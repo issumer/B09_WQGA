@@ -59,7 +59,6 @@ import com.example.b09_wqga.model.VocData
 import com.example.b09_wqga.model.WordData
 import com.example.b09_wqga.model.WordData.Companion.LANGUAGE_NAMES_IN_KOREAN
 import com.example.b09_wqga.navigation.Routes
-import com.example.b09_wqga.screen_test.VocListScreenTest
 import com.example.b09_wqga.ui.theme.B09_WQGATheme
 
 
