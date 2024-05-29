@@ -49,7 +49,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.b09_wqga.model.UIViewModel
+import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
 import kotlinx.coroutines.delay
 import kotlin.random.Random
@@ -60,6 +63,9 @@ data class RPGPlayer(var x: Float, var y: Float, var radius: Float, var health: 
 
 @Composable
 fun GamePlayScreen_1(navController: NavHostController) {
+    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+    val uiViewModel: UIViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+
     var canvasSize by remember { mutableStateOf(IntSize(0, 0)) }
 
     var player by remember { mutableStateOf(RPGPlayer(x = 0f, y = 0f, radius = 30f, health = 100, maxHealth = 100)) }
@@ -274,6 +280,7 @@ fun GamePlayScreen_1(navController: NavHostController) {
         if(showMenuDialog) {
             GameMenuDialog(onDismiss = { showMenuDialog = false },
                 onExitGame = {
+                    uiViewModel.showBottomNavigationBar.value = true
                     navController.navigate(Routes.GameListScreen.route) {
                         popUpTo(Routes.GamePlayScreen_1.route) {
                             inclusive = true

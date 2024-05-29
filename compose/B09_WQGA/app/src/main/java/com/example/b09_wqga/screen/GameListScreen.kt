@@ -63,6 +63,7 @@ import com.example.b09_wqga.navigation.Routes
 @Composable
 fun GameListScreen(navController: NavHostController) {
     val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+    val uiViewModel: UIViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
 
     val lazyColumnGameList = userDataViewModel.lazyColumnGameList
 
@@ -115,6 +116,7 @@ fun GameListScreen(navController: NavHostController) {
             GameStartDialog(onDismiss = {showGameStartDialog = false},
                 onPlay = {voc, quizStyle, difficulty ->
                     showGameStartDialog = false
+                    uiViewModel.showBottomNavigationBar.value = false
                     when(currentPlayGameId) {
                         1 -> {
                             navController.navigate(Routes.GamePlayScreen_1.route) {
