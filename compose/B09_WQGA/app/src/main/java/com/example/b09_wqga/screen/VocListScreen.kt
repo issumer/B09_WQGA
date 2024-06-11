@@ -83,6 +83,9 @@ fun VocListScreen(navController: NavHostController) {
     var showVocEditDialog by rememberSaveable {
         mutableStateOf<Boolean>(false)
     }
+    var showVocAddFailDialog by rememberSaveable {
+        mutableStateOf<Boolean>(false)
+    }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -98,7 +101,11 @@ fun VocListScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.width(8.dp))
 
             Button(onClick = {
-                showVocAddDialog = true
+                if(userDataViewModel.checkVocFull()) {
+                    showVocAddFailDialog = true
+                } else {
+                    showVocAddDialog = true
+                }
             }) {
                 Text("Add") // Add Voc
             }
@@ -153,6 +160,11 @@ fun VocListScreen(navController: NavHostController) {
                         }
                     )
                 }
+            }
+        }
+        if(showVocAddFailDialog) {
+            VocAddFailDialog {
+                showVocAddFailDialog = false
             }
         }
     }
@@ -377,6 +389,24 @@ fun VocEditDialog(onDismiss: () -> Unit, currentEditVoc: VocData, onSaveVoc: (St
                 }) {
                     Text("Save Voc")
                 }
+            }
+        }
+    )
+}
+
+@Composable
+fun VocAddFailDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "단어장 개수 제한", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = "이 앱은 평가용 앱이므로 단어장 개수에 제한이 있습니다. 양해 부탁드립니다!")
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("확인")
             }
         }
     )

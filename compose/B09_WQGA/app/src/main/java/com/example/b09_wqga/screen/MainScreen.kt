@@ -18,12 +18,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.b09_wqga.R
 import com.example.b09_wqga.navigation.MainNavGraph
 import com.example.b09_wqga.model.AuthenticationViewModel
 import com.example.b09_wqga.navigation.Routes
 import com.example.b09_wqga.component.BottomNavigationBar
 import com.example.b09_wqga.model.UIViewModel
 import com.example.b09_wqga.model.UserDataViewModel
+import com.example.b09_wqga.model.VocData
+import com.example.b09_wqga.model.WordData
+import java.util.Scanner
 
 @Composable
 fun rememberViewModelStoreOwner(): ViewModelStoreOwner {
@@ -47,6 +51,22 @@ fun MainScreen(navController: NavHostController) {
         val authenticationViewModel: AuthenticationViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
         val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
         val uiViewModel: UIViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+
+        // 초기 단어장 파일
+        val context = LocalContext.current
+        if(!userDataViewModel.initVocList.value) {
+            val scan = Scanner(context.resources.openRawResource(R.raw.words)) // 파일 접근
+            while(scan.hasNextLine()) {
+                val headword = scan.nextLine()
+                val meaning = scan.nextLine()
+                val firstVocData : VocData = userDataViewModel.vocList[0]
+                firstVocData.wordList.add(WordData(headword, "en", arrayOf<String>(meaning)))
+                firstVocData.wordCount++
+            }
+            scan.close()
+            userDataViewModel.initVocList.value = true
+        }
+
 
         Scaffold(
             bottomBar = {

@@ -55,8 +55,10 @@ import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
 import com.example.b09_wqga.component.SearchBar
 import com.example.b09_wqga.model.GameData
+import com.example.b09_wqga.model.Quiz
 import com.example.b09_wqga.model.UIViewModel
 import com.example.b09_wqga.model.UserDataViewModel
+import com.example.b09_wqga.model.VocData
 import com.example.b09_wqga.navigation.Routes
 
 
@@ -113,10 +115,13 @@ fun GameListScreen(navController: NavHostController) {
         }
 
         if(showGameStartDialog) {
-            GameStartDialog(onDismiss = {showGameStartDialog = false},
+            GameStartDialog(
+                vocDataList = userDataViewModel.vocList,
+                onDismiss = {showGameStartDialog = false},
                 onPlay = {voc, quizStyle, difficulty ->
                     showGameStartDialog = false
                     uiViewModel.showBottomNavigationBar.value = false
+                    userDataViewModel.gameInit(voc, quizStyle, difficulty)
                     when(currentPlayGameId) {
                         1 -> {
                             navController.navigate(Routes.GamePlayScreen_1.route) {
@@ -206,16 +211,22 @@ fun GameItem(gameData: GameData, onStartClick: () -> Unit) {
 
 // 아직 로직 미구현
 @Composable
-fun GameStartDialog(onDismiss: () -> Unit, onPlay: (String, String, String) -> Unit) {
-    var selectedVoc by remember { mutableStateOf("") }
-    var selectedQuizStyle by remember { mutableStateOf("") }
-    var selectedDifficulty by remember { mutableStateOf("") }
-    val vocs = listOf("Vocabulary 1", "Vocabulary 2", "Vocabulary 3") // Example
-    val quizStyles = listOf("Multiple Choice", "Fill in the Blanks") // Example
-    val difficulties = listOf("Easy", "Medium", "Hard") // Example
+fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: (String, Int, Int) -> Unit) {
+    var selectedVocUUID by remember { mutableStateOf("") }
+    var selectedVocTitle by remember { mutableStateOf("") }
+    var selectedQuizStyle by remember { mutableStateOf(-1) }
+    var selectedQuizStyleName by remember { mutableStateOf("") }
+    var selectedDifficulty by remember { mutableStateOf(-1) }
+    var selectedDifficultyName by remember { mutableStateOf("") }
+    val quizStyles = listOf("완전 랜덤", "틀린 단어 위주", "객관식", "주관식") // Example
+    val difficulties = listOf("쉬움", "보통", "어려움") // Example
     var expandedVoc by remember { mutableStateOf(false) }
     var expandedQuizStyle by remember { mutableStateOf(false) }
     var expandedDifficulty by remember { mutableStateOf(false) }
+
+    var warningMessage by rememberSaveable {
+        mutableStateOf("")
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -228,7 +239,7 @@ fun GameStartDialog(onDismiss: () -> Unit, onPlay: (String, String, String) -> U
                 Spacer(modifier = Modifier.height(16.dp))
                 Box {
                     OutlinedTextField(
-                        value = selectedVoc,
+                        value = selectedVocTitle,
                         onValueChange = {},
                         label = { Text("Select Voc") },
                         modifier = Modifier.fillMaxWidth(),
@@ -243,18 +254,19 @@ fun GameStartDialog(onDismiss: () -> Unit, onPlay: (String, String, String) -> U
                         expanded = expandedVoc,
                         onDismissRequest = { expandedVoc = false }
                     ) {
-                        vocs.forEach { voc ->
+                        vocDataList.forEach { vocData ->
                             DropdownMenuItem(onClick = {
-                                selectedVoc = voc
+                                selectedVocUUID = vocData.uuid
+                                selectedVocTitle = vocData.title
                                 expandedVoc = false
-                            }, text = { Text(text = voc) })
+                            }, text = { Text(text = vocData.title) })
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Box {
                     OutlinedTextField(
-                        value = selectedQuizStyle,
+                        value = selectedQuizStyleName,
                         onValueChange = {},
                         label = { Text("Select Quiz Style") },
                         modifier = Modifier.fillMaxWidth(),
@@ -269,9 +281,10 @@ fun GameStartDialog(onDismiss: () -> Unit, onPlay: (String, String, String) -> U
                         expanded = expandedQuizStyle,
                         onDismissRequest = { expandedQuizStyle = false }
                     ) {
-                        quizStyles.forEach { style ->
+                        quizStyles.forEachIndexed { index, style ->
                             DropdownMenuItem(onClick = {
-                                selectedQuizStyle = style
+                                selectedQuizStyle = index
+                                selectedQuizStyleName = style
                                 expandedQuizStyle = false
                             }, text = { Text(text = style) })
                         }
@@ -280,7 +293,7 @@ fun GameStartDialog(onDismiss: () -> Unit, onPlay: (String, String, String) -> U
                 Spacer(modifier = Modifier.height(16.dp))
                 Box {
                     OutlinedTextField(
-                        value = selectedDifficulty,
+                        value = selectedDifficultyName,
                         onValueChange = {},
                         label = { Text("Select Difficulty") },
                         modifier = Modifier.fillMaxWidth(),
@@ -295,19 +308,37 @@ fun GameStartDialog(onDismiss: () -> Unit, onPlay: (String, String, String) -> U
                         expanded = expandedDifficulty,
                         onDismissRequest = { expandedDifficulty = false }
                     ) {
-                        difficulties.forEach { difficulty ->
+                        difficulties.forEachIndexed { index, difficulty ->
                             DropdownMenuItem(onClick = {
-                                selectedDifficulty = difficulty
+                                selectedDifficulty = index
+                                selectedDifficultyName = difficulty
                                 expandedDifficulty = false
                             }, text = { Text(text = difficulty) })
                         }
                     }
                 }
+                Text(text = warningMessage)
             }
         },
         confirmButton = {
             Button(onClick = {
-                onPlay(selectedVoc, selectedQuizStyle, selectedDifficulty)
+                var canPlay = true
+                if(selectedVocUUID.isEmpty()) {
+                    warningMessage = "Select Voc를 채워주세요!"
+                    canPlay = false
+                }
+                if(selectedQuizStyleName.isEmpty() && canPlay) {
+                    warningMessage = "Select Quiz Style를 채워주세요!"
+                    canPlay = false
+                }
+                if(selectedDifficultyName.isEmpty() && canPlay) {
+                    warningMessage = "Select Difficulty를 채워주세요!"
+                    canPlay = false
+                }
+
+                if(canPlay) {
+                    onPlay(selectedVocUUID, selectedQuizStyle, selectedDifficulty)
+                }
             }) {
                 Text("Play")
             }

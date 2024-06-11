@@ -292,7 +292,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        WordQuiz(onSubmitClick = { })
+        //WordQuiz(onSubmitClick = { })
 
         if(showMenuDialog) {
             GameMenuDialog(onDismiss = { showMenuDialog = false },

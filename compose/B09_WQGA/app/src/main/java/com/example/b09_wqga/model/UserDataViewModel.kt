@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.b09_wqga.R
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 import java.util.Date
 
 class UserDataViewModel : ViewModel(){
+    var initVocList = mutableStateOf(false)
     var vocList = mutableStateListOf<VocData>() // 단어장 목록
     var gameList = mutableStateListOf<GameData>() // 게임 목록
     var userId = mutableStateOf("") // 사용자 아이디 (홈, 프로필 화면 표시용)
@@ -34,8 +36,9 @@ class UserDataViewModel : ViewModel(){
     var currentlyEnteredVocUUID = mutableStateOf("") // 단어장 목록 화면에서 단어 목록 화면으로 넘어갈 때 사용
 
     var gameVocUUID = mutableStateOf("") // 게임 시작 화면에서 선택한 단어장 UUID
-    var gameQuizStyle = mutableStateOf("") // 게임 시작 화면에서 퀴즈 방식
-    var gameDifficulty = mutableStateOf("") // 게임 시작 화면에서 난이도
+    var gameQuizStyle = mutableStateOf(-1) // 게임 시작 화면에서 퀴즈 방식
+    var gameDifficulty = mutableStateOf(-1) // 게임 시작 화면에서 난이도
+    var currentQuiz = mutableStateListOf<Quiz>()
 
     // 임시로 데이터 초기화 (원래는 백엔드에서 유저 데이터를 가져온 다음 채워야 함)
     init {
@@ -244,6 +247,11 @@ class UserDataViewModel : ViewModel(){
         }
     }
 
+    // 단어장 개수 제한에 도달했는지 체크
+    fun checkVocFull() : Boolean {
+        return vocList.size >= VocData.MAX_VOC_COUNT
+    }
+
     // 단어 추가
     fun addWord(headword: String, meanings: Array<String>) {
         val vocData = findVocByUUID(currentlyEnteredVocUUID.value)
@@ -293,6 +301,32 @@ class UserDataViewModel : ViewModel(){
                     updateBackendUserData()
                 }
             }
+        }
+    }
+
+    // 단어 개수 제한에 도달했는지 체크
+    fun checkWordFull() : Boolean {
+        val vocData = findVocByUUID(currentlyEnteredVocUUID.value)
+        if(vocData != null) {
+            return vocData.wordList.size >= WordData.MAX_WORD_COUNT
+        }
+        return true;
+    }
+
+    // 게임 시작을 위한 초기화
+    fun gameInit(vocDataUUID : String, quizStyle : Int, difficulty : Int) {
+        gameVocUUID.value = vocDataUUID
+        gameQuizStyle.value = quizStyle
+        gameDifficulty.value = difficulty
+
+        val vocData = findVocByUUID(gameVocUUID.value)
+        if(vocData != null) {
+            if(currentQuiz.isEmpty()) {
+                currentQuiz.add(Quiz(vocData, quizStyle = quizStyle))
+            } else {
+                currentQuiz[0] = Quiz(vocData, quizStyle = quizStyle)
+            }
+
         }
     }
 

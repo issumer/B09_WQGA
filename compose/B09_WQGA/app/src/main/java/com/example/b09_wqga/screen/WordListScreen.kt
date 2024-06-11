@@ -80,6 +80,10 @@ fun WordListScreen() {
         mutableStateOf<Boolean>(false)
     }
 
+    var showWordAddFailDialog by rememberSaveable {
+        mutableStateOf<Boolean>(false)
+    }
+
     var ttsReady by rememberSaveable { // tts 준비 여부
         mutableStateOf(false)
     }
@@ -131,7 +135,11 @@ fun WordListScreen() {
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Button(onClick = {
-                    showWordAddDialog = true
+                    if(userDataViewModel.checkWordFull()) {
+                        showWordAddFailDialog = true
+                    } else {
+                        showWordAddDialog = true
+                    }
                 }) {
                     Text("Add") // Add Word
                 }
@@ -187,7 +195,12 @@ fun WordListScreen() {
                         userDataViewModel.getBackendDict(headword)
                     },
                     onAddWord = { headword, meanings ->
-                        userDataViewModel.addWord(headword, meanings)
+                        var meaningsList = mutableListOf<String>()
+                        meanings.forEach {
+                            if(it.isNotEmpty())
+                                meaningsList.add(it)
+                        }
+                        userDataViewModel.addWord(headword, meaningsList.toTypedArray())
                         showWordAddDialog = false
                     }
                 )
@@ -205,7 +218,12 @@ fun WordListScreen() {
                                 userDataViewModel.getBackendDict(headword)
                             },
                             onSaveWord = { headword, meanings ->
-                                userDataViewModel.editWord(headword, meanings)
+                                var meaningsList = mutableListOf<String>()
+                                meanings.forEach {
+                                    if(it.isNotEmpty())
+                                        meaningsList.add(it)
+                                }
+                                userDataViewModel.editWord(headword, meaningsList.toTypedArray())
                                 showWordEditDialog = false
                             },
                             onDeleteWord = {
@@ -214,6 +232,11 @@ fun WordListScreen() {
                             }
                         )
                     }
+                }
+            }
+            if (showWordAddFailDialog) {
+                WordAddFailDialog {
+                    showWordAddFailDialog = false
                 }
             }
         }
@@ -418,15 +441,25 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: WordData, onDictClick: (S
         mutableStateOf(currentWord.headword)
     }
     var meanings = remember {
-        mutableStateListOf(currentWord.meanings[0],
-            currentWord.meanings[1],
-            currentWord.meanings[2],
-            currentWord.meanings[3],
-            currentWord.meanings[4]
+        mutableStateListOf<String>(
+            "",
+            "",
+            "",
+            "",
+            ""
         )
+    }
+    var meaningsInited by remember {
+        mutableStateOf(false)
     }
     var warningMessage by rememberSaveable {
         mutableStateOf("")
+    }
+
+    if(!meaningsInited) {
+        currentWord.meanings.forEachIndexed { index, it ->
+            meanings[index] = it
+        }
     }
 
     AlertDialog(
@@ -500,6 +533,24 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: WordData, onDictClick: (S
                 }) {
                     Text("Save Word")
                 }
+            }
+        }
+    )
+}
+
+@Composable
+fun WordAddFailDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "단어 개수 제한", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = "이 앱은 평가용 앱이므로 단어 개수에 제한이 있습니다. 양해 부탁드립니다!")
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("확인")
             }
         }
     )
