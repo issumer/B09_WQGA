@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">B09_WQGA</string>
+    <string name="navBarItem_home">Home</string>
+    <string name="navBarItem_vocabulary">Vocabulary</string>
+    <string name="navBarItem_gameList">Games</string>
+    <string name="navBarItem_profile">Profile</string>
+    <string name="loginScreen_enterId">Enter ID</string>
+    <string name="loginScreen_enterPassword">Enter Password</string>
+    <string name="vocabularyScreen_enterSearch">Search</string>
+</resources>
