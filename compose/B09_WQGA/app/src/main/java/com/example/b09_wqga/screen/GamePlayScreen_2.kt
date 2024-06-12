@@ -99,6 +99,9 @@ fun GamePlayScreen_2(navController: NavHostController) {
     var lives by remember { mutableStateOf(3) } // 목숨 개수
     var gameOver by remember { mutableStateOf(false) } // 게임 종료 여부
     var gamePaused by remember { mutableStateOf(false) } // 게임 잠깐 멈춤 여부 (메뉴 열기 등의 이유로)
+    var score by remember { mutableStateOf(0) }
+    var rightCount by remember { mutableStateOf(0) }
+    var wrongCount by remember { mutableStateOf(0) }
 
     var showMenuDialog by rememberSaveable {
         mutableStateOf<Boolean>(false)
@@ -369,7 +372,10 @@ fun GamePlayScreen_2(navController: NavHostController) {
                         }
                         launchSingleTop = true
                     }
-                }
+                },
+                score = score,
+                rightCount = rightCount,
+                wrongCount = wrongCount
             )
         }
     }

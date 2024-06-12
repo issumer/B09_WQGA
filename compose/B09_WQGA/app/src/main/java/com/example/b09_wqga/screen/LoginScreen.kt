@@ -78,15 +78,20 @@ fun LoginScreen(navController: NavHostController) {
         )
 
         Button(onClick = {
-            userViewModel.loginUser(userID, userPassword) { user ->
-                if (user != null) {
-                    val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-                    attendanceViewModel.addAttendance(user.user_id, currentDate) { success ->
-                        uiViewModel.showBottomNavigationBar.value = true
-                        navigateToMainScreen(navController)
+            // 로그인 체크 코드
+            if(userID.isEmpty() || userPassword.isEmpty()) {
+                showLoginFailDialog = true
+            } else {
+                userViewModel.loginUser(userID, userPassword) { user ->
+                    if (user != null) {
+                        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                        attendanceViewModel.addAttendance(user.user_id, currentDate) { success ->
+                            uiViewModel.showBottomNavigationBar.value = true
+                            navigateToMainScreen(navController)
+                        }
+                    } else {
+                        showLoginFailDialog = true
                     }
-                } else {
-                    showLoginFailDialog = true
                 }
             }
         }) {
@@ -115,8 +120,8 @@ private fun navigateToMainScreen(navController: NavHostController) {
 fun LoginFailDialog(onConfirmClick: () -> Unit) {
     AlertDialog(
         onDismissRequest = { },
-        title = { Text(text = "Login Failed", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-        text = { Text(text = "Login Failed") },
+        title = { Text(text = "로그인 실패", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        text = { Text(text = "로그인에 실패하였습니다. 아이디, 비번을 확인해주세요!") },
         confirmButton = {
             Button(onClick = onConfirmClick) {
                 Text(text = "OK")

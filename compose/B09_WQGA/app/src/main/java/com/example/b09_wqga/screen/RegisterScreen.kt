@@ -88,21 +88,26 @@ fun RegisterScreen(navController: NavHostController) {
         )
 
         Button(onClick = {
-            val user = User(username = userID, password = userPassword, name = userName, enterDate = Date, updateDate = Date)
-            userViewModel.registerUser(user) { success ->
-                if (success) {
-                    uiViewModel.showBottomNavigationBar.value = true
-                    navController.navigate(Routes.MainScreen.route) {
-                        popUpTo(Routes.RegisterScreen.route) {
-                            inclusive = true
+            // 회원가입 체크 코드
+            if(userID.isEmpty() || userPassword.isEmpty() || userName.isEmpty()) {
+                showRegisterFailDialog = true
+            } else {
+                val user = User(username = userID, password = userPassword, name = userName, enterDate = Date, updateDate = Date)
+                userViewModel.registerUser(user) { success ->
+                    if (success) {
+                        uiViewModel.showBottomNavigationBar.value = true
+                        navController.navigate(Routes.MainScreen.route) {
+                            popUpTo(Routes.RegisterScreen.route) {
+                                inclusive = true
+                            }
+                            popUpTo(Routes.InitialScreen.route) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
                         }
-                        popUpTo(Routes.InitialScreen.route) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
+                    } else {
+                        showRegisterFailDialog = true
                     }
-                } else {
-                    showRegisterFailDialog = true
                 }
             }
         }) {
@@ -119,8 +124,8 @@ fun RegisterScreen(navController: NavHostController) {
 fun RegisterFailDialog(onConfirmClick: () -> Unit) {
     AlertDialog(
         onDismissRequest = { },
-        title = { Text(text = "Register Failed", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-        text = { Text(text = "Register Failed") },
+        title = { Text(text = "회원가입 실패", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        text = { Text(text = "회원가입에 실패하였습니다. 아이디, 비번, 이름이 비었는지 확인해주세요!") },
         confirmButton = {
             Button(onClick = onConfirmClick) {
                 Text(text = "OK")

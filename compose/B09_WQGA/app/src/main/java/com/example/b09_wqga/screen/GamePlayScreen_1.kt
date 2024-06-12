@@ -74,11 +74,47 @@ import com.example.b09_wqga.model.UIViewModel
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
-data class RPGEnemy(var x: Float, var y: Float, var width: Float, var height: Float, var health: Int, var maxHealth: Int)
+data class RPGEnemy(
+    val x: Float = 0.0f,
+    val y: Float = 0.0f,
+    val width: Float,
+    val height: Float,
+    var health: Int,
+    val maxHealth: Int,
+    val damage: Int,
+    val score: Int,
+    val difficultyModifier: Double,
+    val availableStage: Int,
+    var painter: Painter? = null,
+    val painterResourceId: Int
+)
 
-data class RPGPlayer(var x: Float, var y: Float, var radius: Float, var health: Int, val maxHealth: Int)
+data class RPGPlayer(
+    var x: Float,
+    var y: Float,
+    var health: Int,
+    val maxHealth: Int,
+    val damage: Int
+)
+
+sealed class RPGAttributes {
+    companion object {
+        val RPGEnemies = listOf(
+            RPGEnemy(width = 60.0f, height = 60.0f, health = 20, maxHealth = 20, damage = 5, score = 20, difficultyModifier = 0.1, availableStage = 0, painterResourceId = R.drawable.enemy1),
+            RPGEnemy(width = 60.0f, height = 60.0f, health = 26, maxHealth = 26, damage = 8, score = 30, difficultyModifier = 0.12, availableStage = 3, painterResourceId = R.drawable.enemy2),
+            RPGEnemy(width = 60.0f, height = 60.0f, health = 40, maxHealth = 40, damage = 6, score = 60, difficultyModifier = 0.15, availableStage = 5, painterResourceId = R.drawable.enemy3)
+        )
+        val backgroundsID = listOf(
+            R.drawable.background1
+            //R.drawable.background2
+            //R.drawable.background3
+            //...
+        )
+    }
+}
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -87,15 +123,21 @@ fun GamePlayScreen_1(navController: NavHostController) {
     val uiViewModel: UIViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
     var canvasSize by remember { mutableStateOf(IntSize(0, 0)) }
 
-    var player by remember { mutableStateOf(RPGPlayer(x = 0f, y = 0f, radius = 30f, health = 100, maxHealth = 100)) }
-    var enemies by remember { mutableStateOf(emptyList<RPGEnemy>()) }
-    var position by remember { mutableStateOf(-1) }
+    var player by remember { mutableStateOf(RPGPlayer(x = 0.0f, y = 0.0f, health = 100, maxHealth = 100, damage = 12)) }
+    var enemies by remember { mutableStateOf(mutableListOf<RPGEnemy>()) }
     var damaged by remember { mutableStateOf(false) }
     var enemydamaged by remember { mutableStateOf(false) }
     var selectedEnemyIndex by remember { mutableStateOf(-1) }
-    var message by remember { mutableStateOf("") }
     var playerTurn by remember { mutableStateOf(true) }
+    var playerQuizPaused by remember { mutableStateOf(false) }
     var playerQuizResult by remember { mutableStateOf(false) }
+    var playerBlockSkill by remember { mutableStateOf(false) }
+    var stage by remember { mutableStateOf(1) }
+    var score by remember { mutableStateOf(0) }
+    var rightCount by remember { mutableStateOf(0) }
+    var wrongCount by remember { mutableStateOf(0) }
+    val difficulty by remember { mutableStateOf(userDataViewModel.gameDifficulty.value) }
+    var centerMessage by remember { mutableStateOf("") }
     var damageMessage by remember { mutableStateOf("") }
     var damagePosition by remember { mutableStateOf(Offset(0f, 0f)) }
     var gameOver by remember { mutableStateOf(false) } // 게임 종료 여부
@@ -105,46 +147,93 @@ fun GamePlayScreen_1(navController: NavHostController) {
     }
 
     var recomposeKey by remember { mutableStateOf(false) }
+    var showAttackSkills by remember { mutableStateOf(false) }
+    var showDefenseSkills by remember { mutableStateOf(false) }
 
     val effect1_vec: Painter = painterResource(id = R.drawable.effect1)
     val effect2_vec: Painter = painterResource(id = R.drawable.effect2)
     val arrow: Painter = painterResource(id = R.drawable.arrow)
-    val enemy1_vec: Painter = painterResource(id = R.drawable.enemy1)
-    val enemy2_vec: Painter = painterResource(id = R.drawable.enemy2)
-    val enemy3_vec: Painter = painterResource(id = R.drawable.enemy3)
+    RPGAttributes.RPGEnemies[0].painter = painterResource(id = R.drawable.enemy1)
+    RPGAttributes.RPGEnemies[1].painter = painterResource(id = R.drawable.enemy2)
+    RPGAttributes.RPGEnemies[2].painter = painterResource(id = R.drawable.enemy3)
     val player_vec: Painter = painterResource(id = R.drawable.player)
     val yourturn: Painter = painterResource(id = R.drawable.yourturn)
 
+    // 초기화 코드 (스테이지 1)
     LaunchedEffect(canvasSize) {
         if (canvasSize.width > 0 && canvasSize.height > 0) {
             player = player.copy(
-                x = canvasSize.width / 6f,
+                x = canvasSize.width / 6.0f,
                 y = canvasSize.height / 1.5f,
             )
 
-            enemies = List(3) { index ->
-                if(index == 1){
-                    RPGEnemy(
-                        x = canvasSize.width * 3 / 5f,
-                        y = canvasSize.height / 10f - (index * 120) + 700,
-                        width = 60f,
-                        height = 60f,
-                        health = 20,
-                        maxHealth = 20
-                    )
+            enemies = mutableListOf<RPGEnemy>()
+
+            for(i in 0..2) {
+                enemies.add(RPGAttributes.RPGEnemies[0].copy(
+                    x = if(i == 1) canvasSize.width * 3 / 5.0f else canvasSize.width * 3 / 5.0f + 170,
+                    y = if(i == 1) canvasSize.height / 10.0f - (i * 120) + 700 else canvasSize.height / 10.0f - (i * 130) + 700,
+                    health = (RPGAttributes.RPGEnemies[0].health * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty)).roundToInt(),
+                    maxHealth = (RPGAttributes.RPGEnemies[0].maxHealth * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty)).roundToInt(),
+                    damage = (RPGAttributes.RPGEnemies[0].damage * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty)).roundToInt()
+                    ))
+            }
+        }
+    }
+
+    fun setStage() {
+        var enemyCountMax = 3
+        when(stage) {
+            in 0..3 -> enemyCountMax = 3
+            in 4 .. 6 -> enemyCountMax = 4
+            else -> enemyCountMax = 5
+        }
+
+        var possibleEnemyPool = RPGAttributes.RPGEnemies.filter { it -> it.availableStage <= stage }
+        enemies = mutableListOf<RPGEnemy>()
+
+        for(i in 0..enemyCountMax - 1) {
+            val randomEnemyIndex = Random.nextInt(possibleEnemyPool.size)
+            val randomEnemy = possibleEnemyPool[randomEnemyIndex]
+
+            // 적 대형 배치하는 코드
+            when(enemyCountMax) {
+                3 -> {
+                    enemies.add(randomEnemy.copy(
+                        x = if(i == 1) canvasSize.width * 3 / 5.0f else canvasSize.width * 3 / 5.0f + 170,
+                        y = if(i == 1) canvasSize.height / 10.0f - (i * 120) + 700 else canvasSize.height / 10.0f - (i * 130) + 700,
+                        health = (randomEnemy.health * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
+                        maxHealth = (randomEnemy.maxHealth * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
+                        damage = (randomEnemy.damage * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt()
+                    ))
                 }
-                else {
-                    RPGEnemy(
-                        x = canvasSize.width * 3 / 5f + 170,
-                        y = canvasSize.height / 10f - (index * 130) + 700,
-                        width = 60f,
-                        height = 60f,
-                        health = 20,
-                        maxHealth = 20
-                    )
+                // 적 개수가 4, 5개 일 때는 임시로 일자로 출력되도록 했는데, 변경 부탁드립니당!
+                4 -> {
+                    enemies.add(randomEnemy.copy(
+                        x = canvasSize.width * 3 / 5.0f,
+                        y = canvasSize.height / 10.0f - (i * 120) + 700,
+                        health = (randomEnemy.health * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
+                        maxHealth = (randomEnemy.maxHealth * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
+                        damage = (randomEnemy.damage * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt()
+                    ))
+                }
+                5 -> {
+                    enemies.add(randomEnemy.copy(
+                        x = canvasSize.width * 3 / 5.0f,
+                        y = canvasSize.height / 10.0f - (i * 120) + 700,
+                        health = (randomEnemy.health * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
+                        maxHealth = (randomEnemy.maxHealth * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
+                        damage = (randomEnemy.damage * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt()
+                    ))
                 }
             }
         }
+    }
+
+    fun nextStage() {
+        stage += 1
+        player.health = player.maxHealth
+        setStage()
     }
 
     suspend fun showDamageMessage() {
@@ -168,39 +257,93 @@ fun GamePlayScreen_1(navController: NavHostController) {
         if (enemies.isNotEmpty()) {
             enemies.forEach { enemy ->
                 delay(500L)
-                val damage = Random.nextInt(3, 7)
+                var damage = Random.nextInt(enemy.damage - 3, enemy.damage + 3)
+                if(playerBlockSkill) {
+                    damage = (damage / 2.0).roundToInt()
+                }
                 player.health -= damage
                 damageMessage = "-$damage"
-                damagePosition = Offset(player.x + 70, player.y - 50)
+                damagePosition = Offset(player.x + 70.0f, player.y - 50.0f)
                 showDamageEffect_1()
                 showDamageMessage()
             }
         }
         delay(500L)
-        playerTurn = true
+        playerBlockSkill = false
+
         if (player.health <= 0) {
             gameOver = true
-            message = "Defeat"
+            centerMessage = "Defeat!"
+
+            delay(2000L)
+            showMenuDialog = true
         } else if (enemies.isEmpty()) {
-            gameOver = true
-            message = "Victory"
+            centerMessage = "Victory! Next Stage"
+
+            delay(2000L)
+            nextStage()
+            centerMessage = ""
         }
+
+        playerQuizPaused = false
+        playerTurn = true
     }
 
-    fun performAttack() {
-        if (selectedEnemyIndex != -1 && playerTurn) {
-            val damage = Random.nextInt(10, 21)
-            enemies[selectedEnemyIndex].health -= damage
-            damageMessage = "-$damage"
-            damagePosition = Offset(enemies[selectedEnemyIndex].x + enemies[selectedEnemyIndex].width / 2 + 30, enemies[selectedEnemyIndex].y - 25)
-            enemydamaged = true
-            if (enemies[selectedEnemyIndex].health <= 0) {
-                enemies = enemies.filterIndexed { index, _ -> index != selectedEnemyIndex }
-                selectedEnemyIndex = -1
-            }
+    fun performSkill(skillNum : Int) {
+        if(playerTurn) {
+            when(skillNum) {
+                0 -> { // 찌르기
+                    if(selectedEnemyIndex == -1 || !(selectedEnemyIndex in 0 until enemies.size)) { // 아무 적도 선택하지 않음
+                        selectedEnemyIndex = Random.nextInt(enemies.size)
+                    }
 
+                    val damage = Random.nextInt(player.damage - 5, player.damage + 10) // 플레이어 공격력 -10 ~ +10 사이 데미지
+                    enemies[selectedEnemyIndex].health -= damage
+                    damageMessage = "-$damage"
+                    damagePosition = Offset(enemies[selectedEnemyIndex].x + enemies[selectedEnemyIndex].width / 2 + 30, enemies[selectedEnemyIndex].y - 25)
+                    enemydamaged = true
+                    if (enemies[selectedEnemyIndex].health <= 0) {
+                        score += enemies[selectedEnemyIndex].score
+                        enemies = enemies.filterIndexed { index, _ -> index != selectedEnemyIndex }.toMutableList()
+                        selectedEnemyIndex = -1
+                    }
+
+                    selectedEnemyIndex = -1
+                    playerTurn = false
+                }
+                1 -> { // 휩쓸기
+                    for(enemy in enemies) {
+                        val damage = Random.nextInt(((player.damage - 2.0) / enemies.count()).roundToInt(), ((player.damage + 10.0) / enemies.count()).roundToInt())
+                        enemy.health -= damage
+                        damageMessage = "-$damage"
+                        damagePosition = Offset(enemy.x + enemy.width / 2 + 30, enemy.y - 25)
+                        enemydamaged = true
+                    }
+
+                    enemies.forEach {
+                        if(it.health <= 0) score += it.score
+                    }
+
+                    enemies = enemies.filterIndexed { index, enemy -> enemy.health > 0 }.toMutableList()
+                    selectedEnemyIndex = -1
+                    playerTurn = false
+                }
+                2 -> { // 체력 회복
+                    player.health = if(player.health + 50 >= player.maxHealth) player.maxHealth else player.health + 50
+                    playerTurn = false
+                }
+                3 -> { // 막기
+                    playerBlockSkill = true
+                    playerTurn = false
+                }
+                4 -> { // 도망
+                    setStage()
+                }
+            }
             playerQuizResult = false
-            playerTurn = false
+            showAttackSkills = false
+            showDefenseSkills = false
+            playerQuizPaused = true
         }
     }
 
@@ -292,7 +435,7 @@ fun GamePlayScreen_1(navController: NavHostController) {
                                 }
                             }
                         }
-                        with(enemy1_vec){
+                        with(enemy.painter!!){
                             translate(left = enemy.x, top= enemy.y){
                                 draw(size = Size(60.dp.toPx(), 60.dp.toPx()))
                             }
@@ -366,14 +509,14 @@ fun GamePlayScreen_1(navController: NavHostController) {
             }
 
 
-            if (message.isNotEmpty()) {
+            if (centerMessage.isNotEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color(0x88000000)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(message, color = Color.White, style = MaterialTheme.typography.headlineSmall)
+                    Text(centerMessage, color = Color.White, style = MaterialTheme.typography.headlineSmall)
                 }
             }
         }
@@ -390,24 +533,51 @@ fun GamePlayScreen_1(navController: NavHostController) {
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 if(playerQuizResult) {
-
-                    Image(painter = painterResource(id = R.drawable.attack),
-                        contentDescription = null,
-                        modifier = Modifier.clickable { performAttack() }
-                            .size(80.dp)
-                    )
-//
-//                    Button(onClick = {  }, enabled = playerQuizResult) {
-//                        Text("방어")
-//                    }
-//                    Button(onClick = {  }, enabled = playerQuizResult) {
-//                        Text("도망")
-//                    }
+                    if(showAttackSkills) {
+                        Button(onClick = { showAttackSkills = false; showDefenseSkills = false }) {
+                            Text("뒤로")
+                        }
+                        Button(onClick = { performSkill(0) }) {
+                            Text("찌르기")
+                        }
+                        Button(onClick = {  performSkill(1) }) {
+                            Text("휩쓸기")
+                        }
+                    } else if (showDefenseSkills) {
+                        Button(onClick = { showAttackSkills = false; showDefenseSkills = false }) {
+                            Text("뒤로")
+                        }
+                        Button(onClick = {  performSkill(2) }) {
+                            Text("체력 회복")
+                        }
+                        Button(onClick = {  performSkill(3) }) {
+                            Text("막기")
+                        }
+                    } else {
+                        Image(painter = painterResource(id = R.drawable.attack),
+                            contentDescription = null,
+                            modifier = Modifier.clickable { showAttackSkills = true }
+                                .size(80.dp)
+                        )
+                        Button(onClick = {  showDefenseSkills = true }) {
+                            Text("방어")
+                        }
+                        Button(onClick = { performSkill(4) }) {
+                            Text("도망")
+                        }
+                    }
                 }
                 else {
                     Image(painter = painterResource(id = R.drawable.skull),
                         contentDescription = null,
-                        modifier = Modifier.clickable { playerTurn = false }
+                        modifier = Modifier.clickable {
+                            if(playerTurn) {
+                                showAttackSkills = false
+                                showDefenseSkills = false
+                                playerTurn = false
+                                playerQuizPaused = true
+                            }
+                        }
                             .size(80.dp)
                     )
                 }
@@ -416,13 +586,21 @@ fun GamePlayScreen_1(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        WordQuiz(userDataViewModel.currentQuiz[0], recomposeKey = recomposeKey, !playerTurn, onSubmit = {quizResult ->
+        WordQuiz(userDataViewModel.currentQuiz[0], recomposeKey = recomposeKey, playerQuizPaused, onSubmit = {quizResult ->
             playerQuizResult = quizResult
-            if(playerQuizResult) playerTurn = true
+            if(playerQuizResult) {
+                rightCount += 1
+                playerTurn = true
+            } else {
+                wrongCount += 1
+            }
         })
 
         if(showMenuDialog) {
-            GameMenuDialog(onDismiss = { showMenuDialog = false },
+            GameMenuDialog(onDismiss = {
+                if(!gameOver) {
+                    showMenuDialog = false
+                }},
                 onExitGame = {
                     uiViewModel.showBottomNavigationBar.value = true
                     navController.navigate(Routes.GameListScreen.route) {
@@ -431,26 +609,33 @@ fun GamePlayScreen_1(navController: NavHostController) {
                         }
                         launchSingleTop = true
                     }
-                }
+                },
+                score = score,
+                rightCount = rightCount,
+                wrongCount = wrongCount
             )
         }
     }
 }
 
 @Composable
-fun GameMenuDialog(onDismiss: () -> Unit, onExitGame: () -> Unit) {
+fun GameMenuDialog(onDismiss: () -> Unit, onExitGame: () -> Unit, score: Int, rightCount: Int, wrongCount: Int) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Game Menu", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "게임 메뉴", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Button(onClick = onDismiss) {
-                    Text("Back")
+                    Text("뒤로")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = onExitGame) {
-                    Text("Exit Game")
+                    Text("나가기")
                 }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("점수: $score")
+                Text("맞은 개수: $rightCount")
+                Text("틀린 개수: $wrongCount")
             }
         },
         confirmButton = {

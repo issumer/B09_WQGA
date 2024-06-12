@@ -234,7 +234,8 @@ data class Quiz(
         val answerNonEmptyMeanings = answerWord!!.meanings.filter { it.isNotEmpty() }
         val answerRandomMeaning = answerNonEmptyMeanings.random(Random)
 
-        val randomAlphabet = answerWord!!.headword[Random.nextInt(answerWord!!.headword.length)]
+        val cleanHeadword = answerWord!!.headword.replace(" ","")
+        val randomAlphabet = cleanHeadword[Random.nextInt(cleanHeadword.length)]
 
         when(currentQuizType) {
             0 -> {
