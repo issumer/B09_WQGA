@@ -102,7 +102,8 @@ fun GamePlayScreen_2(navController: NavHostController) {
     var score by remember { mutableStateOf(0) }
     var rightCount by remember { mutableStateOf(0) }
     var wrongCount by remember { mutableStateOf(0) }
-    var showLiveDecrese: Boolean by remember { mutableStateOf(false)}
+    var showLiveDecrease: Boolean by remember { mutableStateOf(false)}
+
 
     var showMenuDialog by rememberSaveable {
         mutableStateOf<Boolean>(false)
@@ -128,7 +129,18 @@ fun GamePlayScreen_2(navController: NavHostController) {
     val heart1 : Painter = painterResource(id = R.drawable.heart1)
     val heart0 : Painter = painterResource(id = R.drawable.heart0)
 
-    suspend fun nextQuiz() {
+
+    fun nextQuiz() {
+        if(rightCount > 0 || wrongCount > 0) { // 첫번째 퀴즈는 새로운 퀴즈를 만들지 않음
+            userDataViewModel.currentQuiz[0].createQuiz()
+        }
+        playerQuizPaused = false
+        showWordQuiz = true
+        recomposeKey = !recomposeKey // 강제 recompose
+    }
+
+
+    suspend fun quizFinished() {
         delay(2000L)
         playerQuizPaused = true
         showWordQuiz = false
@@ -183,9 +195,9 @@ fun GamePlayScreen_2(navController: NavHostController) {
                 }
                 if (ball.y > canvasSize.height - ball.radius) {
                     lives -= 1
-                    showLiveDecrese = true
+                    showLiveDecrease = true
                     delay(1000L)
-                    showLiveDecrese = false
+                    showLiveDecrease = false
                     if (lives > 0) {
                         ball = ball.copy(
                             x = canvasSize.width / 2f,
@@ -232,9 +244,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
                                     isBroken = 0
                                 )
                                     .also {
-                                        playerQuizPaused = false
-                                        showWordQuiz = true
-                                        recomposeKey = !recomposeKey // 강제 recompose
+                                        nextQuiz()
                                     }// 퀴즈 표시
                             } else block.copy(isBroken = 1)
                         } else {
@@ -245,9 +255,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
                                     isBroken = 0
                                 )
                                     .also {
-                                        playerQuizPaused = false
-                                        showWordQuiz = true
-                                        recomposeKey = !recomposeKey // 강제 recompose
+                                        nextQuiz()
                                     } // 퀴즈 표시
                             } else block.copy(isBroken = 0)
                         }
@@ -367,7 +375,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
                     canvasSize = size
                 }) {
                 drawIntoCanvas {canvas ->
-                    if(showLiveDecrese){
+                    if(showLiveDecrease){
                         with(lifedecrease){
                             translate(left = 360f, top= 450f){
                                 draw(size = Size(100.dp.toPx(), 45.dp.toPx()))
@@ -475,7 +483,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
                 if(playerQuizResult) {
                     rightCount += 1
                     coroutineScope.launch {
-                        nextQuiz()
+                        quizFinished()
                     }
                     //showWordQuiz = false // 퀴즈 표시 비활성화
                     //userDataViewModel.moveToNextQuiz()
@@ -487,7 +495,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
                         gameOver = true
                     } else {
                         coroutineScope.launch {
-                            nextQuiz()
+                            quizFinished()
                         }
                     }
                 }
