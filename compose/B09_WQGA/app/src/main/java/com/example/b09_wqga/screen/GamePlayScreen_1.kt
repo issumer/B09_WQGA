@@ -182,12 +182,12 @@ fun GamePlayScreen_1(navController: NavHostController) {
     }
 
     fun setStage() {
-        var enemyCountMax = 4
-//        when(stage) {
-//            in 0..3 -> enemyCountMax = 3
-//            in 4 .. 6 -> enemyCountMax = 4
-//            else -> enemyCountMax = 5
-//        }
+        var enemyCountMax = 3
+       when(stage) {
+           in 0..3 -> enemyCountMax = 3
+           in 4 .. 6 -> enemyCountMax = 4
+           else -> enemyCountMax = 5
+       }
 
         var possibleEnemyPool = RPGAttributes.RPGEnemies.filter { it -> it.availableStage <= stage }
         enemies = mutableListOf<RPGEnemy>()
