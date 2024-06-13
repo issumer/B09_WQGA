@@ -8,6 +8,7 @@ import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -102,7 +103,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
     var score by remember { mutableStateOf(0) }
     var rightCount by remember { mutableStateOf(0) }
     var wrongCount by remember { mutableStateOf(0) }
-
+    var showLiveDecrese: Boolean by remember { mutableStateOf(false)}
     var showMenuDialog by rememberSaveable {
         mutableStateOf<Boolean>(false)
     }
@@ -114,6 +115,11 @@ fun GamePlayScreen_2(navController: NavHostController) {
     val yellowbrick : Painter = painterResource(id = R.drawable.yellowbrick)
     val bluebrickc : Painter = painterResource(id = R.drawable.bluebrickc)
     val redbrickc : Painter = painterResource(id = R.drawable.redbrickc)
+    val lifedecrease : Painter = painterResource(id = R.drawable.lifedecrease)
+    val heart3 : Painter = painterResource(id = R.drawable.heart3)
+    val heart2 : Painter = painterResource(id = R.drawable.heart2)
+    val heart1 : Painter = painterResource(id = R.drawable.heart1)
+    val heart0 : Painter = painterResource(id = R.drawable.heart0)
 
 
     LaunchedEffect(canvasSize) {
@@ -163,6 +169,9 @@ fun GamePlayScreen_2(navController: NavHostController) {
             }
             if (ball.y > canvasSize.height - ball.radius) {
                 lives -= 1
+                showLiveDecrese = true
+                delay(1000L)
+                showLiveDecrese = false
                 if (lives > 0) {
                     ball = ball.copy(
                         x = canvasSize.width / 2f,
@@ -223,12 +232,65 @@ fun GamePlayScreen_2(navController: NavHostController) {
         .background(Color.White)
     ) {
         Box(modifier = Modifier
+            .height(50.dp)
+            .fillMaxWidth()
+            .background(Color.Black)
+        ){
+            Canvas(modifier = Modifier
+                .fillMaxSize()){
+                if(lives == 3){
+                    with(heart3){
+                        translate(left = 30f, top= 30f){
+                            draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
+                        }
+                    }
+                }
+                else if(lives == 2){
+                    with(heart2){
+                        translate(left = 30f, top= 30f){
+                            draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
+                        }
+                    }
+                }
+                else if(lives == 1){
+                    with(heart1){
+                        translate(left = 30f, top= 30f){
+                            draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
+                        }
+                    }
+                }
+                else{
+                    with(heart0){
+                        translate(left = 30f, top= 30f){
+                            draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
+                        }
+                    }
+                }
+            }
+
+
+            Row(horizontalArrangement = Arrangement.End,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 10.dp, top = 10.dp)){
+                Image(painter = painterResource(id = R.drawable.pausebutton_2),
+                    contentDescription = "menu",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .clickable { showMenuDialog = true }
+                        .size(width = 70.dp, height = 30.dp)
+                )
+            }
+
+
+        }
+        Box(modifier = Modifier
             .height(440.dp)
             .fillMaxWidth()) {
 
             Image(painter = painterResource(id = R.drawable.background2),
                 contentDescription = "background",
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.FillWidth,
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -249,6 +311,16 @@ fun GamePlayScreen_2(navController: NavHostController) {
                     canvasSize = size
                 }) {
                 drawIntoCanvas {canvas ->
+
+                    if(showLiveDecrese){
+                        with(lifedecrease){
+                            translate(left = 360f, top= 450f){
+                                draw(size = Size(100.dp.toPx(), 45.dp.toPx()))
+                            }
+                        }
+                    }
+
+
                     blocks.forEach { block ->
 
                         if(block.isBroken != 0) {
@@ -328,24 +400,8 @@ fun GamePlayScreen_2(navController: NavHostController) {
 
                 }
             }
-            Button(onClick = {
-                showMenuDialog = true
-            },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp)
-            ) {
-                Text("Menu")
-            }
-            Row(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(Alignment.BottomStart)
-            ) {
-                repeat(lives) {
-                    Text("❤️", color = Color.Black, modifier = Modifier.padding(end = 8.dp))
-                }
-            }
+
+
             if (gameOver) {
                 Box(
                     modifier = Modifier
@@ -353,7 +409,9 @@ fun GamePlayScreen_2(navController: NavHostController) {
                         .background(Color(0x88000000)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Defeat", color = Color.Black, style = MaterialTheme.typography.headlineSmall)
+                    Image(painter = painterResource(R.drawable.gameover),
+                        contentDescription = "gameover",
+                        modifier = Modifier.size(150.dp))
                 }
             }
         }
