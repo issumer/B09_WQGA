@@ -102,6 +102,8 @@ fun GamePlayScreen_2(navController: NavHostController) {
     var score by remember { mutableStateOf(0) }
     var rightCount by remember { mutableStateOf(0) }
     var wrongCount by remember { mutableStateOf(0) }
+    var showWrong: Boolean by remember { mutableStateOf(false)}
+    var showCorrect: Boolean by remember { mutableStateOf(false)}
     var showLiveDecrease: Boolean by remember { mutableStateOf(false)}
 
 
@@ -124,6 +126,8 @@ fun GamePlayScreen_2(navController: NavHostController) {
     val bluebrickc : Painter = painterResource(id = R.drawable.bluebrickc)
     val redbrickc : Painter = painterResource(id = R.drawable.redbrickc)
     val lifedecrease : Painter = painterResource(id = R.drawable.lifedecrease)
+    val wrong : Painter = painterResource(id = R.drawable.wrong)
+    val correct : Painter = painterResource(id = R.drawable.correct)
     val heart3 : Painter = painterResource(id = R.drawable.heart3)
     val heart2 : Painter = painterResource(id = R.drawable.heart2)
     val heart1 : Painter = painterResource(id = R.drawable.heart1)
@@ -176,6 +180,24 @@ fun GamePlayScreen_2(navController: NavHostController) {
         }
     }
 
+    LaunchedEffect(lives){
+        if(lives != 3) {
+            showLiveDecrease = true
+            delay(1000)
+            showLiveDecrease = false
+        }
+    }
+
+    LaunchedEffect(showCorrect){
+        delay(1000)
+        showCorrect = false
+    }
+
+    LaunchedEffect(showWrong) {
+        delay(1000)
+        showWrong = false
+    }
+
     LaunchedEffect(Unit) {
         while (!gameOver) {
             if (!showWordQuiz) {
@@ -196,7 +218,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
                 if (ball.y > canvasSize.height - ball.radius) {
                     lives -= 1
                     showLiveDecrease = true
-                    delay(1000L)
+                    delay(1000)
                     showLiveDecrease = false
                     if (lives > 0) {
                         ball = ball.copy(
@@ -282,17 +304,17 @@ fun GamePlayScreen_2(navController: NavHostController) {
         } else if (blocks.all { it.isBroken == 0 }) {
             gameWin = true
         }
-        GameOverDialog(gameWin = gameWin,onDismiss = { showMenuDialog = false },
-            onExitGame = {
-                uiViewModel.showBottomNavigationBar.value = true
-                navController.navigate(Routes.GameListScreen.route) {
-                    popUpTo(Routes.GamePlayScreen_2.route) {
-                        inclusive = true
-                    }
-                    launchSingleTop = true
-                }
-            }
-        )
+//        GameOverDialog(gameWin = gameWin,onDismiss = { showMenuDialog = false },
+//            onExitGame = {
+//                uiViewModel.showBottomNavigationBar.value = true
+//                navController.navigate(Routes.GameListScreen.route) {
+//                    popUpTo(Routes.GamePlayScreen_2.route) {
+//                        inclusive = true
+//                    }
+//                    launchSingleTop = true
+//                }
+//            }
+//        )
     }
 
     Column(modifier = Modifier
@@ -379,6 +401,22 @@ fun GamePlayScreen_2(navController: NavHostController) {
                         with(lifedecrease){
                             translate(left = 360f, top= 450f){
                                 draw(size = Size(100.dp.toPx(), 45.dp.toPx()))
+                            }
+                        }
+                    }
+
+                    if(showWrong){
+                        with(wrong){
+                            translate(left = 420f, top= 600f){
+                                draw(size = Size(70.dp.toPx(), 70.dp.toPx()))
+                            }
+                        }
+                    }
+
+                    if(showCorrect){
+                        with(correct){
+                            translate(left = 420f, top= 450f){
+                                draw(size = Size(70.dp.toPx(), 70.dp.toPx()))
                             }
                         }
                     }
@@ -481,6 +519,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
             WordQuiz(userDataViewModel.currentQuiz[0], recomposeKey = recomposeKey, playerQuizPaused, onSubmit = {quizResult ->
                 playerQuizResult = quizResult
                 if(playerQuizResult) {
+                    showCorrect = true
                     rightCount += 1
                     coroutineScope.launch {
                         quizFinished()
@@ -488,6 +527,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
                     //showWordQuiz = false // 퀴즈 표시 비활성화
                     //userDataViewModel.moveToNextQuiz()
                 } else {
+                    showWrong = true
                     wrongCount += 1
                     lives -= 1 //목숨 하나 까기
                     //showWordQuiz = false // 퀴즈 표시 비활성화
