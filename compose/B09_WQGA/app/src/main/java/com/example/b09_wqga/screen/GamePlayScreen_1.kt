@@ -107,6 +107,7 @@ sealed class RPGAttributes {
             RPGEnemy(width = 60.0f, height = 60.0f, health = 26, maxHealth = 26, damage = 8, score = 30, difficultyModifier = 0.12, availableStage = 3, painterResourceId = R.drawable.enemy2),
             RPGEnemy(width = 60.0f, height = 60.0f, health = 40, maxHealth = 40, damage = 6, score = 60, difficultyModifier = 0.15, availableStage = 5, painterResourceId = R.drawable.enemy3)
         )
+        // 여러 배경 추가
         val backgroundsID = listOf(
             R.drawable.background1
             //R.drawable.background2
@@ -555,11 +556,17 @@ fun GamePlayScreen_1(navController: NavHostController) {
                     } else {
                         Image(painter = painterResource(id = R.drawable.attack),
                             contentDescription = null,
-                            modifier = Modifier.clickable { showAttackSkills = true }
+                            modifier = Modifier.clickable {
+                                //showAttackSkills = true
+                                performSkill(0)
+                            }
                                 .size(80.dp)
                         )
-                        Button(onClick = {  showDefenseSkills = true }) {
-                            Text("방어")
+                        Button(onClick = {
+                            //showDefenseSkills = true
+                            performSkill(2)
+                        }) {
+                            Text("회복")
                         }
                         Button(onClick = { performSkill(4) }) {
                             Text("도망")
