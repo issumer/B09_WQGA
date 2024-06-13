@@ -200,6 +200,7 @@ fun RegisterScreen(navController: NavHostController) {
                     }
                 }
             }
+                .size(width = 100.dp, height = 41.dp)
         )
 
         if (showRegisterFailDialog) {
