@@ -15,32 +15,42 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Architecture
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Diamond
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Score
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.b09_wqga.R
+import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.model.GameData
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.model.WordData
 import com.example.b09_wqga.ui.theme.B09_WQGATheme
+import java.time.LocalDate
 
 
 @Composable
@@ -49,6 +59,17 @@ fun HomeScreen() {
     val scrollState = rememberScrollState()
     val gameData: GameData? = userDataViewModel.getRecentlyPlayedGame() // 최근에 플레이한 게임
     val wordData: WordData? = userDataViewModel.getRecentlyAddedWord() // 최근에 생성한 단어
+
+    val currentDate = LocalDate.now()
+
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf(currentDate) }
+
+    val points = userDataViewModel.getUserPoints()
+    val lastAttendanceDate = userDataViewModel.getUserLastAttendanceDate()
+
+    val isButtonEnabled = selectedDate == currentDate && (lastAttendanceDate == null || lastAttendanceDate != currentDate)
+
 
     Column(
         modifier = Modifier
@@ -63,56 +84,85 @@ fun HomeScreen() {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        if(gameData != null) {
-            Text(
-                text = "Recently Played Game",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            RecentlyPlayedGame(gameData)
-        }
-
-        if(wordData != null) {
-            Text(
-                text = "Recently Added Word",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            RecentlyAddedWord(wordData)
-        }
-
-        Text(
-            text = "Attendance",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        Calendar(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-                .weight(1f)
-        )
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Button(onClick = { /*TODO*/ }) {
-                Text("Attendance Check")
-            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.Score,
+                    imageVector = Icons.Default.Diamond,
                     contentDescription = "Points",
                     modifier = Modifier.size(24.dp)
                 )
-                Text(text = "Points", fontSize = 18.sp)
+                Text(text = "$points Points", fontSize = 18.sp)
             }
+            Button_WQGA(width = 200, height = 40, text = "Attendance Check",
+                onClickLabel = {
+                    userDataViewModel.increasePoints()
+                    showDialog = true
+                }, enabled = isButtonEnabled
+            )
         }
+
+        Calendar(
+            currentDate = currentDate,
+            selectedDate = selectedDate,
+            onDateSelected = { date -> selectedDate = date },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 5.dp)
+                .weight(1f)
+        )
+
+        if(gameData != null) {
+            Box(modifier = Modifier
+                .background(
+                    color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(start = 8.dp, end = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Recently Played Game",
+                    fontSize = 18.sp,
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 5.dp)
+                )
+            }
+            RecentlyPlayedGame(gameData)
+        }
+
+        if(wordData != null) {
+            Box(modifier = Modifier
+                .background(
+                    color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(start = 8.dp, end = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Recently Added Word",
+                    fontSize = 18.sp,
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 5.dp)
+                )
+            }
+            RecentlyAddedWord(wordData)
+        }
+    }
+
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Attendance Completed!") },
+            text = { Text("Good Luck~") },
+            confirmButton = {
+                Button_WQGA(width = 80, height = 40, text = "check", onClickLabel = { showDialog = false })
+            }
+        )
     }
 }
 
@@ -202,46 +252,22 @@ fun RecentlyAddedWord(word: WordData) {
 }
 
 @Composable
-fun Calendar(modifier: Modifier = Modifier) {
-    val month = 5
-    val year = 2024
-    val today = 27
-    val daysInMonth = getDaysInMonth(month, year)
-    Box(
-        modifier = modifier
-            .background(Color.Gray)
-            .fillMaxSize()
-    ) {
-        LazyVerticalGrid(columns = GridCells.Fixed(7)) {
-            items(daysInMonth) { day ->
-                val actualDay = day + 1
-                if(actualDay == today) {
-                    Text(
-                        modifier = Modifier.background(color = Color.Blue),
-                        text = actualDay.toString()
-                    )
-                } else {
-                    Text(actualDay.toString())
+fun Calendar(
+    currentDate: LocalDate,
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    AndroidView(
+        modifier = modifier,
+        factory = { ctx ->
+            CalendarView(ctx).apply {
+                setOnDateChangeListener { _, year, month, dayOfMonth ->
+                    val date = LocalDate.of(year, month + 1, dayOfMonth)
+                    onDateSelected(date)
                 }
-
             }
         }
-    }
-}
-
-// Function to get the number of days in a month
-fun getDaysInMonth(month: Int, year: Int): Int {
-    return when (month) {
-        1, 3, 5, 7, 8, 10, 12 -> 31
-        4, 6, 9, 11 -> 30
-        else -> if (year % 4 == 0 && year % 100 != 0 || year % 400 == 0) 29 else 28
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    B09_WQGATheme {
-        HomeScreen()
-    }
+    )
 }

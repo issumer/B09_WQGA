@@ -5,14 +5,16 @@
 package com.example.b09_wqga.model
 
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.b09_wqga.R
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.util.Date
 
 class UserDataViewModel : ViewModel(){
@@ -20,7 +22,7 @@ class UserDataViewModel : ViewModel(){
     var vocList = mutableStateListOf<VocData>() // 단어장 목록
     var gameList = mutableStateListOf<GameData>() // 게임 목록
     var userId = mutableStateOf("") // 사용자 아이디 (홈, 프로필 화면 표시용)
-    var points = mutableStateOf(0) // 사용자의 포인트 수
+//    var points = mutableStateOf(0) // 사용자의 포인트 수
     var lazyColumnVocList = mutableStateListOf<VocData>() // lazy column에 사용되는 단어장 목록
     var lazyColumnWordList = mutableStateListOf<WordData>() // lazy column에 사용되는 단어 목록
     var lazyColumnGameList = mutableStateListOf<GameData>() // lazy column에 사용되는 게임 목록
@@ -39,6 +41,31 @@ class UserDataViewModel : ViewModel(){
     var gameQuizStyle = mutableStateOf(-1) // 게임 시작 화면에서 퀴즈 방식
     var gameDifficulty = mutableStateOf(-1) // 게임 시작 화면에서 난이도
     var currentQuiz = mutableStateListOf<Quiz>()
+    //var currentQuizIndex by mutableStateOf(0)
+
+    // 사실 모든 퀴즈는 한 퀴즈 객체 안에서 진행되기 때문에 새로운 문제를 생성할 때마다 퀴즈 객체를 생성할 필요가 없습니다.
+    // 다만 currentQuiz를 리스트로 둔 이유는 mutableStateOf로 퀴즈 객체를 저장하는 것이 조금 까다롭기 때문입니당
+//    fun moveToNextQuiz() {
+//        if (currentQuizIndex < currentQuiz.size - 1) {
+//            currentQuizIndex += 1
+//        } else {
+//            currentQuizIndex = 0 // 처음으로 돌아가거나 다른 처리
+//        }
+//    }
+
+    val currentDate = LocalDate.now()
+    var points by mutableStateOf(0)
+    var selectedDate by mutableStateOf(currentDate)
+    var lastAttendanceDate by mutableStateOf<LocalDate?>(null)
+
+    // 출석체크 상태 관련 함수들
+    fun getUserPoints() = points
+    fun getUserSelectedDate() = selectedDate
+    fun getUserLastAttendanceDate() = lastAttendanceDate
+    fun increasePoints() {
+        points += 10
+        lastAttendanceDate = currentDate
+    }
 
     // 임시로 데이터 초기화 (원래는 백엔드에서 유저 데이터를 가져온 다음 채워야 함)
     init {

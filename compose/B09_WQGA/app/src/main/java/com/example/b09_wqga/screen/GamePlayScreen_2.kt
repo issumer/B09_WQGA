@@ -1,16 +1,14 @@
 /*
-구현 목록에서 게임 2 (턴제 RPG 게임) 화면에 해당하는 화면
+구현 목록에서 게임 2 (벽돌깨기) 화면에 해당하는 화면
 */
 
 package com.example.b09_wqga.screen
 
-import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,27 +19,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.VideogameAsset
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.nativeCanvas
@@ -50,8 +43,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
@@ -60,6 +55,7 @@ import com.example.b09_wqga.model.UIViewModel
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 // BB: Block Breaking
@@ -99,14 +95,25 @@ fun GamePlayScreen_2(navController: NavHostController) {
 
     var lives by remember { mutableStateOf(3) } // 목숨 개수
     var gameOver by remember { mutableStateOf(false) } // 게임 종료 여부
+    var gameWin by remember { mutableStateOf(false) } // 게임 승리 여부
     var gamePaused by remember { mutableStateOf(false) } // 게임 잠깐 멈춤 여부 (메뉴 열기 등의 이유로)
+    var playerQuizResult by remember { mutableStateOf(false) }
+    var playerQuizPaused by remember { mutableStateOf(false) }
     var score by remember { mutableStateOf(0) }
     var rightCount by remember { mutableStateOf(0) }
     var wrongCount by remember { mutableStateOf(0) }
     var showLiveDecrese: Boolean by remember { mutableStateOf(false)}
+
     var showMenuDialog by rememberSaveable {
         mutableStateOf<Boolean>(false)
     }
+
+    var showWordQuiz by remember { mutableStateOf(false) } // 퀴즈 표시 여부
+
+    var recomposeKey by remember { mutableStateOf(false) }
+
+    var coroutineScope = rememberCoroutineScope()
+
 
     val ball_vec : Painter = painterResource(id = R.drawable.ball)
     val paddle1 : Painter = painterResource(id = R.drawable.paddle1)
@@ -120,6 +127,12 @@ fun GamePlayScreen_2(navController: NavHostController) {
     val heart2 : Painter = painterResource(id = R.drawable.heart2)
     val heart1 : Painter = painterResource(id = R.drawable.heart1)
     val heart0 : Painter = painterResource(id = R.drawable.heart0)
+
+    suspend fun nextQuiz() {
+        delay(2000L)
+        playerQuizPaused = true
+        showWordQuiz = false
+    }
 
 
     LaunchedEffect(canvasSize) {
@@ -153,77 +166,125 @@ fun GamePlayScreen_2(navController: NavHostController) {
 
     LaunchedEffect(Unit) {
         while (!gameOver) {
-            delay(16L)
-            currentTime.value = System.currentTimeMillis()
+            if (!showWordQuiz) {
+                delay(16L)
+                currentTime.value = System.currentTimeMillis()
 
-            ball = ball.copy(
-                x = ball.x + ball.vx,
-                y = ball.y + ball.vy
-            )
+                ball = ball.copy(
+                    x = ball.x + ball.vx,
+                    y = ball.y + ball.vy
+                )
 
-            if (ball.x < ball.radius || ball.x > canvasSize.width - ball.radius) {
-                ball = ball.copy(vx = -ball.vx)
-            }
-            if (ball.y < ball.radius) {
-                ball = ball.copy(vy = -ball.vy)
-            }
-            if (ball.y > canvasSize.height - ball.radius) {
-                lives -= 1
-                showLiveDecrese = true
-                delay(1000L)
-                showLiveDecrese = false
-                if (lives > 0) {
-                    ball = ball.copy(
-                        x = canvasSize.width / 2f,
-                        y = canvasSize.height / 2f,
-                        vy = -ball.vy
+                if (ball.x < ball.radius || ball.x > canvasSize.width - ball.radius) {
+                    ball = ball.copy(vx = -ball.vx)
+                }
+                if (ball.y < ball.radius) {
+                    ball = ball.copy(vy = -ball.vy)
+                }
+                if (ball.y > canvasSize.height - ball.radius) {
+                    lives -= 1
+                    showLiveDecrese = true
+                    delay(1000L)
+                    showLiveDecrese = false
+                    if (lives > 0) {
+                        ball = ball.copy(
+                            x = canvasSize.width / 2f,
+                            y = canvasSize.height / 2f,
+                            vy = -ball.vy
+                        )
+                    } else {
+                        gameOver = true
+                    }
+                }
+
+                // Paddle collision detection
+                val ballRect = Rect(
+                    ball.x - ball.radius,
+                    ball.y - ball.radius,
+                    ball.x + ball.radius,
+                    ball.y + ball.radius
+                )
+                val paddleRect = Rect(
+                    paddle.x,
+                    paddle.y,
+                    paddle.x + paddle.width,
+                    paddle.y + paddle.height
+                )
+                if (ballRect.overlaps(paddleRect)) {
+                    ball = ball.copy(vy = -ball.vy)
+                }
+
+                blocks = blocks.map { block ->
+                    val blockRect = Rect(
+                        block.x,
+                        block.y,
+                        block.x + block.width,
+                        block.y + block.height
                     )
-                } else {
+                    if (ballRect.overlaps(blockRect) && block.isBroken != 0) {
+                        ball = ball.copy(vy = -ball.vy)
+
+                        if (block.isBroken == 2) {
+                            if (block.quizBlock) {
+                                block.copy(
+                                    showExclamation = true,
+                                    timestamp = currentTime.value,
+                                    isBroken = 0
+                                )
+                                    .also {
+                                        playerQuizPaused = false
+                                        showWordQuiz = true
+                                        recomposeKey = !recomposeKey // 강제 recompose
+                                    }// 퀴즈 표시
+                            } else block.copy(isBroken = 1)
+                        } else {
+                            if (block.quizBlock) {
+                                block.copy(
+                                    showExclamation = true,
+                                    timestamp = currentTime.value,
+                                    isBroken = 0
+                                )
+                                    .also {
+                                        playerQuizPaused = false
+                                        showWordQuiz = true
+                                        recomposeKey = !recomposeKey // 강제 recompose
+                                    } // 퀴즈 표시
+                            } else block.copy(isBroken = 0)
+                        }
+
+                    } else {
+                        block
+                    }
+                }
+                // 모든 벽돌이 깨졌는지 확인
+                if (blocks.all { it.isBroken == 0 }) {
+                    gameWin = true
                     gameOver = true
                 }
-            }
-
-            // Paddle collision detection
-            val ballRect = Rect(
-                ball.x - ball.radius,
-                ball.y - ball.radius,
-                ball.x + ball.radius,
-                ball.y + ball.radius
-            )
-            val paddleRect = Rect(
-                paddle.x,
-                paddle.y,
-                paddle.x + paddle.width,
-                paddle.y + paddle.height
-            )
-            if (ballRect.overlaps(paddleRect)) {
-                ball = ball.copy(vy = -ball.vy)
-            }
-
-            blocks = blocks.map { block ->
-                val blockRect = Rect(
-                    block.x,
-                    block.y,
-                    block.x + block.width,
-                    block.y + block.height
-                )
-                if (ballRect.overlaps(blockRect) && block.isBroken != 0) {
-                    ball = ball.copy(vy = -ball.vy)
-
-                    if(block.isBroken == 2) {
-                        if(block.quizBlock) block.copy(showExclamation = true, timestamp = currentTime.value, isBroken = 0)
-                        else block.copy(isBroken = 1)
-                    }
-                    else {
-                        if(block.quizBlock) block.copy(showExclamation = true, timestamp = currentTime.value, isBroken = 0)
-                        else block.copy(isBroken = 0)
-                    }
-                    
-                } else {
-                    block
-                }
+            } else {
+                // 퀴즈가 활성화되면 게임 루프가 일시 중지됨
+//                delay(Long.MAX_VALUE)
+                delay(30L)
             }
         }
+    }
+    if (gameOver) {
+        if (lives == 0) {
+            gameWin = false
+        } else if (blocks.all { it.isBroken == 0 }) {
+            gameWin = true
+        }
+        GameOverDialog(gameWin = gameWin,onDismiss = { showMenuDialog = false },
+            onExitGame = {
+                uiViewModel.showBottomNavigationBar.value = true
+                navController.navigate(Routes.GameListScreen.route) {
+                    popUpTo(Routes.GamePlayScreen_2.route) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+            }
+        )
     }
 
     Column(modifier = Modifier
@@ -235,40 +296,37 @@ fun GamePlayScreen_2(navController: NavHostController) {
             .height(70.dp)
             .fillMaxWidth()
             .background(Color.Black)
-        ){
-            Canvas(modifier = Modifier
-                .fillMaxSize()){
-                if(lives == 3){
-                    with(heart3){
-                        translate(left = 30f, top= 20f){
+        ) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                if (lives == 3) {
+                    with(heart3) {
+                        translate(left = 30f, top = 20f) {
                             draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
                         }
                     }
-                }
-                else if(lives == 2){
-                    with(heart2){
-                        translate(left = 30f, top= 20f){
+                } else if (lives == 2) {
+                    with(heart2) {
+                        translate(left = 30f, top = 20f) {
                             draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
                         }
                     }
-                }
-                else if(lives == 1){
-                    with(heart1){
-                        translate(left = 30f, top= 20f){
+                } else if (lives == 1) {
+                    with(heart1) {
+                        translate(left = 30f, top = 20f) {
                             draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
                         }
                     }
-                }
-                else{
-                    with(heart0){
-                        translate(left = 30f, top= 20f){
+                } else {
+                    with(heart0) {
+                        translate(left = 30f, top = 20f) {
                             draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
                         }
                     }
                 }
             }
-
-
             Row(horizontalArrangement = Arrangement.End,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -281,8 +339,6 @@ fun GamePlayScreen_2(navController: NavHostController) {
                         .size(width = 70.dp, height = 30.dp)
                 )
             }
-
-
         }
         Box(modifier = Modifier
             .height(440.dp)
@@ -290,7 +346,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
 
             Image(painter = painterResource(id = R.drawable.background2),
                 contentDescription = "background",
-                contentScale = ContentScale.FillWidth,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -311,7 +367,6 @@ fun GamePlayScreen_2(navController: NavHostController) {
                     canvasSize = size
                 }) {
                 drawIntoCanvas {canvas ->
-
                     if(showLiveDecrese){
                         with(lifedecrease){
                             translate(left = 360f, top= 450f){
@@ -319,8 +374,6 @@ fun GamePlayScreen_2(navController: NavHostController) {
                             }
                         }
                     }
-
-
                     blocks.forEach { block ->
 
                         if(block.isBroken != 0) {
@@ -400,8 +453,6 @@ fun GamePlayScreen_2(navController: NavHostController) {
 
                 }
             }
-
-
             if (gameOver) {
                 Box(
                     modifier = Modifier
@@ -418,14 +469,40 @@ fun GamePlayScreen_2(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //WordQuiz(onSubmitClick = { })
+        if (showWordQuiz) {
+            WordQuiz(userDataViewModel.currentQuiz[0], recomposeKey = recomposeKey, playerQuizPaused, onSubmit = {quizResult ->
+                playerQuizResult = quizResult
+                if(playerQuizResult) {
+                    rightCount += 1
+                    coroutineScope.launch {
+                        nextQuiz()
+                    }
+                    //showWordQuiz = false // 퀴즈 표시 비활성화
+                    //userDataViewModel.moveToNextQuiz()
+                } else {
+                    wrongCount += 1
+                    lives -= 1 //목숨 하나 까기
+                    //showWordQuiz = false // 퀴즈 표시 비활성화
+                    if(lives == 0) {
+                        gameOver = true
+                    } else {
+                        coroutineScope.launch {
+                            nextQuiz()
+                        }
+                    }
+                }
+            })
+        }
 
         if(showMenuDialog) {
-            GameMenuDialog(onDismiss = { showMenuDialog = false },
+            GameMenuDialog(onDismiss = {
+                if(!gameOver) {
+                    showMenuDialog = false
+                }},
                 onExitGame = {
                     uiViewModel.showBottomNavigationBar.value = true
                     navController.navigate(Routes.GameListScreen.route) {
-                        popUpTo(Routes.GamePlayScreen_2.route) {
+                        popUpTo(Routes.GamePlayScreen_1.route) {
                             inclusive = true
                         }
                         launchSingleTop = true
@@ -437,5 +514,25 @@ fun GamePlayScreen_2(navController: NavHostController) {
             )
         }
     }
+}
+
+@Composable
+fun GameOverDialog(gameWin: Boolean, onDismiss: () -> Unit, onExitGame: () -> Unit) {
+    AlertDialog(onDismissRequest = onDismiss,
+        title = { Text(
+            text = if (gameWin) "Victory~!~!" else "Defeat..",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )},
+        text = {
+            Button(onClick = onExitGame) {
+                Text("Menu")
+            }
+        },
+        confirmButton = {
+
+        }
+    )
 }
 
