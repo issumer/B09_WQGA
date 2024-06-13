@@ -68,8 +68,12 @@ fun MainScreen(navController: NavHostController) {
 
         Scaffold(
             bottomBar = {
-                if (uiViewModel.showBottomNavigationBar.value)
-                    BottomNavigationBar(navController)
+                if (uiViewModel.showBottomNavigationBar.value) {
+                    val userId = navController.currentBackStackEntry?.arguments?.getString("userId")
+                    if (userId != null) {
+                        BottomNavigationBar(navController, userId)
+                    }
+                }
             }
         ) { contentPadding ->
 
@@ -101,7 +105,6 @@ fun MainScreen(navController: NavHostController) {
                             val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
                             HomeScreen(userId, userViewModel)
                         } else {
-                            // Handle the case where userId is null
                         }
                     }
                     MainNavGraph(navController)
@@ -110,3 +113,4 @@ fun MainScreen(navController: NavHostController) {
         }
     }
 }
+

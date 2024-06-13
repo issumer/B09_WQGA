@@ -34,8 +34,11 @@ fun NavGraphBuilder.MainNavGraph(navController: NavHostController) {
         composable(route = Routes.GamePlayScreen_2.route) {
             GamePlayScreen_2(navController)
         }
-        composable(route = Routes.ProfileScreen.route) {
-            ProfileScreen()
+        composable(route = Routes.ProfileScreen.route) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            val userRepository = UserRepository()
+            val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
+            ProfileScreen(userId, userViewModel, navController)
         }
     }
 }

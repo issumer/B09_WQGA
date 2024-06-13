@@ -1,48 +1,50 @@
-/*
-구현 목록에서 프로필 화면에 해당하는 화면
-*/
-
 package com.example.b09_wqga.screen
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.VideogameAsset
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.b09_wqga.R
+import com.example.b09_wqga.viewmodel.UserViewModel
 
-// 아직 로직(정보 가져오기 등)은 미구현
 @Composable
-fun ProfileScreen() {
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+fun ProfileScreen(userId: String, userViewModel: UserViewModel, navController: NavController) {
+    val context = LocalContext.current
+
+    // Fetch user data when the ProfileScreen is composed
+    LaunchedEffect(userId) {
+        userViewModel.fetchUsername(userId)
+        userViewModel.fetchPoints(userId)
+        userViewModel.fetchEnterDate(userId)
+    }
+
+    val username by remember { userViewModel.username }
+    val points by remember { userViewModel.points }
+    val enterdate by remember { userViewModel.enterdate }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         // Profile
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -55,10 +57,16 @@ fun ProfileScreen() {
                 modifier = Modifier.size(64.dp)
             )
             Column {
-                Text(text = "ID: user123", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text(text = "Name: John Doe", fontSize = 16.sp)
+                Text(text = "ID: $userId", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Name: $username", fontSize = 16.sp)
             }
-            Button(onClick = {  }) {
+            Button(onClick = {
+                userViewModel.logout(context) {
+                    navController.navigate("LoginScreen") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            }) {
                 Icon(imageVector = Icons.AutoMirrored.Filled.Logout, contentDescription = "Log out")
                 Spacer(modifier = Modifier.width(4.dp))
                 Text("Log out")
@@ -68,11 +76,16 @@ fun ProfileScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Information
-        Text(text = "Information", fontSize = 24.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+        Text(
+            text = "Information",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
         val infoList = listOf(
-            "Registered date: 01/01/2022",
-            "Points: 1234",
+            "Registered date: $enterdate",
+            "Points: $points",
             "Total word count: 567",
             "Total right count: 456",
             "Total wrong count: 111",
@@ -90,7 +103,12 @@ fun ProfileScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Settings
-        Text(text = "Settings", fontSize = 24.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+        Text(
+            text = "Settings",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
         LazyColumn {
             items(listOf("Setting 1", "Setting 2", "Setting 3", "Setting 4")) { setting ->

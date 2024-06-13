@@ -69,6 +69,16 @@ class UserRepository {
         }
     }
 
+    suspend fun getEnterDate(userId: String): String? {
+        return try {
+            val snapshot = database.child(userId).get().await()
+            snapshot.getValue(User::class.java)?.enterDate
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error fetching enterDate", e)
+            null
+        }
+    }
+
     suspend fun increasePoints(userId: String): Boolean {
         return try {
             val snapshot = database.child(userId).get().await()

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.example.b09_wqga.screen
 
 import androidx.compose.foundation.Image
@@ -32,9 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -72,7 +69,7 @@ fun LoginScreen(navController: NavHostController) {
     var showLoginFailDialog by rememberSaveable { mutableStateOf(false) }
     var passwordVisibility by rememberSaveable { mutableStateOf(false) }
 
-
+    val context = LocalContext.current
 
 
     Column(
@@ -161,7 +158,7 @@ fun LoginScreen(navController: NavHostController) {
                 if(userID.isEmpty() || userPassword.isEmpty()) {
                     showLoginFailDialog = true
                 } else {
-                    userViewModel.loginUser(userID, userPassword) { user ->
+                    userViewModel.loginUser(context, userID, userPassword) { user ->
                         if (user != null) {
                             val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
                             attendanceViewModel.addAttendance(user.user_id, currentDate) { success ->

@@ -18,7 +18,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.b09_wqga.navigation.Routes
 
 @Composable
-fun BottomNavigationBar(navController: NavController) {
+fun BottomNavigationBar(navController: NavController, userId: String) {
     NavigationBar {
         val backStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = backStackEntry?.destination?.route
@@ -27,7 +27,7 @@ fun BottomNavigationBar(navController: NavController) {
             NavigationBarItem(
                 selected = currentRoute == navItem.route,
                 onClick = {
-                    navController.navigate(navItem.route) {
+                    navController.navigate("${navItem.route}/$userId") {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
@@ -48,4 +48,3 @@ fun BottomNavigationBar(navController: NavController) {
         }
     }
 }
-

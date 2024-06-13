@@ -1,22 +1,31 @@
 package com.example.b09_wqga.viewmodel
 
-import android.util.Log
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.b09_wqga.database.User
 import com.example.b09_wqga.repository.UserRepository
+import com.example.b09_wqga.util.SharedPreferencesHelper
 import kotlinx.coroutines.launch
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
     val username = mutableStateOf("")
+    val enterdate = mutableStateOf("")
     val points = mutableStateOf(0)
 
     fun fetchUsername(userId: String) {
         viewModelScope.launch {
             val fetchedUsername = userRepository.getUsername(userId)
             username.value = fetchedUsername ?: ""
+        }
+    }
+
+    fun fetchEnterDate(userId: String) {
+        viewModelScope.launch {
+            val fetchedEnterDate = userRepository.getEnterDate(userId)
+            enterdate.value = fetchedEnterDate ?: ""
         }
     }
 
@@ -38,7 +47,6 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
     fun registerUser(user: User, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
-            Log.d("UserViewModel", "Registering user: ${user.username}")
             if (userRepository.isUsernameTaken(user.username)) {
                 onComplete(false)
             } else {
@@ -48,11 +56,20 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
         }
     }
 
-    fun loginUser(username: String, password: String, onComplete: (User?) -> Unit) {
+    fun loginUser(context: Context, username: String, password: String, onComplete: (User?) -> Unit) {
         viewModelScope.launch {
             val user = userRepository.loginUser(username, password)
+            if (user != null) {
+                SharedPreferencesHelper(context).saveUser(user)
+            }
             onComplete(user)
         }
     }
-}
 
+    fun logout(context: Context, onComplete: () -> Unit) {
+        viewModelScope.launch {
+            SharedPreferencesHelper(context).clearUser()
+            onComplete()
+        }
+    }
+}
