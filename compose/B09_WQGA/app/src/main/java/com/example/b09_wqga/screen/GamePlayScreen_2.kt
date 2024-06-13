@@ -232,7 +232,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
         .background(Color.White)
     ) {
         Box(modifier = Modifier
-            .height(50.dp)
+            .height(70.dp)
             .fillMaxWidth()
             .background(Color.Black)
         ){
@@ -240,28 +240,28 @@ fun GamePlayScreen_2(navController: NavHostController) {
                 .fillMaxSize()){
                 if(lives == 3){
                     with(heart3){
-                        translate(left = 30f, top= 30f){
+                        translate(left = 30f, top= 20f){
                             draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
                         }
                     }
                 }
                 else if(lives == 2){
                     with(heart2){
-                        translate(left = 30f, top= 30f){
+                        translate(left = 30f, top= 20f){
                             draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
                         }
                     }
                 }
                 else if(lives == 1){
                     with(heart1){
-                        translate(left = 30f, top= 30f){
+                        translate(left = 30f, top= 20f){
                             draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
                         }
                     }
                 }
                 else{
                     with(heart0){
-                        translate(left = 30f, top= 30f){
+                        translate(left = 30f, top= 20f){
                             draw(size = Size(80.dp.toPx(), 26.dp.toPx()))
                         }
                     }
@@ -272,7 +272,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
             Row(horizontalArrangement = Arrangement.End,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(end = 10.dp, top = 10.dp)){
+                    .padding(end = 5.dp, top = 10.dp)){
                 Image(painter = painterResource(id = R.drawable.pausebutton_2),
                     contentDescription = "menu",
                     contentScale = ContentScale.Crop,
