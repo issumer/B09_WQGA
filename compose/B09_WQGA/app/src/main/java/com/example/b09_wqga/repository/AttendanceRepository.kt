@@ -39,4 +39,15 @@ class AttendanceRepository {
             false
         }
     }
+
+    suspend fun getAttendanceDates(userId: Int): List<String> {
+        return try {
+            val snapshot = database.orderByChild("user_id").equalTo(userId.toDouble()).get().await()
+            val attendance = snapshot.children.firstOrNull()?.getValue(Attendance::class.java)
+            attendance?.attendance_dates ?: emptyList()
+        } catch (e: Exception) {
+            Log.e("AttendanceRepository", "Error fetching attendance dates", e)
+            emptyList()
+        }
+    }
 }

@@ -48,4 +48,41 @@ class UserRepository {
             null
         }
     }
+
+    suspend fun getUsername(userId: String): String? {
+        return try {
+            val snapshot = database.child(userId).get().await()
+            snapshot.getValue(User::class.java)?.username
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error fetching username", e)
+            null
+        }
+    }
+
+    suspend fun getPoints(userId: String): Int? {
+        return try {
+            val snapshot = database.child(userId).get().await()
+            snapshot.getValue(User::class.java)?.points
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error fetching points", e)
+            null
+        }
+    }
+
+    suspend fun increasePoints(userId: String): Boolean {
+        return try {
+            val snapshot = database.child(userId).get().await()
+            val user = snapshot.getValue(User::class.java)
+            if (user != null) {
+                val newPoints = (user.points ?: 0) + 10
+                database.child(userId).child("points").setValue(newPoints).await()
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error increasing points", e)
+            false
+        }
+    }
 }

@@ -1,24 +1,23 @@
 package com.example.b09_wqga.navigation
 
-import androidx.compose.ui.input.key.Key.Companion.Home
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.example.b09_wqga.screen.GameListScreen
-import com.example.b09_wqga.screen.GamePlayScreen_1
-import com.example.b09_wqga.screen.GamePlayScreen_2
-import com.example.b09_wqga.screen.ProfileScreen
-import com.example.b09_wqga.screen.HomeScreen
-import com.example.b09_wqga.screen.VocListScreen
-import com.example.b09_wqga.screen.WordListScreen
+import com.example.b09_wqga.screen.*
+import com.example.b09_wqga.repository.UserRepository
+import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.b09_wqga.viewmodel.UserViewModel
 
+fun NavGraphBuilder.MainNavGraph(navController: NavHostController) {
+    navigation(startDestination = Routes.HomeScreen.route, route = "MainScreen") {
 
-fun NavGraphBuilder.MainNavGraph(navController: NavHostController){
-    navigation(startDestination = "HomeScreen", route="MainScreen"){
-
-        composable(route = Routes.HomeScreen.route) {
-            HomeScreen()
+        composable(route = Routes.HomeScreen.route) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            val userRepository = UserRepository()
+            val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
+            HomeScreen(userId, userViewModel)
         }
         composable(route = Routes.VocListScreen.route) {
             VocListScreen(navController)

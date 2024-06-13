@@ -15,4 +15,12 @@ class AttendanceViewModel(private val attendanceRepository: AttendanceRepository
             onComplete(result)
         }
     }
+
+    fun getAttendanceDates(userId: Int, onComplete: (List<String>) -> Unit) {
+        viewModelScope.launch {
+            val dates = attendanceRepository.getAttendanceDates(userId)
+            Log.d("AttendanceViewModel", "getAttendanceDates result: $dates")
+            onComplete(dates)
+        }
+    }
 }

@@ -1,12 +1,11 @@
 package com.example.b09_wqga.navigation
 
-
-sealed class Routes (val route: String) {
+sealed class Routes(val route: String) {
     object InitialScreen : Routes("InitialScreen")
     object LoginScreen : Routes("LoginScreen")
     object RegisterScreen : Routes("RegisterScreen")
     object WelcomeScreen : Routes("WelcomeScreen")
-    object HomeScreen : Routes("HomeScreen")
+    object HomeScreen : Routes("HomeScreen/{userId}")
     object VocListScreen : Routes("VocListScreen")
     object WordListScreen : Routes("WordListScreen")
     object GameListScreen : Routes("GameListScreen")
@@ -14,5 +13,4 @@ sealed class Routes (val route: String) {
     object GamePlayScreen_2 : Routes("GamePlayScreen_2")
     object ProfileScreen : Routes("ProfileScreen")
     object MainScreen : Routes("MainScreen")
-
 }

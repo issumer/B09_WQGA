@@ -1,7 +1,3 @@
-/*
-구현 목록에서 메인 화면에 해당하는 화면
-*/
-
 package com.example.b09_wqga.screen
 
 import androidx.compose.foundation.layout.Column
@@ -27,6 +23,9 @@ import com.example.b09_wqga.model.UIViewModel
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.model.VocData
 import com.example.b09_wqga.model.WordData
+import com.example.b09_wqga.repository.UserRepository
+import com.example.b09_wqga.viewmodel.UserViewModel
+import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
 import java.util.Scanner
 
 @Composable
@@ -67,7 +66,6 @@ fun MainScreen(navController: NavHostController) {
             userDataViewModel.initVocList.value = true
         }
 
-
         Scaffold(
             bottomBar = {
                 if (uiViewModel.showBottomNavigationBar.value)
@@ -95,7 +93,17 @@ fun MainScreen(navController: NavHostController) {
                     composable(Routes.RegisterScreen.route) {
                         RegisterScreen(navController)
                     }
-                    // 중첩 NavGraph
+
+                    composable("${Routes.MainScreen.route}/{userId}") { backStackEntry ->
+                        val userId = backStackEntry.arguments?.getString("userId")
+                        if (userId != null) {
+                            val userRepository = UserRepository()
+                            val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
+                            HomeScreen(userId, userViewModel)
+                        } else {
+                            // Handle the case where userId is null
+                        }
+                    }
                     MainNavGraph(navController)
                 }
             }

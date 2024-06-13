@@ -4,17 +4,11 @@
 
 package com.example.b09_wqga.screen
 
-import android.os.Bundle
 import android.widget.CalendarView
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -22,15 +16,10 @@ import androidx.compose.material.icons.filled.Architecture
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Diamond
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Score
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,37 +28,49 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.b09_wqga.R
 import com.example.b09_wqga.component.Button_WQGA
-import com.example.b09_wqga.model.GameData
-import com.example.b09_wqga.model.UserDataViewModel
-import com.example.b09_wqga.model.WordData
-import com.example.b09_wqga.ui.theme.B09_WQGATheme
+import com.example.b09_wqga.model.*
+import com.example.b09_wqga.repository.AttendanceRepository
+import com.example.b09_wqga.viewmodel.AttendanceViewModel
+import com.example.b09_wqga.viewmodel.UserViewModel
+import com.example.b09_wqga.viewmodelfactory.AttendanceViewModelFactory
 import java.time.LocalDate
-
+import java.time.format.DateTimeFormatter
 
 @Composable
-fun HomeScreen() {
-    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+fun HomeScreen(userId: String, userViewModel: UserViewModel) {
     val scrollState = rememberScrollState()
-    val gameData: GameData? = userDataViewModel.getRecentlyPlayedGame() // 최근에 플레이한 게임
-    val wordData: WordData? = userDataViewModel.getRecentlyAddedWord() // 최근에 생성한 단어
+    val attendanceRepository = AttendanceRepository()
+    val attendanceViewModel: AttendanceViewModel = viewModel(factory = AttendanceViewModelFactory(attendanceRepository))
+    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+    val gameData: GameData? = userDataViewModel.getRecentlyPlayedGame()
+    val wordData: WordData? = userDataViewModel.getRecentlyAddedWord()
 
     val currentDate = LocalDate.now()
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(currentDate) }
+    var attendanceDates by remember { mutableStateOf(emptyList<String>()) }
 
-    val points = userDataViewModel.getUserPoints()
+    val points = userViewModel.points.value
+    val username = userViewModel.username.value
     val lastAttendanceDate = userDataViewModel.getUserLastAttendanceDate()
 
     val isButtonEnabled = selectedDate == currentDate && (lastAttendanceDate == null || lastAttendanceDate != currentDate)
 
+    LaunchedEffect(userId) {
+        userViewModel.fetchUsername(userId)
+        userViewModel.fetchPoints(userId)
+        attendanceViewModel.getAttendanceDates(userId.toInt()) { dates ->
+            attendanceDates = dates
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -78,7 +79,7 @@ fun HomeScreen() {
             .verticalScroll(scrollState)
     ) {
         Text(
-            text = "Welcome back, ${userDataViewModel.userId.value}!",
+            text = "Welcome back, $username!",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -98,8 +99,10 @@ fun HomeScreen() {
             }
             Button_WQGA(width = 200, height = 40, text = "Attendance Check",
                 onClickLabel = {
-                    userDataViewModel.increasePoints()
-                    showDialog = true
+                    userViewModel.increasePoints(userId)
+                    attendanceViewModel.addAttendance(userId.toInt(), currentDate.format(dateFormatter)) {
+                        showDialog = true
+                    }
                 }, enabled = isButtonEnabled
             )
         }
@@ -108,13 +111,14 @@ fun HomeScreen() {
             currentDate = currentDate,
             selectedDate = selectedDate,
             onDateSelected = { date -> selectedDate = date },
+            attendanceDates = attendanceDates,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 5.dp)
                 .weight(1f)
         )
 
-        if(gameData != null) {
+        if (gameData != null) {
             Box(modifier = Modifier
                 .background(
                     color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
@@ -133,7 +137,7 @@ fun HomeScreen() {
             RecentlyPlayedGame(gameData)
         }
 
-        if(wordData != null) {
+        if (wordData != null) {
             Box(modifier = Modifier
                 .background(
                     color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
@@ -153,7 +157,6 @@ fun HomeScreen() {
         }
     }
 
-
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -165,6 +168,7 @@ fun HomeScreen() {
         )
     }
 }
+
 
 @Composable
 fun RecentlyPlayedGame(gameData: GameData) {
@@ -256,9 +260,12 @@ fun Calendar(
     currentDate: LocalDate,
     selectedDate: LocalDate,
     onDateSelected: (LocalDate) -> Unit,
+    attendanceDates: List<String>,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val highlightedDates = attendanceDates.map { LocalDate.parse(it) }.toSet()
+
     AndroidView(
         modifier = modifier,
         factory = { ctx ->
@@ -267,6 +274,10 @@ fun Calendar(
                     val date = LocalDate.of(year, month + 1, dayOfMonth)
                     onDateSelected(date)
                 }
+            }
+        },
+        update = { view ->
+            for (date in highlightedDates) {
             }
         }
     )

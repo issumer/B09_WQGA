@@ -166,7 +166,7 @@ fun LoginScreen(navController: NavHostController) {
                             val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
                             attendanceViewModel.addAttendance(user.user_id, currentDate) { success ->
                                 uiViewModel.showBottomNavigationBar.value = true
-                                navigateToMainScreen(navController)
+                                navigateToMainScreen(navController, user.user_id.toString())
                             }
                         } else {
                             showLoginFailDialog = true
@@ -184,8 +184,8 @@ fun LoginScreen(navController: NavHostController) {
     }
 }
 
-private fun navigateToMainScreen(navController: NavHostController) {
-    navController.navigate(Routes.MainScreen.route) {
+private fun navigateToMainScreen(navController: NavHostController, userId: String) {
+    navController.navigate("${Routes.MainScreen.route}/$userId") {
         popUpTo(Routes.LoginScreen.route) {
             inclusive = true
         }
@@ -195,6 +195,7 @@ private fun navigateToMainScreen(navController: NavHostController) {
         launchSingleTop = true
     }
 }
+
 
 @Composable
 fun LoginFailDialog(onConfirmClick: () -> Unit) {
