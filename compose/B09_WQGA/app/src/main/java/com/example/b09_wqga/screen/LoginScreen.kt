@@ -108,6 +108,7 @@ fun LoginScreen(navController: NavHostController) {
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent
                 ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
             )
         }
 
@@ -148,7 +149,7 @@ fun LoginScreen(navController: NavHostController) {
                     .fillMaxWidth(),
                 visualTransformation = if (passwordVisibility) VisualTransformation.None
                 else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
             )
         }
 
