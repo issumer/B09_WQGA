@@ -41,17 +41,11 @@ class UserDataViewModel : ViewModel(){
     var gameQuizStyle = mutableStateOf(-1) // 게임 시작 화면에서 퀴즈 방식
     var gameDifficulty = mutableStateOf(-1) // 게임 시작 화면에서 난이도
     var currentQuiz = mutableStateListOf<Quiz>()
-    //var currentQuizIndex by mutableStateOf(0)
-
     // 사실 모든 퀴즈는 한 퀴즈 객체 안에서 진행되기 때문에 새로운 문제를 생성할 때마다 퀴즈 객체를 생성할 필요가 없습니다.
     // 다만 currentQuiz를 리스트로 둔 이유는 mutableStateOf로 퀴즈 객체를 저장하는 것이 조금 까다롭기 때문입니당
-//    fun moveToNextQuiz() {
-//        if (currentQuizIndex < currentQuiz.size - 1) {
-//            currentQuizIndex += 1
-//        } else {
-//            currentQuizIndex = 0 // 처음으로 돌아가거나 다른 처리
-//        }
-//    }
+
+    // MainScreen의 Bottom Navigation Bar를 보여줄지 여부
+    var showBottomNavigationBar = mutableStateOf(false)
 
     val currentDate = LocalDate.now()
     var points by mutableStateOf(0)
@@ -70,8 +64,8 @@ class UserDataViewModel : ViewModel(){
     // 임시로 데이터 초기화 (원래는 백엔드에서 유저 데이터를 가져온 다음 채워야 함)
     init {
         vocList.addAll(listOf(
-                VocData("Title 1", "Description 1", "en"),
-                VocData("Title 2", "Description 2", "ja"),
+                VocData("Title 1", "Description 1", "en", doNotSave = true),
+                VocData("Title 2", "Description 2", "ja", doNotSave = true),
             )
         )
 
@@ -356,6 +350,48 @@ class UserDataViewModel : ViewModel(){
 
         }
     }
+
+    // 프로필 화면 total word count
+    fun getTotalWordCount() : Int {
+        var totalCount = 0
+        vocList.forEach {
+            totalCount += it.wordCount
+        }
+        return totalCount
+    }
+
+    // 프로필 화면 total right count
+    fun getTotalRightCount() : Int {
+        var totalCount = 0
+        vocList.forEach {vocData ->
+            vocData.wordList.forEach {  wordData ->
+                totalCount += wordData.right
+            }
+        }
+        return totalCount
+    }
+
+    // 프로필 화면 total wrong count
+    fun getTotalWrongCount() : Int {
+        var totalCount = 0
+        vocList.forEach {vocData ->
+            vocData.wordList.forEach {  wordData ->
+                totalCount += wordData.wrong
+            }
+        }
+        return totalCount
+    }
+
+    // 프로필 화면 total played games
+    fun getTotalPlayedGames() : Int {
+        var totalCount = 0
+        gameList.forEach {
+            totalCount += it.userPlayedCount
+        }
+        return totalCount
+    }
+
+
 
     // 백엔드에서 유저 정보를 불러오는 코드
     suspend fun getBackendUserData() {

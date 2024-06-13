@@ -21,21 +21,27 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
+import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.viewmodel.UserViewModel
 
 @Composable
-fun ProfileScreen(userId: String, userViewModel: UserViewModel, navController: NavController) {
+fun ProfileScreen(userId: String, userViewModel: UserViewModel, navController: NavHostController) {
     val context = LocalContext.current
+    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
 
     // Fetch user data when the ProfileScreen is composed
     LaunchedEffect(userId) {
+        userViewModel.fetchName(userId)
         userViewModel.fetchUsername(userId)
         userViewModel.fetchPoints(userId)
         userViewModel.fetchEnterDate(userId)
     }
 
+    val name by remember { userViewModel.name }
     val username by remember { userViewModel.username }
     val points by remember { userViewModel.points }
     val enterdate by remember { userViewModel.enterdate }
@@ -57,13 +63,16 @@ fun ProfileScreen(userId: String, userViewModel: UserViewModel, navController: N
                 modifier = Modifier.size(64.dp)
             )
             Column {
-                Text(text = "ID: $userId", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text(text = "Name: $username", fontSize = 16.sp)
+                Text(text = "ID: $username", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Name: $name", fontSize = 16.sp)
             }
             Button(onClick = {
                 userViewModel.logout(context) {
                     navController.navigate("LoginScreen") {
-                        popUpTo(0) { inclusive = true }
+                        userDataViewModel.showBottomNavigationBar.value = false
+                        popUpTo(navController.graph.id) {// 백스택 모두 지우기
+                            inclusive = true
+                        }
                     }
                 }
             }) {
@@ -86,10 +95,10 @@ fun ProfileScreen(userId: String, userViewModel: UserViewModel, navController: N
         val infoList = listOf(
             "Registered date: $enterdate",
             "Points: $points",
-            "Total word count: 567",
-            "Total right count: 456",
-            "Total wrong count: 111",
-            "Total played games: 99"
+            "Total word count: ${userDataViewModel.getTotalWordCount()}",
+            "Total right count: ${userDataViewModel.getTotalRightCount()}",
+            "Total wrong count: ${userDataViewModel.getTotalWrongCount()}",
+            "Total played games: ${userDataViewModel.getTotalPlayedGames()}"
         )
 
         infoList.forEach { info ->

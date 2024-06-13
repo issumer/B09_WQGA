@@ -4,6 +4,7 @@
 
 package com.example.b09_wqga.screen
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,7 +48,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.component.SearchBar
 import com.example.b09_wqga.model.GameData
-import com.example.b09_wqga.model.UIViewModel
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.model.VocData
 import com.example.b09_wqga.navigation.Routes
@@ -56,7 +56,6 @@ import com.example.b09_wqga.navigation.Routes
 @Composable
 fun GameListScreen(navController: NavHostController) {
     val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
-    val uiViewModel: UIViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
 
     val lazyColumnGameList = userDataViewModel.lazyColumnGameList
 
@@ -111,15 +110,12 @@ fun GameListScreen(navController: NavHostController) {
                 onDismiss = {showGameStartDialog = false},
                 onPlay = {voc, quizStyle, difficulty ->
                     showGameStartDialog = false
-                    uiViewModel.showBottomNavigationBar.value = false
+                    userDataViewModel.showBottomNavigationBar.value = false
                     userDataViewModel.gameInit(voc, quizStyle, difficulty)
                     when(currentPlayGameId) {
                         1 -> {
                             navController.navigate(Routes.GamePlayScreen_1.route) {
-                                popUpTo(Routes.VocListScreen.route) {
-                                    inclusive = true
-                                }
-                                popUpTo(Routes.MainScreen.route) {
+                                popUpTo(navController.graph.id) {// 백스택 모두 지우기
                                     inclusive = true
                                 }
                                 launchSingleTop = true
@@ -127,10 +123,7 @@ fun GameListScreen(navController: NavHostController) {
                         }
                         2 -> {
                             navController.navigate(Routes.GamePlayScreen_2.route) {
-                                popUpTo(Routes.VocListScreen.route) {
-                                    inclusive = true
-                                }
-                                popUpTo(Routes.MainScreen.route) {
+                                popUpTo(navController.graph.id) {// 백스택 모두 지우기
                                     inclusive = true
                                 }
                                 launchSingleTop = true

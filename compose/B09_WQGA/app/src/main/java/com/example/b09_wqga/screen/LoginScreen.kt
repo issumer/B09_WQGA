@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
-import com.example.b09_wqga.model.UIViewModel
+import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.repository.UserRepository
 import com.example.b09_wqga.repository.AttendanceRepository
 import com.example.b09_wqga.viewmodel.UserViewModel
@@ -62,7 +62,7 @@ fun LoginScreen(navController: NavHostController) {
     val attendanceRepository = AttendanceRepository()
     val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
     val attendanceViewModel: AttendanceViewModel = viewModel(factory = AttendanceViewModelFactory(attendanceRepository))
-    val uiViewModel: UIViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
 
     var userID by rememberSaveable { mutableStateOf("") }
     var userPassword by rememberSaveable { mutableStateOf("") }
@@ -162,7 +162,7 @@ fun LoginScreen(navController: NavHostController) {
                         if (user != null) {
                             val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
                             attendanceViewModel.addAttendance(user.user_id, currentDate) { success ->
-                                uiViewModel.showBottomNavigationBar.value = true
+                                userDataViewModel.showBottomNavigationBar.value = true
                                 navigateToMainScreen(navController, user.user_id.toString())
                             }
                         } else {
@@ -183,10 +183,7 @@ fun LoginScreen(navController: NavHostController) {
 
 private fun navigateToMainScreen(navController: NavHostController, userId: String) {
     navController.navigate("${Routes.MainScreen.route}/$userId") {
-        popUpTo(Routes.LoginScreen.route) {
-            inclusive = true
-        }
-        popUpTo(Routes.InitialScreen.route) {
+        popUpTo(navController.graph.id) {// 백스택 모두 지우기
             inclusive = true
         }
         launchSingleTop = true

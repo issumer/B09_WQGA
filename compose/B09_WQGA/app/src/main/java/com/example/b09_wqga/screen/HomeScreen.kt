@@ -54,21 +54,22 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
     val currentDate = LocalDate.now()
     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-    var showDialog by remember { mutableStateOf(false) }
+    var showCompleteDialog by remember { mutableStateOf(false) }
+    var showFailDialog by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(currentDate) }
-    var attendanceDates by remember { mutableStateOf(emptyList<String>()) }
+    var attendanceDates = remember { mutableStateListOf<String>() }
 
     val points = userViewModel.points.value
-    val username = userViewModel.username.value
+    val name = userViewModel.name.value
     val lastAttendanceDate = userDataViewModel.getUserLastAttendanceDate()
 
     val isButtonEnabled = selectedDate == currentDate && (lastAttendanceDate == null || lastAttendanceDate != currentDate)
 
     LaunchedEffect(userId) {
-        userViewModel.fetchUsername(userId)
+        userViewModel.fetchName(userId)
         userViewModel.fetchPoints(userId)
         attendanceViewModel.getAttendanceDates(userId.toInt()) { dates ->
-            attendanceDates = dates
+            attendanceDates.addAll(dates)
         }
     }
 
@@ -79,7 +80,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
             .verticalScroll(scrollState)
     ) {
         Text(
-            text = "Welcome back, $username!",
+            text = "Welcome back, $name!",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -99,9 +100,16 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
             }
             Button_WQGA(width = 200, height = 40, text = "Attendance Check",
                 onClickLabel = {
-                    userViewModel.increasePoints(userId)
-                    attendanceViewModel.addAttendance(userId.toInt(), currentDate.format(dateFormatter)) {
-                        showDialog = true
+                    val currentDateString = currentDate.format(dateFormatter)
+                    if(attendanceDates.contains(currentDateString)) {
+                        showFailDialog = true
+                    } else {
+                        attendanceDates.add(currentDateString)
+                        userDataViewModel.lastAttendanceDate = currentDate
+                        userViewModel.increasePoints(userId)
+                        attendanceViewModel.addAttendance(userId.toInt(), currentDate.format(dateFormatter)) {
+                            showCompleteDialog = true
+                        }
                     }
                 }, enabled = isButtonEnabled
             )
@@ -157,15 +165,19 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
         }
     }
 
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text(text = "Attendance Completed!") },
-            text = { Text("Good Luck~") },
-            confirmButton = {
-                Button_WQGA(width = 80, height = 40, text = "check", onClickLabel = { showDialog = false })
-            }
-        )
+    if (showCompleteDialog) {
+        AttendanceCompleteDialog(onDismiss = {
+            showCompleteDialog = false
+        }, onConfirm = {
+            showCompleteDialog = false
+        })
+    }
+    if(showFailDialog) {
+        AttendanceFailDialog(onDismiss = {
+            showFailDialog = false
+        }, onConfirm = {
+            showFailDialog = false
+        })
     }
 }
 
@@ -278,7 +290,32 @@ fun Calendar(
         },
         update = { view ->
             for (date in highlightedDates) {
+                // 이미 출석한 날짜 색칠 필요
             }
+        }
+    )
+}
+
+@Composable
+fun AttendanceCompleteDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Attendance Completed!") },
+        text = { Text("Good Luck~") },
+        confirmButton = {
+            Button_WQGA(width = 80, height = 40, text = "OK", onClickLabel = onConfirm)
+        }
+    )
+}
+
+@Composable
+fun AttendanceFailDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Attendance Fail!") },
+        text = { Text("You've already completed your attendance today! Please come back tomorrow.") },
+        confirmButton = {
+            Button_WQGA(width = 80, height = 40, text = "OK", onClickLabel = onConfirm)
         }
     )
 }

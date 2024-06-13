@@ -51,7 +51,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
 import com.example.b09_wqga.component.WordQuiz
-import com.example.b09_wqga.model.UIViewModel
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
 import kotlinx.coroutines.delay
@@ -77,7 +76,6 @@ data class BBPaddle(var x: Float, val y: Float, val width: Float, val height: Fl
 @Composable
 fun GamePlayScreen_2(navController: NavHostController) {
     val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
-    val uiViewModel: UIViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
     var canvasSize by remember { mutableStateOf(IntSize(0, 0)) }
 
     var blocks by remember {
@@ -548,9 +546,9 @@ fun GamePlayScreen_2(navController: NavHostController) {
                     showMenuDialog = false
                 }},
                 onExitGame = {
-                    uiViewModel.showBottomNavigationBar.value = true
+                    userDataViewModel.showBottomNavigationBar.value = true
                     navController.navigate(Routes.GameListScreen.route) {
-                        popUpTo(Routes.GamePlayScreen_1.route) {
+                        popUpTo(navController.graph.id) {// 백스택 모두 지우기
                             inclusive = true
                         }
                         launchSingleTop = true

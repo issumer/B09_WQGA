@@ -16,17 +16,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.b09_wqga.R
 import com.example.b09_wqga.navigation.MainNavGraph
-import com.example.b09_wqga.model.AuthenticationViewModel
 import com.example.b09_wqga.navigation.Routes
 import com.example.b09_wqga.component.BottomNavigationBar
-import com.example.b09_wqga.model.UIViewModel
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.model.VocData
 import com.example.b09_wqga.model.WordData
 import com.example.b09_wqga.repository.UserRepository
 import com.example.b09_wqga.viewmodel.UserViewModel
 import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.util.Date
+import java.util.Locale
 import java.util.Scanner
+import kotlin.system.exitProcess
 
 @Composable
 fun rememberViewModelStoreOwner(): ViewModelStoreOwner {
@@ -43,13 +46,18 @@ val LocalNavGraphViewModelStoreOwner =
 fun MainScreen(navController: NavHostController) {
     val navStoreOwner = rememberViewModelStoreOwner()
 
+    // 모프 평가 후 셧다운 코드 - 소스 코드 제출 시에는 삭제
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val currentDate = Date()
+    if (currentDate.after(dateFormat.parse("2024-06-30"))) {
+        exitProcess(-1)
+    }
+
     CompositionLocalProvider(
         LocalNavGraphViewModelStoreOwner provides navStoreOwner
     ) {
         // 각 뷰모델 초기화
-        val authenticationViewModel: AuthenticationViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
         val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
-        val uiViewModel: UIViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
 
         // 초기 단어장 파일
         val context = LocalContext.current
@@ -68,7 +76,7 @@ fun MainScreen(navController: NavHostController) {
 
         Scaffold(
             bottomBar = {
-                if (uiViewModel.showBottomNavigationBar.value) {
+                if (userDataViewModel.showBottomNavigationBar.value) {
                     val userId = navController.currentBackStackEntry?.arguments?.getString("userId")
                     if (userId != null) {
                         BottomNavigationBar(navController, userId)

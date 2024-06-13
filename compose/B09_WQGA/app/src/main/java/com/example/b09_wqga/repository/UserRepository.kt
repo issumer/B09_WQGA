@@ -49,6 +49,15 @@ class UserRepository {
         }
     }
 
+    suspend fun getName(userId: String): String? {
+        return try {
+            val snapshot = database.child(userId).get().await()
+            snapshot.getValue(User::class.java)?.name
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error fetching name", e)
+            null
+        }
+    }
     suspend fun getUsername(userId: String): String? {
         return try {
             val snapshot = database.child(userId).get().await()

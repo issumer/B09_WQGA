@@ -79,7 +79,8 @@ data class VocData(
     var wordCount: Int = 0, // 단어장의 단어 개수
     val wordList: MutableList<WordData> = mutableListOf(), // 단어장의 단어 리스트
     val uuid: String = UUID.randomUUID().toString(), // 단어장의 UUID
-    val createDate: Date = Date() // 단어장의 생성 날짜
+    val createDate: Date = Date(), // 단어장의 생성 날짜
+    var doNotSave: Boolean = false // 데이터베이스에 저장X 단어장 여부
 ) {
     companion object {
         val MAX_VOC_COUNT = 5 // 단어장 개수 제한

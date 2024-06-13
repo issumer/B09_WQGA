@@ -4,6 +4,7 @@
 
 package com.example.b09_wqga.screen
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -52,7 +53,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
 import com.example.b09_wqga.component.WordQuiz
-import com.example.b09_wqga.model.UIViewModel
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
 import kotlinx.coroutines.delay
@@ -103,7 +103,6 @@ sealed class RPGAttributes {
 @Composable
 fun GamePlayScreen_1(navController: NavHostController) {
     val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
-    val uiViewModel: UIViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
     var canvasSize by remember { mutableStateOf(IntSize(0, 0)) }
 
     var player by remember { mutableStateOf(RPGPlayer(x = 0.0f, y = 0.0f, health = 100, maxHealth = 100, damage = 12)) }
@@ -590,9 +589,9 @@ fun GamePlayScreen_1(navController: NavHostController) {
                     showMenuDialog = false
                 }},
                 onExitGame = {
-                    uiViewModel.showBottomNavigationBar.value = true
+                    userDataViewModel.showBottomNavigationBar.value = true
                     navController.navigate(Routes.GameListScreen.route) {
-                        popUpTo(Routes.GamePlayScreen_1.route) {
+                        popUpTo(navController.graph.id) {// 백스택 모두 지우기
                             inclusive = true
                         }
                         launchSingleTop = true

@@ -32,7 +32,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -44,21 +43,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
 import com.example.b09_wqga.database.User
-import com.example.b09_wqga.model.UIViewModel
+import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
 import com.example.b09_wqga.repository.UserRepository
 import com.example.b09_wqga.viewmodel.UserViewModel
 import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavHostController) {
     val userRepository = UserRepository()
     val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
-    val uiViewModel: UIViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
 
     var userID by rememberSaveable { mutableStateOf("") }
     var userPassword by rememberSaveable { mutableStateOf("") }
@@ -184,12 +182,9 @@ fun RegisterScreen(navController: NavHostController) {
                     val user = User(username = userID, password = userPassword, name = userName, enterDate = Date, updateDate = Date)
                     userViewModel.registerUser(user) { success ->
                         if (success) {
-                            uiViewModel.showBottomNavigationBar.value = true
+                            userDataViewModel.showBottomNavigationBar.value = true
                             navController.navigate(Routes.MainScreen.route) {
-                                popUpTo(Routes.RegisterScreen.route) {
-                                    inclusive = true
-                                }
-                                popUpTo(Routes.InitialScreen.route) {
+                                popUpTo(navController.graph.id) {// 백스택 모두 지우기
                                     inclusive = true
                                 }
                                 launchSingleTop = true

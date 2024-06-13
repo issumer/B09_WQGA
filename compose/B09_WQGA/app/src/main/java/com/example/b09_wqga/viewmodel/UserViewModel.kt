@@ -11,10 +11,17 @@ import kotlinx.coroutines.launch
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
+    val name = mutableStateOf("")
     val username = mutableStateOf("")
     val enterdate = mutableStateOf("")
     val points = mutableStateOf(0)
 
+    fun fetchName(userId: String) {
+        viewModelScope.launch {
+            val fetchedName = userRepository.getName(userId)
+            name.value = fetchedName ?: ""
+        }
+    }
     fun fetchUsername(userId: String) {
         viewModelScope.launch {
             val fetchedUsername = userRepository.getUsername(userId)
