@@ -182,12 +182,12 @@ fun GamePlayScreen_1(navController: NavHostController) {
     }
 
     fun setStage() {
-        var enemyCountMax = 3
-        when(stage) {
-            in 0..3 -> enemyCountMax = 3
-            in 4 .. 6 -> enemyCountMax = 4
-            else -> enemyCountMax = 5
-        }
+        var enemyCountMax = 4
+//        when(stage) {
+//            in 0..3 -> enemyCountMax = 3
+//            in 4 .. 6 -> enemyCountMax = 4
+//            else -> enemyCountMax = 5
+//        }
 
         var possibleEnemyPool = RPGAttributes.RPGEnemies.filter { it -> it.availableStage <= stage }
         enemies = mutableListOf<RPGEnemy>()
@@ -207,11 +207,10 @@ fun GamePlayScreen_1(navController: NavHostController) {
                         damage = (randomEnemy.damage * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt()
                     ))
                 }
-                // 적 개수가 4, 5개 일 때는 임시로 일자로 출력되도록 했는데, 변경 부탁드립니당!
                 4 -> {
                     enemies.add(randomEnemy.copy(
-                        x = canvasSize.width * 3 / 5.0f,
-                        y = canvasSize.height / 10.0f - (i * 120) + 700,
+                        x = if(i == 0 || i == 1) canvasSize.width * 3 / 5f else canvasSize.width * 3 / 5f + 200,
+                        y = if(i == 0 || i == 2) canvasSize.height / 10.0f + 700 else canvasSize.height / 10.0f + 500,
                         health = (randomEnemy.health * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
                         maxHealth = (randomEnemy.maxHealth * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
                         damage = (randomEnemy.damage * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt()
@@ -219,8 +218,8 @@ fun GamePlayScreen_1(navController: NavHostController) {
                 }
                 5 -> {
                     enemies.add(randomEnemy.copy(
-                        x = canvasSize.width * 3 / 5.0f,
-                        y = canvasSize.height / 10.0f - (i * 120) + 700,
+                        x = if (i in 0..1) canvasSize.width * 3 / 8f + 40 else if(i == 2) canvasSize.width * 3 / 8f + 240 else canvasSize.width * 3 / 8f + 440,
+                        y = if (i == 0 || i == 3) canvasSize.height / 10.0f + 700 else if (i == 1 || i == 4) canvasSize.height / 10.0f + 400 else canvasSize.height / 10.0f + 550,
                         health = (randomEnemy.health * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
                         maxHealth = (randomEnemy.maxHealth * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
                         damage = (randomEnemy.damage * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt()
