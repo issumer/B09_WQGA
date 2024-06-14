@@ -63,6 +63,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
     var selectedDate by remember { mutableStateOf(currentDate) }
     var attendanceDates = remember { mutableStateListOf<String>() }
 
+
     val points = userViewModel.points.value
     val name = userViewModel.name.value
     val lastAttendanceDate = userDataViewModel.getUserLastAttendanceDate()
@@ -87,7 +88,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
     ) {
         Row(horizontalArrangement = Arrangement.Center, modifier =Modifier.fillMaxWidth()) {
             Text(
-                text = "Welcome back, $userId!",
+                text = "Welcome back, $name!",
                 fontSize = 24.sp,
                 fontFamily = pixelFont2,
                 fontWeight = FontWeight.ExtraBold,
