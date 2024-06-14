@@ -8,19 +8,26 @@ import com.example.b09_wqga.screen.*
 import com.example.b09_wqga.repository.UserRepository
 import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.viewmodel.UserViewModel
 
 fun NavGraphBuilder.MainNavGraph(navController: NavHostController) {
     navigation(startDestination = Routes.HomeScreen.route, route = "MainScreen") {
 
         composable(route = Routes.HomeScreen.route) { backStackEntry ->
-            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            //val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            // 임시 패치
             val userRepository = UserRepository()
             val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
+            val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+            val userId = userDataViewModel.userID.value
             HomeScreen(userId, userViewModel)
         }
         composable(route = Routes.VocListScreen.route) { backStackEntry ->
-            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            //val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            // 임시 패치
+            val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+            val userId = userDataViewModel.userID.value
             VocListScreen(navController, userId.toInt())
         }
         composable(route = Routes.WordListScreen.route) { backStackEntry ->
@@ -37,9 +44,12 @@ fun NavGraphBuilder.MainNavGraph(navController: NavHostController) {
             GamePlayScreen_2(navController)
         }
         composable(route = Routes.ProfileScreen.route) { backStackEntry ->
-            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            //val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
             val userRepository = UserRepository()
             val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
+            // 임시 패치
+            val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+            val userId = userDataViewModel.userID.value
             ProfileScreen(userId, userViewModel, navController)
         }
     }

@@ -168,6 +168,7 @@ fun LoginScreen(navController: NavHostController) {
                         userViewModel.loginUser(context, userID, userPassword) { user ->
                             if (user != null) {
                                 userDataViewModel.showBottomNavigationBar.value = true
+                                userDataViewModel.userID.value = user.user_id.toString() // 임시
                                 navigateToMainScreen(navController, user.user_id.toString())
                             } else {
                                 showLoginFailDialog = true

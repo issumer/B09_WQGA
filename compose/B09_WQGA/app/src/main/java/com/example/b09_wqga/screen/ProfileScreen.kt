@@ -76,7 +76,7 @@ fun ProfileScreen(userId: String, userViewModel: UserViewModel, navController: N
             }
             TextButton(onClick = {
                 userViewModel.logout(context) {
-                    navController.navigate("LoginScreen") {
+                    navController.navigate("InitialScreen") {
                         userDataViewModel.showBottomNavigationBar.value = false
                         popUpTo(navController.graph.id) {// 백스택 모두 지우기
                             inclusive = true

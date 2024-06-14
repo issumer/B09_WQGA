@@ -21,7 +21,7 @@ class UserDataViewModel : ViewModel(){
     var initVocList = mutableStateOf(false)
     var vocList = mutableStateListOf<VocData>() // 단어장 목록
     var gameList = mutableStateListOf<GameData>() // 게임 목록
-    var userId = mutableStateOf("") // 사용자 아이디 (홈, 프로필 화면 표시용)
+    var userID = mutableStateOf("") // 사용자 아이디 (navigation 용)
 //    var points = mutableStateOf(0) // 사용자의 포인트 수
     var lazyColumnVocList = mutableStateListOf<VocData>() // lazy column에 사용되는 단어장 목록
     var lazyColumnWordList = mutableStateListOf<WordData>() // lazy column에 사용되는 단어 목록
