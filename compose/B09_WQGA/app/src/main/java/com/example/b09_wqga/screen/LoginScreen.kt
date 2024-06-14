@@ -6,10 +6,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,10 +22,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -32,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -53,6 +58,7 @@ import com.example.b09_wqga.navigation.Routes
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.example.b09_wqga.ui.theme.nanumFontFamily
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,7 +83,6 @@ fun LoginScreen(navController: NavHostController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Image(painter = painterResource(id = R.drawable.accounticon), contentDescription = null,
             modifier = Modifier.size(80.dp))
 
@@ -93,7 +98,7 @@ fun LoginScreen(navController: NavHostController) {
             OutlinedTextField(
                 value = userID,
                 placeholder = {
-                    Text(text = "Enter ID", color = Color.Gray, fontSize = 14.sp)
+                    Text(text = "Enter ID", color = Color.Gray, fontSize = 14.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
                 },
                 onValueChange = { userID = it },
                 leadingIcon = { Icon(painter = painterResource(R.drawable.idlogo), contentDescription = null,
@@ -122,7 +127,7 @@ fun LoginScreen(navController: NavHostController) {
                 value = userPassword,
                 onValueChange = { userPassword = it },
                 placeholder = {
-                    Text(text = "Enter PW", color = Color.Gray, fontSize = 14.sp)
+                    Text(text = "Enter PW", color = Color.Gray, fontSize = 14.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
                 },
                 leadingIcon = { Icon(painter = painterResource(R.drawable.pwlogo), contentDescription = null,
                     modifier = Modifier.size(25.dp)) },
@@ -154,23 +159,30 @@ fun LoginScreen(navController: NavHostController) {
 
         Image(painter = painterResource(id = R.drawable.loginbutton),
             contentDescription = null,
-            modifier = Modifier.clickable {
-                if(userID.isEmpty() || userPassword.isEmpty()) {
-                    showLoginFailDialog = true
-                } else {
-                    userViewModel.loginUser(context, userID, userPassword) { user ->
-                        if (user != null) {
-                            val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-                            attendanceViewModel.addAttendance(user.user_id, currentDate) { success ->
-                                userDataViewModel.showBottomNavigationBar.value = true
-                                navigateToMainScreen(navController, user.user_id.toString())
+            modifier = Modifier
+                .clickable {
+                    if (userID.isEmpty() || userPassword.isEmpty()) {
+                        showLoginFailDialog = true
+                    } else {
+                        userViewModel.loginUser(context, userID, userPassword) { user ->
+                            if (user != null) {
+                                val currentDate = SimpleDateFormat(
+                                    "yyyy-MM-dd",
+                                    Locale.getDefault()
+                                ).format(Date())
+                                attendanceViewModel.addAttendance(
+                                    user.user_id,
+                                    currentDate
+                                ) { success ->
+                                    userDataViewModel.showBottomNavigationBar.value = true
+                                    navigateToMainScreen(navController, user.user_id.toString())
+                                }
+                            } else {
+                                showLoginFailDialog = true
                             }
-                        } else {
-                            showLoginFailDialog = true
                         }
                     }
                 }
-            }
                 .size(width = 100.dp, height = 41.dp)
         )
 
@@ -193,13 +205,32 @@ private fun navigateToMainScreen(navController: NavHostController, userId: Strin
 
 @Composable
 fun LoginFailDialog(onConfirmClick: () -> Unit) {
+    val showDialog = remember { mutableStateOf(false) }
     AlertDialog(
-        onDismissRequest = { },
-        title = { Text(text = "로그인 실패", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-        text = { Text(text = "로그인에 실패하였습니다. 아이디, 비번을 확인해주세요!") },
+        onDismissRequest = { showDialog.value = false },
+        title = {
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                Text(text = "로그인 실패", fontSize = 20.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Bold)
+            }
+        },
+        text = {
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "아이디와 비밀번호를 확인해주세요!",
+                    fontFamily = nanumFontFamily,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
         confirmButton = {
-            Button(onClick = onConfirmClick) {
-                Text(text = "OK")
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+
+                TextButton(onClick = onConfirmClick) {
+                    Image(painter = painterResource(R.drawable.okbutton),
+                        contentDescription = null,
+                        modifier = Modifier.size(width = 80.dp, height = 30.dp)
+                    )
+                }
             }
         }
     )
