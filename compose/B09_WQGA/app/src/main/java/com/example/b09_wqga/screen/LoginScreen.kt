@@ -167,17 +167,8 @@ fun LoginScreen(navController: NavHostController) {
                     } else {
                         userViewModel.loginUser(context, userID, userPassword) { user ->
                             if (user != null) {
-                                val currentDate = SimpleDateFormat(
-                                    "yyyy-MM-dd",
-                                    Locale.getDefault()
-                                ).format(Date())
-                                attendanceViewModel.addAttendance(
-                                    user.user_id,
-                                    currentDate
-                                ) { success ->
-                                    userDataViewModel.showBottomNavigationBar.value = true
-                                    navigateToMainScreen(navController, user.user_id.toString())
-                                }
+                                userDataViewModel.showBottomNavigationBar.value = true
+                                navigateToMainScreen(navController, user.user_id.toString())
                             } else {
                                 showLoginFailDialog = true
                             }

@@ -1,7 +1,3 @@
-/*
-구현 목록에서 홈 화면에 해당하는 화면
-*/
-
 package com.example.b09_wqga.screen
 
 import android.widget.CalendarView
@@ -40,8 +36,10 @@ import com.example.b09_wqga.ui.theme.pixelFont2
 import com.example.b09_wqga.viewmodel.AttendanceViewModel
 import com.example.b09_wqga.viewmodel.UserViewModel
 import com.example.b09_wqga.viewmodelfactory.AttendanceViewModelFactory
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Composable
 fun HomeScreen(userId: String, userViewModel: UserViewModel) {
@@ -52,36 +50,30 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
     val gameData: GameData? = userDataViewModel.getRecentlyPlayedGame()
     val wordData: WordData? = userDataViewModel.getRecentlyAddedWord()
 
-    val currentDate = LocalDate.now()
+    val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     var showCompleteDialog by remember { mutableStateOf(false) }
     var showFailDialog by remember { mutableStateOf(false) }
-    var selectedDate by remember { mutableStateOf(currentDate) }
-    var attendanceDates = remember { mutableStateListOf<String>() }
-
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var attendanceDates by remember { mutableStateOf<List<String>>(listOf()) }
 
     val points = userViewModel.points.value
     val name = userViewModel.name.value
-    val lastAttendanceDate = userDataViewModel.getUserLastAttendanceDate()
-
-    val isButtonEnabled = selectedDate == currentDate && (lastAttendanceDate == null || lastAttendanceDate != currentDate)
 
     LaunchedEffect(userId) {
         userViewModel.fetchName(userId)
         userViewModel.fetchPoints(userId)
 
-        // Check if userId can be converted to an Int
         val userIdInt = userId.toIntOrNull()
         if (userIdInt != null) {
-            attendanceViewModel.getAttendanceDates(userId.toInt()) { dates ->
-                attendanceDates.addAll(dates)
+            attendanceViewModel.getAttendanceDates(userIdInt) { dates ->
+                attendanceDates = dates
             }
-        } else {
-            // Handle the error or show a message to the user
-            // For example, showFailDialog = true
         }
     }
+
+    val isButtonEnabled = !attendanceDates.contains(currentDate)
 
     Column(
         modifier = Modifier
@@ -89,7 +81,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
             .padding(16.dp)
             .verticalScroll(scrollState)
     ) {
-        Row(horizontalArrangement = Arrangement.Center, modifier =Modifier.fillMaxWidth()) {
+        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = "Welcome back, $name!",
                 fontSize = 24.sp,
@@ -119,28 +111,30 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
             }
             Button_WQGA(width = 200, height = 40, text = "Attendance Check",
                 onClickLabel = {
-                    val currentDateString = currentDate.format(dateFormatter)
-                    if(attendanceDates.contains(currentDateString)) {
-                        showFailDialog = true
-                    } else {
-                        attendanceDates.add(currentDateString)
-                        userDataViewModel.lastAttendanceDate = currentDate
-                        userViewModel.increasePoints(userId)
+                    if (isButtonEnabled) {
                         val userIdInt = userId.toIntOrNull()
                         if (userIdInt != null) {
-                            attendanceViewModel.addAttendance(userIdInt, currentDate.format(dateFormatter)) {
-                                showCompleteDialog = true
+                            attendanceViewModel.addAttendance(userIdInt, currentDate) { success ->
+                                if (success) {
+                                    attendanceDates = attendanceDates + currentDate
+                                    userViewModel.increasePoints(userId)
+                                    showCompleteDialog = true
+                                } else {
+                                    showFailDialog = true
+                                }
                             }
                         } else {
                             showFailDialog = true
                         }
+                    } else {
+                        showFailDialog = true
                     }
                 }, enabled = isButtonEnabled
             )
         }
 
         Calendar(
-            currentDate = currentDate,
+            currentDate = selectedDate,
             selectedDate = selectedDate,
             onDateSelected = { date -> selectedDate = date },
             attendanceDates = attendanceDates,
@@ -151,12 +145,13 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
         )
 
         if (gameData != null) {
-            Box(modifier = Modifier
-                .background(
-                    color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
-                    shape = RoundedCornerShape(12.dp)
-                )
-                .padding(start = 8.dp, end = 8.dp),
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(start = 8.dp, end = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -170,12 +165,13 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
         }
 
         if (wordData != null) {
-            Box(modifier = Modifier
-                .background(
-                    color = Color.Black,
-                    shape = RoundedCornerShape(10.dp)
-                )
-                .padding(start = 15.dp, end = 15.dp, top = 5.dp, bottom = 5.dp),
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = Color.Black,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .padding(start = 15.dp, end = 15.dp, top = 5.dp, bottom = 5.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -197,7 +193,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
             showCompleteDialog = false
         })
     }
-    if(showFailDialog) {
+    if (showFailDialog) {
         AttendanceFailDialog(onDismiss = {
             showFailDialog = false
         }, onConfirm = {
@@ -205,7 +201,6 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
         })
     }
 }
-
 
 @Composable
 fun RecentlyPlayedGame(gameData: GameData) {
@@ -270,7 +265,7 @@ fun RecentlyAddedWord(word: WordData) {
         )
 
         word.meanings.forEach { meaning ->
-            if(!meaning.isEmpty()) {
+            if (meaning.isNotEmpty()) {
                 Text(
                     text = meaning,
                     fontSize = 18.sp,

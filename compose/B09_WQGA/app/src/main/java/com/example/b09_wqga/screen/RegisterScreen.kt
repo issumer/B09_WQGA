@@ -43,7 +43,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
 import com.example.b09_wqga.database.User
-import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
 import com.example.b09_wqga.repository.UserRepository
 import com.example.b09_wqga.ui.theme.nanumFontFamily
@@ -57,14 +56,12 @@ import java.util.Date
 fun RegisterScreen(navController: NavHostController) {
     val userRepository = UserRepository()
     val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
-    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
 
     var userID by rememberSaveable { mutableStateOf("") }
     var userPassword by rememberSaveable { mutableStateOf("") }
     var userName by rememberSaveable { mutableStateOf("") }
     var showRegisterFailDialog by rememberSaveable { mutableStateOf(false) }
     var passwordVisibility by rememberSaveable { mutableStateOf(false) }
-    val context = LocalContext.current
     val dateFormat = "yyyyMMdd HH:mm"
     val date = Date(System.currentTimeMillis())
     val DateFormat = SimpleDateFormat(dateFormat)
@@ -183,8 +180,7 @@ fun RegisterScreen(navController: NavHostController) {
                     val user = User(username = userID, password = userPassword, name = userName, enterDate = Date, updateDate = Date)
                     userViewModel.registerUser(user) { success ->
                         if (success) {
-                            userDataViewModel.showBottomNavigationBar.value = true
-                            navController.navigate(Routes.MainScreen.route) {
+                            navController.navigate(Routes.LoginScreen.route) {
                                 popUpTo(navController.graph.id) {// 백스택 모두 지우기
                                     inclusive = true
                                 }
@@ -218,3 +214,4 @@ fun RegisterFailDialog(onConfirmClick: () -> Unit) {
         }
     )
 }
+
