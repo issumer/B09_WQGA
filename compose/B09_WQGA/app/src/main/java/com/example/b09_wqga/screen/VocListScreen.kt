@@ -1,39 +1,16 @@
-/*
-구현 목록에서 단어장 목록 화면에 해당하는 화면
-*/
-
 package com.example.b09_wqga.screen
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,52 +21,44 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.component.SearchBar
-import com.example.b09_wqga.model.UserDataViewModel
-import com.example.b09_wqga.model.VocData
-import com.example.b09_wqga.model.WordData
+import com.example.b09_wqga.database.Voc
 import com.example.b09_wqga.navigation.Routes
+import com.example.b09_wqga.viewmodel.VocViewModel
+import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
+import com.example.b09_wqga.repository.VocRepository
 
-
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun VocListScreen(navController: NavHostController) {
-    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+fun VocListScreen(navController: NavHostController, userId: Int) {
+    val vocRepository = VocRepository()
+    val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
+    val vocList by vocViewModel.vocList.collectAsState(initial = emptyList())
 
-    val lazyColumnVocList = userDataViewModel.lazyColumnVocList
+    var currentEditVocId by rememberSaveable { mutableStateOf<Int?>(null) }
+    var showVocAddDialog by rememberSaveable { mutableStateOf(false) }
+    var showVocEditDialog by rememberSaveable { mutableStateOf(false) }
+    var showVocAddFailDialog by rememberSaveable { mutableStateOf(false) }
 
-    // 이 방식은 custom saver 필요
-//    var currentEditVoc by rememberSaveable {
-//        mutableStateOf<VocData?>(null)
-//    }
-
-    var currentEditVocUUID by rememberSaveable { // 현재 편집하는 단어장의 uuid
-        mutableStateOf("")
+    LaunchedEffect(userId) {
+        vocViewModel.loadVocs(userId)
     }
 
-    var showVocAddDialog by rememberSaveable {
-        mutableStateOf<Boolean>(false)
-    }
-    var showVocEditDialog by rememberSaveable {
-        mutableStateOf<Boolean>(false)
-    }
-    var showVocAddFailDialog by rememberSaveable {
-        mutableStateOf<Boolean>(false)
-    }
-
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SearchBar(searchText = userDataViewModel.vocListSearchText.value,
-                onSearchTextChanged = { userDataViewModel.vocListSearchText.value = it; userDataViewModel.updateLazyColumnVocList() },
+            SearchBar(
+                searchText = vocViewModel.searchText.value,
+                onSearchTextChanged = { vocViewModel.searchText.value = it }
             )
-
             Spacer(modifier = Modifier.width(8.dp))
-
             Button(onClick = {
-                if(userDataViewModel.checkVocFull()) {
+                if (vocViewModel.isVocListFull()) {
                     showVocAddFailDialog = true
                 } else {
                     showVocAddDialog = true
@@ -102,55 +71,66 @@ fun VocListScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(lazyColumnVocList) { vocData ->
-                VocItem(vocData = vocData,
+            items(vocList) { voc ->
+                VocItem(
+                    voc = voc,
                     onEditClick = {
-                        currentEditVocUUID = vocData.uuid
+                        currentEditVocId = voc.voc_id
                         showVocEditDialog = true
                     },
                     onEnterClick = {
-                        userDataViewModel.currentlyEnteredVocUUID.value = vocData.uuid
-                        if(userDataViewModel.findVocByUUID(vocData.uuid) != null) {
-                            userDataViewModel.updateLazyColumnWordList()
-                            navController.navigate(Routes.WordListScreen.route) {
-//                                popUpTo(Routes.VocListScreen.route) {
-//                                    inclusive = true
-//                                }
-                                launchSingleTop = true
-                            }
+                        navController.navigate("${Routes.WordListScreen.route.replace("{vocId}", voc.voc_id.toString())}") {
+                            launchSingleTop = true
                         }
-                    })
+                    }
+                )
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
-        if(showVocAddDialog) {
-            VocAddDialog(onDismiss = {showVocAddDialog = false},
-                onAddVoc = {title, description, languageName ->
-                    userDataViewModel.addVoc(title, description, languageName)
-                    showVocAddDialog = false
+
+        if (showVocAddDialog) {
+            VocAddDialog(
+                onDismiss = { showVocAddDialog = false },
+                onAddVoc = { title, description, language ->
+                    vocViewModel.addVoc(Voc(title = title, description = description, lang = language, user_id = userId, words_json = emptyList())) { success ->
+                        if (success) {
+                            vocViewModel.loadVocs(userId)
+                        }
+                        showVocAddDialog = false
+                    }
                 }
             )
         }
-        if(showVocEditDialog) {
-            if(!currentEditVocUUID.isEmpty()) {
-                val vocData = userDataViewModel.findVocByUUID(currentEditVocUUID)
 
-                if(vocData != null) {
-                    VocEditDialog(onDismiss = {showVocEditDialog = false},
-                        currentEditVoc = vocData,
+        if (showVocEditDialog) {
+            currentEditVocId?.let { vocId ->
+                val voc = vocViewModel.getVocById(vocId)
+                if (voc != null) {
+                    VocEditDialog(
+                        onDismiss = { showVocEditDialog = false },
+                        currentEditVoc = voc,
                         onSaveVoc = { title, description ->
-                            userDataViewModel.editVoc(currentEditVocUUID, title, description)
-                            showVocEditDialog = false
+                            vocViewModel.updateVoc(voc.copy(title = title, description = description)) { success ->
+                                if (success) {
+                                    vocViewModel.loadVocs(userId)
+                                }
+                                showVocEditDialog = false
+                            }
                         },
                         onDeleteVoc = {
-                            userDataViewModel.deleteVoc(currentEditVocUUID)
-                            showVocEditDialog = false
+                            vocViewModel.deleteVoc(vocId, userId) { success ->
+                                if (success) {
+                                    vocViewModel.loadVocs(userId)
+                                }
+                                showVocEditDialog = false
+                            }
                         }
                     )
                 }
             }
         }
-        if(showVocAddFailDialog) {
+
+        if (showVocAddFailDialog) {
             VocAddFailDialog {
                 showVocAddFailDialog = false
             }
@@ -158,20 +138,21 @@ fun VocListScreen(navController: NavHostController) {
     }
 }
 
+
 @Composable
-fun VocItem(vocData: VocData, onEditClick: () -> Unit, onEnterClick: () -> Unit) {
+fun VocItem(voc: Voc, onEditClick: () -> Unit, onEnterClick: () -> Unit) {
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)) {
         Text(
-            text = vocData.title,
+            text = voc.title,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
         Text(
-            text = vocData.description,
+            text = voc.description,
             fontSize = 16.sp,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -190,7 +171,7 @@ fun VocItem(vocData: VocData, onEditClick: () -> Unit, onEnterClick: () -> Unit)
                     tint = Color.Blue,
                     contentDescription = "Icon")
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Count: ${vocData.wordCount}")
+                Text(text = "Count: ${voc.word_count}")
 
                 Spacer(modifier = Modifier.width(8.dp))
 
@@ -200,10 +181,9 @@ fun VocItem(vocData: VocData, onEditClick: () -> Unit, onEnterClick: () -> Unit)
                     tint = Color.Blue,
                     contentDescription = "Icon")
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = WordData.LANGUAGE_NAMES_IN_KOREAN[vocData.lang]!!)
+                Text(text = voc.lang)
             }
 
-            //Spacer(modifier = Modifier.width(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Button(onClick = onEditClick) {
                     Text("Edit") // Edit Voc
@@ -230,7 +210,7 @@ fun VocAddDialog(onDismiss: () -> Unit, onAddVoc: (String, String, String) -> Un
     var selectedLanguageName by rememberSaveable {
         mutableStateOf("")
     }
-    var languageList = WordData.LANGUAGE_NAMES_IN_KOREAN.values.toList()
+    val languageList = listOf("en", "ko", "ja", "zh") // 임시 언어 리스트
     val filteredLanguages = languageList.filter {
         it.contains(selectedLanguageName, ignoreCase = true)
     }
@@ -247,10 +227,6 @@ fun VocAddDialog(onDismiss: () -> Unit, onAddVoc: (String, String, String) -> Un
         title = { Text(text = "Add Vocabulary", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Button(onClick = onDismiss) {
-                    Text("Back")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
@@ -300,16 +276,13 @@ fun VocAddDialog(onDismiss: () -> Unit, onAddVoc: (String, String, String) -> Un
         },
         confirmButton = {
             Button(onClick = {
-                if(title.isEmpty()) {
+                if (title.isEmpty()) {
                     warningMessage = "Title을 채워주세요!"
-                }
-                else if(description.isEmpty()) {
+                } else if (description.isEmpty()) {
                     warningMessage = "Description을 채워주세요!"
-                }
-                else if(selectedLanguageName.isEmpty() || WordData.LANGUAGE_CODES_FROM_KOREAN[selectedLanguageName] == null) {
+                } else if (selectedLanguageName.isEmpty()) {
                     warningMessage = "Language를 선택해주세요!"
-                }
-                else {
+                } else {
                     warningMessage = ""
                     onAddVoc(title, description, selectedLanguageName)
                 }
@@ -321,7 +294,7 @@ fun VocAddDialog(onDismiss: () -> Unit, onAddVoc: (String, String, String) -> Un
 }
 
 @Composable
-fun VocEditDialog(onDismiss: () -> Unit, currentEditVoc: VocData, onSaveVoc: (String, String) -> Unit, onDeleteVoc: () -> Unit) {
+fun VocEditDialog(onDismiss: () -> Unit, currentEditVoc: Voc, onSaveVoc: (String, String) -> Unit, onDeleteVoc: () -> Unit) {
     var title by rememberSaveable {
         mutableStateOf(currentEditVoc.title)
     }
@@ -337,10 +310,6 @@ fun VocEditDialog(onDismiss: () -> Unit, currentEditVoc: VocData, onSaveVoc: (St
         title = { Text(text = "Edit Vocabulary", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Button(onClick = onDismiss) {
-                    Text("Back")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
@@ -363,13 +332,11 @@ fun VocEditDialog(onDismiss: () -> Unit, currentEditVoc: VocData, onSaveVoc: (St
                     Text("Delete Voc")
                 }
                 Button(onClick = {
-                    if(title.isEmpty()) {
+                    if (title.isEmpty()) {
                         warningMessage = "Title을 채워주세요!"
-                    }
-                    else if(description.isEmpty()) {
+                    } else if (description.isEmpty()) {
                         warningMessage = "Description을 채워주세요!"
-                    }
-                    else {
+                    } else {
                         warningMessage = ""
                         onSaveVoc(title, description)
                     }

@@ -1,43 +1,17 @@
-/*
-구현 목록에서 단어 목록 화면에 해당하는 화면
-*/
-
 package com.example.b09_wqga.screen
 
+import android.annotation.SuppressLint
 import android.speech.tts.TextToSpeech
-import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -46,22 +20,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.b09_wqga.component.SearchBar
-import com.example.b09_wqga.model.UserDataViewModel
-import com.example.b09_wqga.model.VocData
-import com.example.b09_wqga.model.WordData
+import com.example.b09_wqga.database.Word
+import com.example.b09_wqga.viewmodel.VocViewModel
+import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
+import com.example.b09_wqga.repository.VocRepository
 import java.util.Locale
 
-
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun WordListScreen() {
-    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+fun WordListScreen(navController: NavHostController, vocId: Int) {
+    val vocRepository = VocRepository()
+    val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
     val context = LocalContext.current // 현재 컨텍스트 정보
 
-    val lazyColumnWordList = userDataViewModel.lazyColumnWordList
+    val lazyColumnWordList by vocViewModel.wordList.collectAsState()
 
-    var currentEditHeadword by rememberSaveable { // 현재 편집하는 단어의 표제어
-        mutableStateOf("")
+    var currentEditWordId by rememberSaveable { // 현재 편집하는 단어의 ID
+        mutableStateOf(0)
     }
 
     var showWordAddDialog by rememberSaveable {
@@ -79,14 +56,14 @@ fun WordListScreen() {
     var ttsReady by rememberSaveable { // tts 준비 여부
         mutableStateOf(false)
     }
-    var tts : TextToSpeech? by remember { // tts가 준비되면 실제 객체로 변경
+    var tts: TextToSpeech? by remember { // tts가 준비되면 실제 객체로 변경
         mutableStateOf(null)
     }
 
     // 현재 Lifecycle owner가 dispose되면 수행
     DisposableEffect(LocalLifecycleOwner.current) {
-        tts = TextToSpeech(context) {status -> // tts 객체 초기화
-            if(status == TextToSpeech.SUCCESS) {
+        tts = TextToSpeech(context) { status -> // tts 객체 초기화
+            if (status == TextToSpeech.SUCCESS) {
                 ttsReady = true
                 tts!!.language = Locale.US
             }
@@ -98,159 +75,131 @@ fun WordListScreen() {
         }
     }
 
-    val speakWord = { wordData:WordData ->
-        if(ttsReady) {
+    val speakWord = { wordData: Word ->
+        if (ttsReady) {
             // 큐에 추가 (순차적으로)
             tts?.speak(wordData.headword, TextToSpeech.QUEUE_ADD, null, null)
         }
     }
 
     // 현재 이 단어 목록 화면의 단어장
-    var currentlyEnteredVoc = userDataViewModel.findVocByUUID(userDataViewModel.currentlyEnteredVocUUID.value)
+    LaunchedEffect(vocId) {
+        vocViewModel.loadWordsByVocId(vocId)
+    }
 
-    if(currentlyEnteredVoc != null) {
-        Column(modifier = Modifier
+    Column(
+        modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                SearchBar(
-                    searchText = userDataViewModel.wordListSearchText.value,
-                    onSearchTextChanged = {
-                        userDataViewModel.wordListSearchText.value =
-                            it; userDataViewModel.updateLazyColumnWordList()
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SearchBar(
+                searchText = vocViewModel.searchText.value,
+                onSearchTextChanged = { vocViewModel.searchText.value = it }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Button(onClick = {
+                if (vocViewModel.checkWordFull()) {
+                    showWordAddFailDialog = true
+                } else {
+                    showWordAddDialog = true
+                }
+            }) {
+                Text("Add") // Add Word
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            SortDropdownMenu(
+                label = "Sort Based On",
+                selectedOption = vocViewModel.sortBasedOn.value,
+                options = vocViewModel.sortOptions,
+                onOptionSelected = {
+                    vocViewModel.sortBasedOn.value = it
+                    vocViewModel.sortWordList()
+                }
+            )
+
+            SortDropdownMenu(
+                label = "Sort Order",
+                selectedOption = vocViewModel.sortOrder.value,
+                options = listOf("Ascending", "Descending"),
+                onOptionSelected = {
+                    vocViewModel.sortOrder.value = it
+                    vocViewModel.sortWordList()
+                }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(lazyColumnWordList) { wordData ->
+                WordItem(
+                    word = wordData,
+                    onTTSClick = {
+                        speakWord(wordData)
                     },
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Button(onClick = {
-                    if(userDataViewModel.checkWordFull()) {
-                        showWordAddFailDialog = true
-                    } else {
-                        showWordAddDialog = true
+                    onEditClick = {
+                        currentEditWordId = wordData.word_id
+                        showWordEditDialog = true
                     }
-                }) {
-                    Text("Add") // Add Word
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+        if (showWordAddDialog) {
+            WordAddDialog(
+                onDismiss = { showWordAddDialog = false },
+                onAddWord = { headword, meanings ->
+                    vocViewModel.addWord(vocId, headword, meanings)
+                    showWordAddDialog = false
                 }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                SortDropdownMenu(
-                    label = "Sort Based On",
-                    selectedOption = userDataViewModel.wordListSortBasedOn.value,
-                    options = userDataViewModel.wordListSortBasedOnList,
-                    onOptionSelected = {
-                        userDataViewModel.wordListSortBasedOn.value =
-                            it; userDataViewModel.updateLazyColumnWordList()
-                    }
-                )
-
-                SortDropdownMenu(
-                    label = "Sort Order",
-                    selectedOption = userDataViewModel.wordListSortOrder.value,
-                    options = userDataViewModel.wordListSortOrderList,
-                    onOptionSelected = {
-                        userDataViewModel.wordListSortOrder.value =
-                            it; userDataViewModel.updateLazyColumnWordList()
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(lazyColumnWordList) { wordData ->
-                    WordItem(word = wordData,
-                        onTTSClick = {
-                            speakWord(wordData)
-                        },
-                        onEditClick = {
-                            currentEditHeadword = wordData.headword
-                            showWordEditDialog = true
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
-            if (showWordAddDialog) {
-                WordAddDialog(onDismiss = { showWordAddDialog = false },
-                    currentVoc = currentlyEnteredVoc,
+            )
+        }
+        if (showWordEditDialog) {
+            val wordData = vocViewModel.getWordById(currentEditWordId)
+            if (wordData != null) {
+                WordEditDialog(
+                    onDismiss = { showWordEditDialog = false },
+                    currentWord = wordData,
                     onDictClick = { headword ->
-                        userDataViewModel.getBackendDict(headword)
+                        vocViewModel.loadWordsByVocId(vocId) // 사전 API 대신 샘플 로드
                     },
-                    onAddWord = { headword, meanings ->
-                        var meaningsList = mutableListOf<String>()
-                        meanings.forEach {
-                            if(it.isNotEmpty())
-                                meaningsList.add(it)
-                        }
-                        userDataViewModel.addWord(headword, meaningsList.toTypedArray())
-                        showWordAddDialog = false
+                    onSaveWord = { headword, meanings ->
+                        vocViewModel.updateWord(wordData.copy(headword = headword, meanings = meanings))
+                        showWordEditDialog = false
                     }
-                )
-            }
-            if (showWordEditDialog) {
-                if (!currentEditHeadword.isEmpty()) {
-                    val wordData = userDataViewModel.findWordByHeadword(currentEditHeadword)
-
-                    Log.i("worddata", wordData.toString())
-                    if (wordData != null) {
-                        Log.i("worddata2", wordData.toString())
-                        WordEditDialog(onDismiss = { showWordEditDialog = false },
-                            currentWord = wordData,
-                            onDictClick = { headword ->
-                                userDataViewModel.getBackendDict(headword)
-                            },
-                            onSaveWord = { headword, meanings ->
-                                var meaningsList = mutableListOf<String>()
-                                meanings.forEach {
-                                    if(it.isNotEmpty())
-                                        meaningsList.add(it)
-                                }
-                                userDataViewModel.editWord(headword, meaningsList.toTypedArray())
-                                showWordEditDialog = false
-                            },
-                            onDeleteWord = {
-                                userDataViewModel.deleteWord(currentEditHeadword)
-                                showWordEditDialog = false
-                            }
-                        )
-                    }
-                }
-            }
-            if (showWordAddFailDialog) {
-                WordAddFailDialog {
-                    showWordAddFailDialog = false
+                ) {
+                    vocViewModel.deleteWord(vocId, currentEditWordId)
+                    showWordEditDialog = false
                 }
             }
         }
-    } else { // 단어장을 삭제하고 back 버튼을 눌렀을 경우 대비
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("현재 단어장이 존재하지 않습니다.")
+        if (showWordAddFailDialog) {
+            WordAddFailDialog {
+                showWordAddFailDialog = false
             }
         }
     }
 }
 
 @Composable
-fun WordItem(word: WordData, onTTSClick: () -> Unit, onEditClick: () -> Unit) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(8.dp)) {
+fun WordItem(word: Word, onTTSClick: () -> Unit, onEditClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
         Text(
             text = word.headword,
             fontSize = 20.sp,
@@ -259,7 +208,7 @@ fun WordItem(word: WordData, onTTSClick: () -> Unit, onEditClick: () -> Unit) {
         )
 
         word.meanings.forEach { meaning ->
-            if(!meaning.isEmpty()) {
+            if (meaning.isNotEmpty()) {
                 Text(text = meaning, fontSize = 16.sp, modifier = Modifier.padding(bottom = 4.dp))
             }
         }
@@ -325,14 +274,14 @@ fun SortDropdownMenu(label: String, selectedOption: String, options: List<String
                 DropdownMenuItem(onClick = {
                     onOptionSelected(option)
                     expanded = false
-                }, text = {Text(text = option)})
+                }, text = { Text(text = option) })
             }
         }
     }
 }
 
 @Composable
-fun WordAddDialog(onDismiss: () -> Unit, currentVoc: VocData, onDictClick: (String) -> Array<String>, onAddWord: (String, Array<String>) -> Unit) {
+fun WordAddDialog(onDismiss: () -> Unit, onAddWord: (String, List<String>) -> Unit) {
     var headword by rememberSaveable {
         mutableStateOf("")
     }
@@ -352,30 +301,13 @@ fun WordAddDialog(onDismiss: () -> Unit, currentVoc: VocData, onDictClick: (Stri
                     Text("Back")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Row (modifier = Modifier.fillMaxWidth()) {
+                Row(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = headword,
                         onValueChange = { headword = it },
                         modifier = Modifier.weight(1f),
                         label = { Text("Enter Headword") }
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = {
-                        // 사전 API 실행 코드
-                        var dictMeanings = onDictClick(headword)
-
-                        // 뜻 초기화
-                        meanings.clear()
-
-                        // 처음 5개만 복사
-                        if (dictMeanings.size >= 5) {
-                            meanings.addAll(dictMeanings.copyOfRange(0, 5))
-                        } else {
-                            meanings.addAll(dictMeanings.copyOf())
-                        }
-                    }) {
-                        Text("Dict")
-                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 meanings.forEachIndexed { index, meaning ->
@@ -393,31 +325,23 @@ fun WordAddDialog(onDismiss: () -> Unit, currentVoc: VocData, onDictClick: (Stri
         confirmButton = {
             Button(onClick = {
                 var canAddWord = true
-                if(headword.isEmpty()) {
+                if (headword.isEmpty()) {
                     warningMessage = "Headword를 채워주세요!"
                     canAddWord = false
                 }
 
                 var everyMeaningEmpty = true
-                meanings.forEach {meaning ->
-                    if(!meaning.isEmpty()) everyMeaningEmpty = false
+                meanings.forEach { meaning ->
+                    if (meaning.isNotEmpty()) everyMeaningEmpty = false
                 }
 
-                if(everyMeaningEmpty && canAddWord) {
+                if (everyMeaningEmpty && canAddWord) {
                     warningMessage = "Meaning을 채워주세요!"
                     canAddWord = false
                 }
 
-                val sameHeadwordIndex = currentVoc.wordList.indexOfFirst {
-                    it.headword == headword
-                }
-                if(sameHeadwordIndex != -1 && canAddWord) {
-                    warningMessage = "중복된 표제어의 단어를 추가할 수 없습니다."
-                    canAddWord = false
-                }
-
-                if(canAddWord) {
-                    onAddWord(headword, meanings.toTypedArray())
+                if (canAddWord) {
+                    onAddWord(headword, meanings.toList())
                 }
 
             }) {
@@ -428,66 +352,34 @@ fun WordAddDialog(onDismiss: () -> Unit, currentVoc: VocData, onDictClick: (Stri
 }
 
 @Composable
-fun WordEditDialog(onDismiss: () -> Unit, currentWord: WordData, onDictClick: (String) -> Array<String>, onSaveWord: (String, Array<String>) -> Unit, onDeleteWord: () -> Unit) {
+fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (String) -> Unit, onSaveWord: (String, List<String>) -> Unit, onDeleteWord: () -> Unit) {
     var headword by rememberSaveable {
         mutableStateOf(currentWord.headword)
     }
     var meanings = remember {
-        mutableStateListOf<String>(
-            "",
-            "",
-            "",
-            "",
-            ""
-        )
-    }
-    var meaningsInited by remember {
-        mutableStateOf(false)
+        mutableStateListOf(*currentWord.meanings.toTypedArray())
     }
     var warningMessage by rememberSaveable {
         mutableStateOf("")
     }
 
-    if(!meaningsInited) {
-        currentWord.meanings.forEachIndexed { index, it ->
-            meanings[index] = it
-        }
-    }
-
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Add Word", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "Edit Word", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Button(onClick = onDismiss) {
                     Text("Back")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Row (modifier = Modifier.fillMaxWidth()) {
+                Row(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = headword,
                         onValueChange = { headword = it },
                         modifier = Modifier.weight(1f),
                         readOnly = true,
-                        label = { Text("Enter Headword") }
+                        label = { Text("Headword") }
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = {
-                        // 사전 API 실행 코드
-                        var dictMeanings = onDictClick(headword)
-
-                        // 뜻 초기화
-                        meanings.clear()
-
-                        // 처음 5개만 복사
-                        if (dictMeanings.size >= 5) {
-                            meanings.addAll(dictMeanings.copyOfRange(0, 5))
-                        } else {
-                            meanings.addAll(dictMeanings.copyOf())
-                        }
-                    }) {
-                        Text("Dict")
-                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 meanings.forEachIndexed { index, meaning ->
@@ -503,24 +395,27 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: WordData, onDictClick: (S
             }
         },
         confirmButton = {
-            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Button(onClick = onDeleteWord) {
                     Text("Delete Word")
                 }
                 Button(onClick = {
-                    var canAddWord = true
+                    var canSaveWord = true
                     var everyMeaningEmpty = true
-                    meanings.forEach {meaning ->
-                        if(!meaning.isEmpty()) everyMeaningEmpty = false
+                    meanings.forEach { meaning ->
+                        if (meaning.isNotEmpty()) everyMeaningEmpty = false
                     }
 
-                    if(everyMeaningEmpty) {
+                    if (everyMeaningEmpty) {
                         warningMessage = "Meaning을 채워주세요!"
-                        canAddWord = false
+                        canSaveWord = false
                     }
 
-                    if(canAddWord) {
-                        onSaveWord(headword, meanings.toTypedArray())
+                    if (canSaveWord) {
+                        onSaveWord(headword, meanings.toList())
                     }
                 }) {
                     Text("Save Word")

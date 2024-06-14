@@ -29,16 +29,26 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.b09_wqga.R
 import com.example.b09_wqga.component.Button_WQGA
-import com.example.b09_wqga.model.*
+import com.example.b09_wqga.database.Game
+import com.example.b09_wqga.database.Played
+import com.example.b09_wqga.database.Word
 import com.example.b09_wqga.repository.AttendanceRepository
+import com.example.b09_wqga.repository.GameRepository
+import com.example.b09_wqga.repository.PlayedRepository
+import com.example.b09_wqga.repository.VocRepository
 import com.example.b09_wqga.ui.theme.pixelFont1
 import com.example.b09_wqga.ui.theme.pixelFont2
 import com.example.b09_wqga.viewmodel.AttendanceViewModel
+import com.example.b09_wqga.viewmodel.GameViewModel
+import com.example.b09_wqga.viewmodel.PlayedViewModel
 import com.example.b09_wqga.viewmodel.UserViewModel
+import com.example.b09_wqga.viewmodel.VocViewModel
 import com.example.b09_wqga.viewmodelfactory.AttendanceViewModelFactory
+import com.example.b09_wqga.viewmodelfactory.GameViewModelFactory
+import com.example.b09_wqga.viewmodelfactory.PlayedViewModelFactory
+import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 import java.text.SimpleDateFormat
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Composable
@@ -46,17 +56,21 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
     val scrollState = rememberScrollState()
     val attendanceRepository = AttendanceRepository()
     val attendanceViewModel: AttendanceViewModel = viewModel(factory = AttendanceViewModelFactory(attendanceRepository))
-    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
-    val gameData: GameData? = userDataViewModel.getRecentlyPlayedGame()
-    val wordData: WordData? = userDataViewModel.getRecentlyAddedWord()
+    val gameRepository = GameRepository()
+    val gameViewModel: GameViewModel = viewModel(factory = GameViewModelFactory(gameRepository))
+    val playedRepository = PlayedRepository()
+    val playedViewModel: PlayedViewModel = viewModel(factory = PlayedViewModelFactory(playedRepository))
+    val vocRepository = VocRepository()
+    val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
 
     val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     var showCompleteDialog by remember { mutableStateOf(false) }
     var showFailDialog by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var attendanceDates by remember { mutableStateOf<List<String>>(listOf()) }
+    var recentlyPlayed by remember { mutableStateOf<Played?>(null) }
+    var wordData by remember { mutableStateOf<Word?>(null) }
 
     val points = userViewModel.points.value
     val name = userViewModel.name.value
@@ -70,6 +84,12 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
             attendanceViewModel.getAttendanceDates(userIdInt) { dates ->
                 attendanceDates = dates
             }
+
+            playedViewModel.getAllPlayedByUserId(userIdInt) { playedList ->
+                recentlyPlayed = playedList.maxByOrNull { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.play_date) }
+            }
+
+            vocViewModel.loadVocs(userIdInt)  // Correct method call
         }
     }
 
@@ -144,7 +164,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                 .weight(1f)
         )
 
-        if (gameData != null) {
+        if (recentlyPlayed != null) {
             Box(
                 modifier = Modifier
                     .background(
@@ -161,7 +181,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
             }
-            RecentlyPlayedGame(gameData)
+            RecentlyPlayedGame(recentlyPlayed!!)
         }
 
         if (wordData != null) {
@@ -182,7 +202,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
             }
-            RecentlyAddedWord(wordData)
+            RecentlyAddedWord(wordData!!)
         }
     }
 
@@ -203,12 +223,12 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
 }
 
 @Composable
-fun RecentlyPlayedGame(gameData: GameData) {
+fun RecentlyPlayedGame(played: Played) {
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)) {
         Text(
-            text = gameData.title,
+            text = "Game ID: ${played.game_id}",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)
@@ -216,35 +236,29 @@ fun RecentlyPlayedGame(gameData: GameData) {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
-                painter = painterResource(id = gameData.imageResource),
+                painter = painterResource(id = R.drawable.ic_launcher_foreground), // Replace with actual game image
                 contentDescription = "Game Icon",
                 modifier = Modifier.size(48.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column {
-                Text(
-                    text = gameData.description,
-                    fontSize = 16.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                // Add game description and other details here
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = Icons.Default.Architecture, contentDescription = "Ranking Icon")
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "${gameData.userRanking}", fontSize = 16.sp) // Ranking
+                    Text(text = "${played.best_score}", fontSize = 16.sp) // Ranking
 
                     Spacer(modifier = Modifier.width(4.dp))
 
                     Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = "Right Icon")
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "${gameData.userRight}", fontSize = 16.sp) // Right
+                    Text(text = "${played.right}", fontSize = 16.sp) // Right
 
                     Spacer(modifier = Modifier.width(4.dp))
 
                     Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = "Wrong Icon")
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "${gameData.userWrong}", fontSize = 16.sp) // Wrong
+                    Text(text = "${played.wrong}", fontSize = 16.sp) // Wrong
                 }
             }
         }
@@ -252,7 +266,7 @@ fun RecentlyPlayedGame(gameData: GameData) {
 }
 
 @Composable
-fun RecentlyAddedWord(word: WordData) {
+fun RecentlyAddedWord(word: Word) {
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)) {
@@ -313,10 +327,8 @@ fun Calendar(
                     onDateSelected(date)
                 }
             }
-
         },
         update = { view ->
-
             for (date in highlightedDates) {
                 // 이미 출석한 날짜 색칠 필요
             }

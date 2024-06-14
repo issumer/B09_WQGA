@@ -7,7 +7,7 @@ sealed class Routes(val route: String) {
     object WelcomeScreen : Routes("WelcomeScreen")
     object HomeScreen : Routes("HomeScreen/{userId}")
     object VocListScreen : Routes("VocListScreen/{userId}")
-    object WordListScreen : Routes("WordListScreen")
+    object WordListScreen : Routes("WordListScreen/{vocId}")
     object GameListScreen : Routes("GameListScreen/{userId}")
     object GamePlayScreen_1 : Routes("GamePlayScreen_1")
     object GamePlayScreen_2 : Routes("GamePlayScreen_2")

@@ -19,11 +19,13 @@ fun NavGraphBuilder.MainNavGraph(navController: NavHostController) {
             val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
             HomeScreen(userId, userViewModel)
         }
-        composable(route = Routes.VocListScreen.route) {
-            VocListScreen(navController)
+        composable(route = Routes.VocListScreen.route) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            VocListScreen(navController, userId.toInt())
         }
-        composable(route = Routes.WordListScreen.route) {
-            WordListScreen()
+        composable(route = Routes.WordListScreen.route) { backStackEntry ->
+            val vocId = backStackEntry.arguments?.getString("vocId")?.toIntOrNull() ?: return@composable
+            WordListScreen(navController, vocId)
         }
         composable(route = Routes.GameListScreen.route) {
             GameListScreen(navController)
