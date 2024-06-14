@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.b09_wqga.R
+import com.example.b09_wqga.ui.theme.pixelFont1
 
 @Composable
 fun Button_WQGA(width: Int, height: Int, text: String, onClickLabel : () -> Unit, enabled : Boolean = true){
@@ -21,7 +22,7 @@ fun Button_WQGA(width: Int, height: Int, text: String, onClickLabel : () -> Unit
         modifier = Modifier
             .then(if (enabled) Modifier.clickable { onClickLabel() } else Modifier)
             .background(
-                color = if (enabled) colorResource(id = R.color.wqga) else Color.Gray,
+                color = if (enabled) Color.Black else Color.Gray,
                 shape = RoundedCornerShape((height / 2).dp)
             )
             .size(width = width.dp, height = height.dp),
@@ -31,8 +32,9 @@ fun Button_WQGA(width: Int, height: Int, text: String, onClickLabel : () -> Unit
 //        RectWithRoundedEnds(width, height, color = colorResource(id = R.color.wqga))
         androidx.compose.material3.Text(
             text = text,
-            fontWeight = FontWeight.Bold,
-            fontSize = 19.sp,
+            fontWeight = FontWeight.ExtraLight,
+            fontFamily = pixelFont1,
+            fontSize = 14.sp,
             color = Color.White
         )
     }
