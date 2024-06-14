@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Architecture
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Diamond
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -23,7 +22,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -37,7 +35,6 @@ import com.example.b09_wqga.R
 import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.model.*
 import com.example.b09_wqga.repository.AttendanceRepository
-import com.example.b09_wqga.ui.theme.nanumFontFamily
 import com.example.b09_wqga.ui.theme.pixelFont1
 import com.example.b09_wqga.ui.theme.pixelFont2
 import com.example.b09_wqga.viewmodel.AttendanceViewModel
@@ -73,12 +70,18 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
     LaunchedEffect(userId) {
         userViewModel.fetchName(userId)
         userViewModel.fetchPoints(userId)
-        attendanceViewModel.getAttendanceDates(userId.toInt()) { dates ->
-            attendanceDates.addAll(dates)
+
+        // Check if userId can be converted to an Int
+        val userIdInt = userId.toIntOrNull()
+        if (userIdInt != null) {
+            attendanceViewModel.getAttendanceDates(userId.toInt()) { dates ->
+                attendanceDates.addAll(dates)
+            }
+        } else {
+            // Handle the error or show a message to the user
+            // For example, showFailDialog = true
         }
     }
-
-
 
     Column(
         modifier = Modifier
@@ -123,8 +126,13 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                         attendanceDates.add(currentDateString)
                         userDataViewModel.lastAttendanceDate = currentDate
                         userViewModel.increasePoints(userId)
-                        attendanceViewModel.addAttendance(userId.toInt(), currentDate.format(dateFormatter)) {
-                            showCompleteDialog = true
+                        val userIdInt = userId.toIntOrNull()
+                        if (userIdInt != null) {
+                            attendanceViewModel.addAttendance(userIdInt, currentDate.format(dateFormatter)) {
+                                showCompleteDialog = true
+                            }
+                        } else {
+                            showFailDialog = true
                         }
                     }
                 }, enabled = isButtonEnabled
@@ -344,7 +352,3 @@ fun AttendanceFailDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
         }
     )
 }
-
-
-
-
