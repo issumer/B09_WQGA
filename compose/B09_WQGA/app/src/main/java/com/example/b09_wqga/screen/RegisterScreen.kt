@@ -46,6 +46,7 @@ import com.example.b09_wqga.database.User
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
 import com.example.b09_wqga.repository.UserRepository
+import com.example.b09_wqga.ui.theme.nanumFontFamily
 import com.example.b09_wqga.viewmodel.UserViewModel
 import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
 import java.text.SimpleDateFormat
@@ -88,7 +89,7 @@ fun RegisterScreen(navController: NavHostController) {
             OutlinedTextField(
                 value = userName,
                 placeholder = {
-                    Text(text = "Enter Name", color = Color.Gray, fontSize = 14.sp)
+                    Text(text = "Enter Name", color = Color.Gray, fontSize = 14.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
                 },
                 onValueChange = { userName = it },
                 leadingIcon = { Icon(painter = painterResource(R.drawable.name), contentDescription = null,
@@ -114,7 +115,7 @@ fun RegisterScreen(navController: NavHostController) {
             OutlinedTextField(
                 value = userID,
                 placeholder = {
-                    Text(text = "Enter ID", color = Color.Gray, fontSize = 14.sp)
+                    Text(text = "Enter ID", color = Color.Gray, fontSize = 14.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
                 },
                 onValueChange = { userID = it },
                 leadingIcon = { Icon(painter = painterResource(R.drawable.idlogo), contentDescription = null,
@@ -142,7 +143,7 @@ fun RegisterScreen(navController: NavHostController) {
                 value = userPassword,
                 onValueChange = { userPassword = it },
                 placeholder = {
-                    Text(text = "Enter PW", color = Color.Gray, fontSize = 14.sp)
+                    Text(text = "Enter PW", color = Color.Gray, fontSize = 14.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
                 },
                 leadingIcon = { Icon(painter = painterResource(R.drawable.pwlogo), contentDescription = null,
                     modifier = Modifier.size(25.dp)) },
