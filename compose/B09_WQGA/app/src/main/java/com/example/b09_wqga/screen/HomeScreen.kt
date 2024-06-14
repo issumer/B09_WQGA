@@ -23,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -36,6 +37,9 @@ import com.example.b09_wqga.R
 import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.model.*
 import com.example.b09_wqga.repository.AttendanceRepository
+import com.example.b09_wqga.ui.theme.nanumFontFamily
+import com.example.b09_wqga.ui.theme.pixelFont1
+import com.example.b09_wqga.ui.theme.pixelFont2
 import com.example.b09_wqga.viewmodel.AttendanceViewModel
 import com.example.b09_wqga.viewmodel.UserViewModel
 import com.example.b09_wqga.viewmodelfactory.AttendanceViewModelFactory
@@ -73,18 +77,23 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
         }
     }
 
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
             .verticalScroll(scrollState)
     ) {
-        Text(
-            text = "Welcome back, $name!",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Row(horizontalArrangement = Arrangement.Center, modifier =Modifier.fillMaxWidth()) {
+            Text(
+                text = "Welcome back, $userId!",
+                fontSize = 24.sp,
+                fontFamily = pixelFont2,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -92,11 +101,17 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.Diamond,
+                    painter = painterResource(R.drawable.diamond),
                     contentDescription = "Points",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(30.dp)
                 )
-                Text(text = "$points Points", fontSize = 18.sp)
+                Text(
+                    text = "$points Points",
+                    fontSize = 18.sp,
+                    fontFamily = pixelFont1,
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.padding(start = 5.dp)
+                )
             }
             Button_WQGA(width = 200, height = 40, text = "Attendance Check",
                 onClickLabel = {
@@ -148,15 +163,16 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
         if (wordData != null) {
             Box(modifier = Modifier
                 .background(
-                    color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
-                    shape = RoundedCornerShape(12.dp)
+                    color = Color.Black,
+                    shape = RoundedCornerShape(10.dp)
                 )
-                .padding(start = 8.dp, end = 8.dp),
+                .padding(start = 15.dp, end = 15.dp, top = 5.dp, bottom = 5.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "Recently Added Word",
-                    fontSize = 18.sp,
+                    fontSize = 13.sp,
+                    fontFamily = pixelFont1,
                     color = Color.White,
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
@@ -238,14 +254,20 @@ fun RecentlyAddedWord(word: WordData) {
         .padding(8.dp)) {
         Text(
             text = word.headword,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 22.sp,
+            fontFamily = pixelFont2,
+            fontWeight = FontWeight.Black,
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
         word.meanings.forEach { meaning ->
             if(!meaning.isEmpty()) {
-                Text(text = meaning, fontSize = 16.sp, modifier = Modifier.padding(bottom = 4.dp))
+                Text(
+                    text = meaning,
+                    fontSize = 18.sp,
+                    fontFamily = pixelFont2,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
             }
         }
 
@@ -287,8 +309,10 @@ fun Calendar(
                     onDateSelected(date)
                 }
             }
+
         },
         update = { view ->
+
             for (date in highlightedDates) {
                 // 이미 출석한 날짜 색칠 필요
             }
@@ -319,3 +343,7 @@ fun AttendanceFailDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
         }
     )
 }
+
+
+
+
