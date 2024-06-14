@@ -11,3 +11,12 @@ val nanumFontFamily = FontFamily(
     Font(R.font.nanum_square_b, FontWeight.Bold),
     Font(R.font.nanum_square_eb, FontWeight.ExtraBold),
 )
+
+val pixelFont1 = FontFamily(
+    Font(R.font.pixel_font_1)
+)
+
+val pixelFont2 = FontFamily(
+    Font(R.font.pixel_font_2)
+)
+
