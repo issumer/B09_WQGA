@@ -59,6 +59,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.example.b09_wqga.ui.theme.nanumFontFamily
+import com.example.b09_wqga.ui.theme.pixelFont2
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,7 +99,7 @@ fun LoginScreen(navController: NavHostController) {
             OutlinedTextField(
                 value = userID,
                 placeholder = {
-                    Text(text = "Enter ID", color = Color.Gray, fontSize = 14.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
+                    Text(text = "Enter ID", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 },
                 onValueChange = { userID = it },
                 leadingIcon = { Icon(painter = painterResource(R.drawable.idlogo), contentDescription = null,
@@ -127,7 +128,7 @@ fun LoginScreen(navController: NavHostController) {
                 value = userPassword,
                 onValueChange = { userPassword = it },
                 placeholder = {
-                    Text(text = "Enter PW", color = Color.Gray, fontSize = 14.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
+                    Text(text = "Enter PW", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 },
                 leadingIcon = { Icon(painter = painterResource(R.drawable.pwlogo), contentDescription = null,
                     modifier = Modifier.size(25.dp)) },
@@ -210,14 +211,14 @@ fun LoginFailDialog(onConfirmClick: () -> Unit) {
         onDismissRequest = { showDialog.value = false },
         title = {
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                Text(text = "로그인 실패", fontSize = 20.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Bold)
+                Text(text = "로그인 실패", fontSize = 20.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Bold)
             }
         },
         text = {
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "아이디와 비밀번호를 확인해주세요!",
-                    fontFamily = nanumFontFamily,
+                    fontFamily = pixelFont2,
                     fontWeight = FontWeight.Bold
                 )
             }
