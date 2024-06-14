@@ -16,35 +16,36 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.VideogameAsset
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
+
+import androidx.compose.ui.res.vectorResource
+
+
 import com.example.b09_wqga.R
 
-data class BarItem (val titleId :Int, val selectIcon: ImageVector, val onSelectedIcon :ImageVector, val route:String)
+
+data class BarItem (val titleId :Int, val selectIcon: Int, val route:String)
 
 object NavBarItems{
     val BarItems = listOf(
         BarItem(
             titleId = R.string.navBarItem_home,
-            selectIcon = Icons.Default.Home,
-            onSelectedIcon = Icons.Outlined.Home,
+            selectIcon = R.drawable.home,
             route = "HomeScreen"
         ),
         BarItem(
             titleId = R.string.navBarItem_vocabulary,
-            selectIcon = Icons.Default.FormatListNumberedRtl,
-            onSelectedIcon = Icons.Outlined.FormatListNumberedRtl,
+            selectIcon = R.drawable.voc,
             route = "VocListScreen"
         ),
         BarItem(
             titleId = R.string.navBarItem_gameList,
-            selectIcon = Icons.Default.VideogameAsset,
-            onSelectedIcon = Icons.Outlined.VideogameAsset,
+            selectIcon = R.drawable.game,
             route = "GameListScreen"
         ),
         BarItem(
             titleId = R.string.navBarItem_profile,
-            selectIcon = Icons.Default.Person,
-            onSelectedIcon = Icons.Outlined.Person,
+            selectIcon = R.drawable.accounticon,
             route = "ProfileScreen"
         )
 
