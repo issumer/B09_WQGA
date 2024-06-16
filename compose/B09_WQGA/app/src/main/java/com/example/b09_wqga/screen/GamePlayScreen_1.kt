@@ -4,7 +4,6 @@
 
 package com.example.b09_wqga.screen
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -52,9 +52,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
+import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.component.WordQuiz
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
+import com.example.b09_wqga.ui.theme.nanumFontFamily
+import com.example.b09_wqga.ui.theme.pixelFont2
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 import kotlin.random.Random
@@ -537,10 +540,11 @@ fun GamePlayScreen_1(navController: NavHostController) {
                     } else {
                         Image(painter = painterResource(id = R.drawable.attack),
                             contentDescription = null,
-                            modifier = Modifier.clickable {
-                                //showAttackSkills = true
-                                performSkill(0)
-                            }
+                            modifier = Modifier
+                                .clickable {
+                                    //showAttackSkills = true
+                                    performSkill(0)
+                                }
                                 .size(80.dp)
                         )
                         Button(onClick = {
@@ -557,14 +561,15 @@ fun GamePlayScreen_1(navController: NavHostController) {
                 else {
                     Image(painter = painterResource(id = R.drawable.skull),
                         contentDescription = null,
-                        modifier = Modifier.clickable {
-                            if(playerTurn) {
-                                showAttackSkills = false
-                                showDefenseSkills = false
-                                playerTurn = false
-                                playerQuizPaused = true
+                        modifier = Modifier
+                            .clickable {
+                                if (playerTurn) {
+                                    showAttackSkills = false
+                                    showDefenseSkills = false
+                                    playerTurn = false
+                                    playerQuizPaused = true
+                                }
                             }
-                        }
                             .size(80.dp)
                     )
                 }
@@ -609,20 +614,21 @@ fun GamePlayScreen_1(navController: NavHostController) {
 fun GameMenuDialog(onDismiss: () -> Unit, onExitGame: () -> Unit, score: Int, rightCount: Int, wrongCount: Int) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "게임 메뉴", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "게임 메뉴", fontSize = 30.sp, fontFamily = pixelFont2, fontWeight = FontWeight.ExtraBold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Button(onClick = onDismiss) {
-                    Text("뒤로")
+                Spacer(modifier = Modifier.height(5.dp))
+                Text("점수: $score", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
+                Text("맞은 개수: $rightCount", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
+                Text("틀린 개수: $wrongCount", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
+                Spacer(modifier = Modifier.height(25.dp))
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.width(30.dp))
+                    Button_WQGA(width = 80, height = 40, text = "Back", onClickLabel =  onDismiss)
+                    Spacer(modifier = Modifier.width(50.dp))
+                    Button_WQGA(width = 80, height = 40, text = "Exit", onClickLabel =  onExitGame)
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = onExitGame) {
-                    Text("나가기")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("점수: $score")
-                Text("맞은 개수: $rightCount")
-                Text("틀린 개수: $wrongCount")
             }
         },
         confirmButton = {

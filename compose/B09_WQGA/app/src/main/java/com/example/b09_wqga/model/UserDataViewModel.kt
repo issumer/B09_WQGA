@@ -73,8 +73,8 @@ class UserDataViewModel : ViewModel(){
 
         gameList.addAll(
             listOf(
-                GameData(1, "턴제 RPG 게임 (임시 제목)", "Description 1", R.drawable.ic_launcher_foreground),
-                GameData(2, "벽돌 깨기 (임시 제목)", "Description 2",R.drawable.ic_launcher_foreground),
+                GameData(1, "턴제 RPG 게임", "Description 1", R.drawable.ic_launcher_foreground),
+                GameData(2, "Quiz Brick", "Quiz 벽돌의 정답을 맞춰",R.drawable.ic_launcher_foreground),
             )
         )
 
