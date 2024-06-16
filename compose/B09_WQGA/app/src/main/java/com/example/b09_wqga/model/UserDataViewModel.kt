@@ -22,7 +22,6 @@ class UserDataViewModel : ViewModel(){
     var vocList = mutableStateListOf<VocData>() // 단어장 목록
     var gameList = mutableStateListOf<GameData>() // 게임 목록
     var userID = mutableStateOf("") // 사용자 아이디 (navigation 용)
-//    var points = mutableStateOf(0) // 사용자의 포인트 수
     var lazyColumnVocList = mutableStateListOf<VocData>() // lazy column에 사용되는 단어장 목록
     var lazyColumnWordList = mutableStateListOf<WordData>() // lazy column에 사용되는 단어 목록
     var lazyColumnGameList = mutableStateListOf<GameData>() // lazy column에 사용되는 게임 목록
@@ -51,15 +50,6 @@ class UserDataViewModel : ViewModel(){
     var points by mutableStateOf(0)
     var selectedDate by mutableStateOf(currentDate)
     var lastAttendanceDate by mutableStateOf<LocalDate?>(null)
-
-    // 출석체크 상태 관련 함수들
-    fun getUserPoints() = points
-    fun getUserSelectedDate() = selectedDate
-    fun getUserLastAttendanceDate() = lastAttendanceDate
-    fun increasePoints() {
-        points += 10
-        lastAttendanceDate = currentDate
-    }
 
     // 임시로 데이터 초기화 (원래는 백엔드에서 유저 데이터를 가져온 다음 채워야 함)
     init {

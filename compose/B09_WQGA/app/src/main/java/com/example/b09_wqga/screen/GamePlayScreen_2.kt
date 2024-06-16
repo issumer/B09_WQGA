@@ -50,7 +50,6 @@ import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 // BB: Block Breaking
 data class BBBlock(val x: Float,
@@ -71,6 +70,7 @@ data class BBPaddle(var x: Float, val y: Float, val width: Float, val height: Fl
 @Composable
 fun GamePlayScreen_2(navController: NavHostController) {
     val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+    val gameDifficulty = userDataViewModel.gameDifficulty.value
     var canvasSize by remember { mutableStateOf(IntSize(0, 0)) }
 
     var blocks by remember {
@@ -78,7 +78,20 @@ fun GamePlayScreen_2(navController: NavHostController) {
     }
 
     var ball by remember {
-        mutableStateOf(BBBall(x = 0f, y = 0f, radius = 20f, vx = 6f, vy = 6f))
+        mutableStateOf(BBBall(x = 0f, y = 0f, radius = 20f,
+            vx = when(gameDifficulty) {
+                0 -> 6f
+                1 -> 8f
+                2 -> 10f
+                else -> 6f
+            },
+            vy = when(gameDifficulty) {
+                0 -> 6f
+                1 -> 8f
+                2 -> 10f
+                else -> 6f
+            })
+        )
     }
 
     var paddle by remember {
@@ -148,15 +161,44 @@ fun GamePlayScreen_2(navController: NavHostController) {
             val blockWidth = canvasSize.width / 5f
             val blockHeight = canvasSize.height / 20f
 
-            blocks = List(30) { index ->
+            val quizBlockCount = when (gameDifficulty) {
+                0 -> 6
+                1 -> 13
+                2 -> 20
+                else -> 10
+            }
+
+            blocks = List(when(gameDifficulty) {
+                0 -> 30
+                1 -> 35
+                2 -> 40
+                else -> 30
+            }) { index ->
                 BBBlock(
                     x = (index % 5) * blockWidth,
                     y = (index / 5) * blockHeight,
                     width = blockWidth,
                     height = blockHeight,
-                    quizBlock = Random.nextBoolean()
+                    quizBlock = false
                 )
             }
+            blocks = blocks.shuffled().mapIndexed { index, block ->
+                if (index < quizBlockCount) {
+                    block.copy(quizBlock = true)
+                } else {
+                    block
+                }
+            }
+
+//            blocks = List(40) { index ->
+//                BBBlock(
+//                    x = (index % 5) * blockWidth,
+//                    y = (index / 5) * blockHeight,
+//                    width = blockWidth,
+//                    height = blockHeight,
+//                    quizBlock = Random.nextBoolean()
+//                )
+//            }
 
             ball = ball.copy(
                 x = canvasSize.width / 2f,
@@ -379,7 +421,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
                 drawIntoCanvas {canvas ->
                     if(showLiveDecrease){
                         with(lifedecrease){
-                            translate(left = 360f, top= 450f){
+                            translate(left = 360f, top= 500f){
                                 draw(size = Size(100.dp.toPx(), 45.dp.toPx()))
                             }
                         }
@@ -387,7 +429,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
 
                     if(showWrong){
                         with(wrong){
-                            translate(left = 420f, top= 600f){
+                            translate(left = 420f, top= 650f){
                                 draw(size = Size(70.dp.toPx(), 70.dp.toPx()))
                             }
                         }
@@ -395,7 +437,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
 
                     if(showCorrect){
                         with(correct){
-                            translate(left = 420f, top= 450f){
+                            translate(left = 420f, top= 500f){
                                 draw(size = Size(70.dp.toPx(), 70.dp.toPx()))
                             }
                         }
@@ -494,6 +536,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
 
         if (showWordQuiz) {
             WordQuiz(userDataViewModel.currentQuiz[0], recomposeKey = recomposeKey, playerQuizPaused, onSubmit = {quizResult ->
