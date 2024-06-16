@@ -104,4 +104,20 @@ class UserRepository {
             false
         }
     }
+
+    suspend fun updateUserDate(userId: String, date: String): Boolean {
+        return try {
+            val snapshot = database.child(userId).get().await()
+            val user = snapshot.getValue(User::class.java)
+            if (user != null) {
+                database.child(userId).child("updateDate").setValue(date).await()
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error updating user date", e)
+            false
+        }
+    }
 }

@@ -60,19 +60,19 @@ fun MainScreen(navController: NavHostController) {
         val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
 
         // 초기 단어장 파일
-        val context = LocalContext.current
-        if(!userDataViewModel.initVocList.value) {
-            val scan = Scanner(context.resources.openRawResource(R.raw.words)) // 파일 접근
-            while(scan.hasNextLine()) {
-                val headword = scan.nextLine()
-                val meaning = scan.nextLine()
-                val firstVocData : VocData = userDataViewModel.vocList[0]
-                firstVocData.wordList.add(WordData(headword, "en", arrayOf<String>(meaning)))
-                firstVocData.wordCount++
-            }
-            scan.close()
-            userDataViewModel.initVocList.value = true
-        }
+//        val context = LocalContext.current
+//        if(!userDataViewModel.initVocList.value) {
+//            val scan = Scanner(context.resources.openRawResource(R.raw.words)) // 파일 접근
+//            while(scan.hasNextLine()) {
+//                val headword = scan.nextLine()
+//                val meaning = scan.nextLine()
+//                val firstVocData : VocData = userDataViewModel.vocList[0]
+//                firstVocData.wordList.add(WordData(headword, "en", arrayOf<String>(meaning)))
+//                firstVocData.wordCount++
+//            }
+//            scan.close()
+//            userDataViewModel.initVocList.value = true
+//        }
 
         Scaffold(
             bottomBar = {

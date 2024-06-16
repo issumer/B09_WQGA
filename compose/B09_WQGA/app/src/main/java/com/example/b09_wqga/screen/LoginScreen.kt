@@ -55,11 +55,14 @@ import com.example.b09_wqga.viewmodel.AttendanceViewModel
 import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
 import com.example.b09_wqga.viewmodelfactory.AttendanceViewModelFactory
 import com.example.b09_wqga.navigation.Routes
+import com.example.b09_wqga.repository.VocRepository
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.example.b09_wqga.ui.theme.nanumFontFamily
 import com.example.b09_wqga.ui.theme.pixelFont2
+import com.example.b09_wqga.viewmodel.VocViewModel
+import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,8 +70,10 @@ import com.example.b09_wqga.ui.theme.pixelFont2
 fun LoginScreen(navController: NavHostController) {
     val userRepository = UserRepository()
     val attendanceRepository = AttendanceRepository()
+    val vocRepository = VocRepository()
     val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
     val attendanceViewModel: AttendanceViewModel = viewModel(factory = AttendanceViewModelFactory(attendanceRepository))
+    val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
     val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
 
     var userID by rememberSaveable { mutableStateOf("") }
@@ -77,7 +82,10 @@ fun LoginScreen(navController: NavHostController) {
     var passwordVisibility by rememberSaveable { mutableStateOf(false) }
 
     val context = LocalContext.current
-
+    val dateFormat = "yyyyMMdd HH:mm"
+    val date = Date(System.currentTimeMillis())
+    val DateFormat = SimpleDateFormat(dateFormat)
+    val Date: String = DateFormat.format(date)
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -169,6 +177,13 @@ fun LoginScreen(navController: NavHostController) {
                             if (user != null) {
                                 userDataViewModel.showBottomNavigationBar.value = true
                                 userDataViewModel.userID.value = user.user_id.toString() // 임시
+
+                                // 처음 등록한 사용자만 새 기본 단어장을 부여받음
+                                if(user.enterDate == user.updateDate) {
+                                    vocViewModel.addDefaultVoc(user.user_id)
+                                }
+                                userViewModel.updateUserDate(user.user_id.toString(), Date) // 로그인한 유저의 날짜 업데이트
+
                                 navigateToMainScreen(navController, user.user_id.toString())
                             } else {
                                 showLoginFailDialog = true

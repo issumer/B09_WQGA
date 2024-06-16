@@ -53,11 +53,11 @@ class UserDataViewModel : ViewModel(){
 
     // 임시로 데이터 초기화 (원래는 백엔드에서 유저 데이터를 가져온 다음 채워야 함)
     init {
-        vocList.addAll(listOf(
-                VocData("Title 1", "Description 1", "en", doNotSave = true),
-                VocData("Title 2", "Description 2", "ja", doNotSave = true),
-            )
-        )
+//        vocList.addAll(listOf(
+//                VocData("Title 1", "Description 1", "en", doNotSave = true),
+//                VocData("Title 2", "Description 2", "ja", doNotSave = true),
+//            )
+//        )
 
         lazyColumnVocList.addAll(vocList)
 
