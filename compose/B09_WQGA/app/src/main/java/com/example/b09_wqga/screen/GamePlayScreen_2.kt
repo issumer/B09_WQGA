@@ -19,9 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,10 +40,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
@@ -94,7 +89,6 @@ fun GamePlayScreen_2(navController: NavHostController) {
     var lives by remember { mutableStateOf(3) } // 목숨 개수
     var gameOver by remember { mutableStateOf(false) } // 게임 종료 여부
     var gameWin by remember { mutableStateOf(false) } // 게임 승리 여부
-    var gamePaused by remember { mutableStateOf(false) } // 게임 잠깐 멈춤 여부 (메뉴 열기 등의 이유로)
     var playerQuizResult by remember { mutableStateOf(false) }
     var playerQuizPaused by remember { mutableStateOf(false) }
     var score by remember { mutableStateOf(0) }
@@ -198,7 +192,7 @@ fun GamePlayScreen_2(navController: NavHostController) {
 
     LaunchedEffect(Unit) {
         while (!gameOver) {
-            if (!showWordQuiz) {
+            if (!showWordQuiz && !showMenuDialog) {
                 delay(16L)
                 currentTime.value = System.currentTimeMillis()
 
@@ -291,7 +285,6 @@ fun GamePlayScreen_2(navController: NavHostController) {
                 }
             } else {
                 // 퀴즈가 활성화되면 게임 루프가 일시 중지됨
-//                delay(Long.MAX_VALUE)
                 delay(30L)
             }
         }
@@ -302,17 +295,6 @@ fun GamePlayScreen_2(navController: NavHostController) {
         } else if (blocks.all { it.isBroken == 0 }) {
             gameWin = true
         }
-//        GameOverDialog(gameWin = gameWin,onDismiss = { showMenuDialog = false },
-//            onExitGame = {
-//                uiViewModel.showBottomNavigationBar.value = true
-//                navController.navigate(Routes.GameListScreen.route) {
-//                    popUpTo(Routes.GamePlayScreen_2.route) {
-//                        inclusive = true
-//                    }
-//                    launchSingleTop = true
-//                }
-//            }
-//        )
     }
 
     Column(modifier = Modifier
@@ -522,13 +504,10 @@ fun GamePlayScreen_2(navController: NavHostController) {
                     coroutineScope.launch {
                         quizFinished()
                     }
-                    //showWordQuiz = false // 퀴즈 표시 비활성화
-                    //userDataViewModel.moveToNextQuiz()
                 } else {
                     showWrong = true
                     wrongCount += 1
                     lives -= 1 //목숨 하나 까기
-                    //showWordQuiz = false // 퀴즈 표시 비활성화
                     if(lives == 0) {
                         gameOver = true
                     } else {
@@ -560,25 +539,5 @@ fun GamePlayScreen_2(navController: NavHostController) {
             )
         }
     }
-}
-
-@Composable
-fun GameOverDialog(gameWin: Boolean, onDismiss: () -> Unit, onExitGame: () -> Unit) {
-    AlertDialog(onDismissRequest = onDismiss,
-        title = { Text(
-            text = if (gameWin) "Victory~!~!" else "Defeat..",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )},
-        text = {
-            Button(onClick = onExitGame) {
-                Text("Menu")
-            }
-        },
-        confirmButton = {
-
-        }
-    )
 }
 

@@ -4,7 +4,6 @@
 
 package com.example.b09_wqga.screen
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +23,6 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -46,11 +44,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.component.SearchBar
 import com.example.b09_wqga.model.GameData
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.model.VocData
 import com.example.b09_wqga.navigation.Routes
+import com.example.b09_wqga.ui.theme.nanumFontFamily
+import com.example.b09_wqga.ui.theme.pixelFont1
+import com.example.b09_wqga.ui.theme.pixelFont2
 
 
 @Composable
@@ -83,6 +85,7 @@ fun GameListScreen(navController: NavHostController) {
             Text(
                 text = "Recently Played Game",
                 fontSize = 20.sp,
+                fontFamily = pixelFont1,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -144,6 +147,7 @@ fun GameItem(gameData: GameData, onStartClick: () -> Unit) {
         Text(
             text = gameData.title,
             fontSize = 20.sp,
+            fontFamily = pixelFont2,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)
         )
@@ -159,6 +163,8 @@ fun GameItem(gameData: GameData, onStartClick: () -> Unit) {
                 Text(
                     text = gameData.description,
                     fontSize = 16.sp,
+                    fontFamily = nanumFontFamily,
+                    fontWeight = FontWeight.Normal,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -180,13 +186,13 @@ fun GameItem(gameData: GameData, onStartClick: () -> Unit) {
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = "${gameData.userWrong}", fontSize = 16.sp) // Wrong
 
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(70.dp))
 
-                    Button(onClick = {
-                        onStartClick()
-                    }) {
-                        Text("Play")
-                    }
+                    Button_WQGA(width = 80, height = 40, text = "Play",
+                        onClickLabel = {
+                        onStartClick() },
+                        enabled = true
+                    )
                 }
             }
         }
@@ -214,18 +220,16 @@ fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: 
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Game Setting", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "Game Setting", fontSize = 30.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.ExtraBold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Button(onClick = onDismiss) {
-                    Text("Back")
-                }
+                Button_WQGA(width = 80, height = 40, text = "Back", onClickLabel = onDismiss)
                 Spacer(modifier = Modifier.height(16.dp))
                 Box {
                     OutlinedTextField(
                         value = selectedVocTitle,
                         onValueChange = {},
-                        label = { Text("Select Voc") },
+                        label = { Text("Select Voc", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) },
                         modifier = Modifier.fillMaxWidth(),
                         readOnly = true,
                         trailingIcon = {
@@ -252,7 +256,7 @@ fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: 
                     OutlinedTextField(
                         value = selectedQuizStyleName,
                         onValueChange = {},
-                        label = { Text("Select Quiz Style") },
+                        label = { Text("Select Quiz Style", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) },
                         modifier = Modifier.fillMaxWidth(),
                         readOnly = true,
                         trailingIcon = {
@@ -270,7 +274,7 @@ fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: 
                                 selectedQuizStyle = index
                                 selectedQuizStyleName = style
                                 expandedQuizStyle = false
-                            }, text = { Text(text = style) })
+                            }, text = { Text(text = style, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) })
                         }
                     }
                 }
@@ -279,7 +283,7 @@ fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: 
                     OutlinedTextField(
                         value = selectedDifficultyName,
                         onValueChange = {},
-                        label = { Text("Select Difficulty") },
+                        label = { Text("Select Difficulty", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) },
                         modifier = Modifier.fillMaxWidth(),
                         readOnly = true,
                         trailingIcon = {
@@ -297,7 +301,7 @@ fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: 
                                 selectedDifficulty = index
                                 selectedDifficultyName = difficulty
                                 expandedDifficulty = false
-                            }, text = { Text(text = difficulty) })
+                            }, text = { Text(text = difficulty, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) })
                         }
                     }
                 }
@@ -305,7 +309,7 @@ fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: 
             }
         },
         confirmButton = {
-            Button(onClick = {
+            Button_WQGA(width = 80, height = 40, text = "Play", onClickLabel = {
                 var canPlay = true
                 if(selectedVocUUID.isEmpty()) {
                     warningMessage = "Select Voc를 채워주세요!"
@@ -323,9 +327,7 @@ fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: 
                 if(canPlay) {
                     onPlay(selectedVocUUID, selectedQuizStyle, selectedDifficulty)
                 }
-            }) {
-                Text("Play")
-            }
+            })
         }
     )
 }
