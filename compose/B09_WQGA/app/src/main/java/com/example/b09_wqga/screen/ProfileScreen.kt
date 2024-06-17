@@ -129,24 +129,24 @@ fun ProfileScreen(userId: String, userViewModel: UserViewModel, navController: N
         Spacer(modifier = Modifier.height(16.dp))
 
         // Settings
-        Text(
-            text = "Settings",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        LazyColumn {
-            items(listOf("Setting 1", "Setting 2", "Setting 3", "Setting 4")) { setting ->
-                Text(
-                    text = setting,
-                    fontSize = 18.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                        .padding(start = 8.dp)
-                )
-            }
-        }
+//        Text(
+//            text = "Settings",
+//            fontSize = 24.sp,
+//            fontWeight = FontWeight.Bold,
+//            modifier = Modifier.padding(bottom = 16.dp)
+//        )
+//
+//        LazyColumn {
+//            items(listOf("Setting 1", "Setting 2", "Setting 3", "Setting 4")) { setting ->
+//                Text(
+//                    text = setting,
+//                    fontSize = 18.sp,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(vertical = 8.dp)
+//                        .padding(start = 8.dp)
+//                )
+//            }
+//        }
     }
 }
