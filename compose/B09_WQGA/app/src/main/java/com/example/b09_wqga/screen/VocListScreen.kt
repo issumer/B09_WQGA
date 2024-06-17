@@ -1,9 +1,11 @@
 package com.example.b09_wqga.screen
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -13,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -20,12 +23,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.component.SearchBar
 import com.example.b09_wqga.database.Voc
 import com.example.b09_wqga.navigation.Routes
 import com.example.b09_wqga.viewmodel.VocViewModel
 import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 import com.example.b09_wqga.repository.VocRepository
+import com.example.b09_wqga.ui.theme.pixelFont1
+import com.example.b09_wqga.ui.theme.pixelFont2
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
@@ -52,20 +58,23 @@ fun VocListScreen(navController: NavHostController, userId: Int) {
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             SearchBar(
                 searchText = vocViewModel.searchText.value,
                 onSearchTextChanged = { vocViewModel.searchText.value = it }
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Button(onClick = {
-                if (vocViewModel.isVocListFull()) {
-                    showVocAddFailDialog = true
-                } else {
-                    showVocAddDialog = true
-                }
-            }) {
-                Text("Add") // Add Voc
-            }
+            Button_WQGA(width = 80, height = 40, text = "Add",
+                onClickLabel = {
+                    if (vocViewModel.isVocListFull()) {
+                        showVocAddFailDialog = true
+                    } else {
+                        showVocAddDialog = true
+                    }
+                },
+                enabled = true
+            )
+
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -141,64 +150,74 @@ fun VocListScreen(navController: NavHostController, userId: Int) {
 
 @Composable
 fun VocItem(voc: Voc, onEditClick: () -> Unit, onEnterClick: () -> Unit) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(8.dp)) {
-        Text(
-            text = voc.title,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
-
-        Text(
-            text = voc.description,
-            fontSize = 16.sp,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
+    Box(
+        Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .fillMaxWidth()
+            .height(180.dp)
+            .background(Color.LightGray)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp, bottom = 10.dp, start = 10.dp, end = 10.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Abc,
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.Blue,
-                    contentDescription = "Icon")
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Count: ${voc.word_count}")
+            Text(
+                text = voc.title,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = pixelFont2,
+                modifier = Modifier.padding(bottom = 15.dp)
+            )
 
-                Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = voc.description,
+                fontSize = 16.sp,
+                maxLines = 2,
+                fontFamily = pixelFont2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
 
-                Icon(
-                    imageVector = Icons.Default.Language,
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.Blue,
-                    contentDescription = "Icon")
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = voc.lang)
-            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Abc,
+                        modifier = Modifier.size(24.dp),
+                        contentDescription = "Icon"
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "Count: ${voc.word_count}")
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Button(onClick = onEditClick) {
-                    Text("Edit") // Edit Voc
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Icon(
+                        imageVector = Icons.Default.Language,
+                        modifier = Modifier.size(24.dp),
+                        contentDescription = "Icon"
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = voc.lang)
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Button(onClick = onEnterClick) {
-                    Text("Enter") // Enter Voc
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Button_WQGA(width = 80, height = 40, text = "Edit",
+                        onClickLabel = onEditClick,
+                        enabled = true
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button_WQGA(width = 80, height = 40, text = "Enter",
+                        onClickLabel = onEnterClick,
+                        enabled = true
+                    )
                 }
             }
         }
     }
 }
-
 @Composable
 fun VocAddDialog(onDismiss: () -> Unit, onAddVoc: (String, String, String) -> Unit) {
     var title by rememberSaveable {
@@ -224,7 +243,7 @@ fun VocAddDialog(onDismiss: () -> Unit, onAddVoc: (String, String, String) -> Un
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Add Vocabulary", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "Add Vocabulary", fontSize = 20.sp, fontFamily = pixelFont1, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
@@ -274,21 +293,23 @@ fun VocAddDialog(onDismiss: () -> Unit, onAddVoc: (String, String, String) -> Un
                 Text(text = warningMessage)
             }
         },
+
         confirmButton = {
-            Button(onClick = {
-                if (title.isEmpty()) {
-                    warningMessage = "Title을 채워주세요!"
-                } else if (description.isEmpty()) {
-                    warningMessage = "Description을 채워주세요!"
-                } else if (selectedLanguageName.isEmpty()) {
-                    warningMessage = "Language를 선택해주세요!"
-                } else {
-                    warningMessage = ""
-                    onAddVoc(title, description, selectedLanguageName)
-                }
-            }) {
-                Text("Add Voc")
-            }
+            Button_WQGA(width = 80, height = 40, text = "Add",
+                onClickLabel = {
+                    if (title.isEmpty()) {
+                        warningMessage = "Title을 채워주세요!"
+                    } else if (description.isEmpty()) {
+                        warningMessage = "Description을 채워주세요!"
+                    } else if (selectedLanguageName.isEmpty()) {
+                        warningMessage = "Language를 선택해주세요!"
+                    } else {
+                        warningMessage = ""
+                        onAddVoc(title, description, selectedLanguageName)
+                    }
+                },
+                enabled = true
+            )
         }
     )
 }
@@ -307,7 +328,7 @@ fun VocEditDialog(onDismiss: () -> Unit, currentEditVoc: Voc, onSaveVoc: (String
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Edit Vocabulary", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "Edit Vocabulary",fontFamily = pixelFont1, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
@@ -328,22 +349,24 @@ fun VocEditDialog(onDismiss: () -> Unit, currentEditVoc: Voc, onSaveVoc: (String
         },
         confirmButton = {
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Button(onClick = onDeleteVoc) {
-                    Text("Delete Voc")
-                }
-                Button(onClick = {
-                    if (title.isEmpty()) {
-                        warningMessage = "Title을 채워주세요!"
-                    } else if (description.isEmpty()) {
-                        warningMessage = "Description을 채워주세요!"
-                    } else {
-                        warningMessage = ""
-                        onSaveVoc(title, description)
-                    }
 
-                }) {
-                    Text("Save Voc")
-                }
+                Button_WQGA(width = 80, height = 40, text = "Delete",
+                    onClickLabel = onDeleteVoc,
+                    enabled = true
+                )
+                Button_WQGA(width = 80, height = 40, text = "Save",
+                    onClickLabel = {
+                        if (title.isEmpty()) {
+                            warningMessage = "Title을 채워주세요!"
+                        } else if (description.isEmpty()) {
+                            warningMessage = "Description을 채워주세요!"
+                        } else {
+                            warningMessage = ""
+                            onSaveVoc(title, description)
+                        }
+                    },
+                    enabled = true
+                )
             }
         }
     )
@@ -353,7 +376,7 @@ fun VocEditDialog(onDismiss: () -> Unit, currentEditVoc: Voc, onSaveVoc: (String
 fun VocAddFailDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "단어장 개수 제한", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "단어장 개수 제한",fontFamily = pixelFont1, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(text = "이 앱은 평가용 앱이므로 단어장 개수에 제한이 있습니다. 양해 부탁드립니다!")
