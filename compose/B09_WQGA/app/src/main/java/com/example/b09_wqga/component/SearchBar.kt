@@ -76,3 +76,34 @@ fun SearchBar(searchText: String, onSearchTextChanged: (String) -> Unit) {
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchBar2(searchText: String, onSearchTextChanged: (String) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(modifier = Modifier.width(8.dp))
+
+        OutlinedTextField(
+            value = searchText,
+            placeholder = {
+                Text(text = "Enter PW", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+            },
+            shape = RoundedCornerShape(25.dp),
+            leadingIcon = { Icon(painter = painterResource(R.drawable.search), contentDescription = null,
+                modifier = Modifier.size(25.dp)) },
+            onValueChange = onSearchTextChanged,
+            modifier = Modifier.weight(1f),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Search,
+                keyboardType = KeyboardType.Text
+            ),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color.Black,
+                unfocusedBorderColor = Color.Transparent
+            )
+        )
+    }
+}
