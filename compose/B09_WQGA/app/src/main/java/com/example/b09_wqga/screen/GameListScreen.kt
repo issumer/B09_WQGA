@@ -46,6 +46,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.component.SearchBar
+import com.example.b09_wqga.component.SearchBar2
 import com.example.b09_wqga.model.GameData
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.model.VocData
@@ -74,10 +75,12 @@ fun GameListScreen(navController: NavHostController) {
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp)) {
-        SearchBar(
-            searchText = userDataViewModel.gameListSearchText.value,
-            onSearchTextChanged = { userDataViewModel.gameListSearchText.value = it; userDataViewModel.updateLazyColumnGameList() }
-        )
+
+            SearchBar2(
+                searchText = userDataViewModel.gameListSearchText.value,
+                onSearchTextChanged = { userDataViewModel.gameListSearchText.value = it; userDataViewModel.updateLazyColumnGameList() },
+            )
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -163,7 +166,7 @@ fun GameItem(gameData: GameData, onStartClick: () -> Unit) {
                 Text(
                     text = gameData.description,
                     fontSize = 16.sp,
-                    fontFamily = nanumFontFamily,
+                    fontFamily = pixelFont2,
                     fontWeight = FontWeight.Normal,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
