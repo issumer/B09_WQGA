@@ -5,6 +5,8 @@
 package com.example.b09_wqga.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.b09_wqga.R
 import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.component.SearchBar
 import com.example.b09_wqga.component.SearchBar2
@@ -190,13 +193,16 @@ fun GameItem(gameData: GameData, onStartClick: () -> Unit) {
                     Text(text = "${gameData.userWrong}", fontSize = 16.sp) // Wrong
 
                     Spacer(modifier = Modifier.width(70.dp))
-
-                    Button_WQGA(width = 80, height = 40, text = "Play",
-                        onClickLabel = {
-                        onStartClick() },
-                        enabled = true
-                    )
+                    
                 }
+            }
+            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                Image(painter = painterResource(id = R.drawable.playb),
+                    contentDescription = null,
+                    modifier = Modifier.size(width = 80.dp, height = 40.dp)
+                        .clickable { onStartClick() }
+                )
+
             }
         }
     }
