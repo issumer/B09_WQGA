@@ -21,11 +21,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.component.SearchBar
 import com.example.b09_wqga.database.Word
 import com.example.b09_wqga.viewmodel.VocViewModel
 import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 import com.example.b09_wqga.repository.VocRepository
+import com.example.b09_wqga.ui.theme.pixelFont1
+import com.example.b09_wqga.ui.theme.pixelFont2
 import java.util.Locale
 
 @SuppressLint("StateFlowValueCalledInComposition")
@@ -102,15 +105,16 @@ fun WordListScreen(navController: NavHostController, vocId: Int) {
             )
             Spacer(modifier = Modifier.width(8.dp))
 
-            Button(onClick = {
-                if (vocViewModel.checkWordFull()) {
-                    showWordAddFailDialog = true
-                } else {
-                    showWordAddDialog = true
-                }
-            }) {
-                Text("Add") // Add Word
-            }
+            Button_WQGA(width = 80, height = 40, text = "Add",
+                onClickLabel = {
+                    if (vocViewModel.checkWordFull()) {
+                        showWordAddFailDialog = true
+                    } else {
+                        showWordAddDialog = true
+                    }
+                },
+                enabled = true
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -203,13 +207,14 @@ fun WordItem(word: Word, onTTSClick: () -> Unit, onEditClick: () -> Unit) {
         Text(
             text = word.headword,
             fontSize = 20.sp,
+            fontFamily = pixelFont2,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
         word.meanings.forEach { meaning ->
             if (meaning.isNotEmpty()) {
-                Text(text = meaning, fontSize = 16.sp, modifier = Modifier.padding(bottom = 4.dp))
+                Text(text = meaning, fontSize = 16.sp, fontFamily = pixelFont2, modifier = Modifier.padding(bottom = 4.dp))
             }
         }
 
@@ -229,19 +234,22 @@ fun WordItem(word: Word, onTTSClick: () -> Unit, onEditClick: () -> Unit) {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Button(onClick = {
-                    onTTSClick()
-                }) {
-                    Text("TTS")
-                }
+                Button_WQGA(width = 80, height = 40, text = "TTS",
+                    onClickLabel = {
+                        onTTSClick()
+                    },
+                    enabled = true
+                )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Button(onClick = {
-                    onEditClick()
-                }) {
-                    Text("Edit")
-                }
+
+                Button_WQGA(width = 80, height = 40, text = "Edit",
+                    onClickLabel = {
+                        onEditClick()
+                    },
+                    enabled = true
+                )
             }
         }
     }
@@ -294,12 +302,14 @@ fun WordAddDialog(onDismiss: () -> Unit, onAddWord: (String, List<String>) -> Un
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Add Word", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "Add Word",fontFamily = pixelFont1, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Button(onClick = onDismiss) {
-                    Text("Back")
-                }
+                Button_WQGA(width = 80, height = 40, text = "Back",
+                    onClickLabel = onDismiss,
+                    enabled = true
+                )
+
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
@@ -323,30 +333,31 @@ fun WordAddDialog(onDismiss: () -> Unit, onAddWord: (String, List<String>) -> Un
             }
         },
         confirmButton = {
-            Button(onClick = {
-                var canAddWord = true
-                if (headword.isEmpty()) {
-                    warningMessage = "Headword를 채워주세요!"
-                    canAddWord = false
-                }
+            Button_WQGA(width = 80, height = 40, text = "Add",
+                onClickLabel = {
+                    var canAddWord = true
+                    if (headword.isEmpty()) {
+                        warningMessage = "Headword를 채워주세요!"
+                        canAddWord = false
+                    }
 
-                var everyMeaningEmpty = true
-                meanings.forEach { meaning ->
-                    if (meaning.isNotEmpty()) everyMeaningEmpty = false
-                }
+                    var everyMeaningEmpty = true
+                    meanings.forEach { meaning ->
+                        if (meaning.isNotEmpty()) everyMeaningEmpty = false
+                    }
 
-                if (everyMeaningEmpty && canAddWord) {
-                    warningMessage = "Meaning을 채워주세요!"
-                    canAddWord = false
-                }
+                    if (everyMeaningEmpty && canAddWord) {
+                        warningMessage = "Meaning을 채워주세요!"
+                        canAddWord = false
+                    }
 
-                if (canAddWord) {
-                    onAddWord(headword, meanings.toList())
-                }
+                    if (canAddWord) {
+                        onAddWord(headword, meanings.toList())
+                    }
 
-            }) {
-                Text("Add Word")
-            }
+                },
+                enabled = true
+            )
         }
     )
 }
@@ -365,12 +376,13 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (Strin
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Edit Word", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "Edit Word",fontFamily = pixelFont1, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Button(onClick = onDismiss) {
-                    Text("Back")
-                }
+                Button_WQGA(width = 80, height = 40, text = "Back",
+                    onClickLabel = onDismiss,
+                    enabled = true
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
@@ -399,27 +411,29 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (Strin
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Button(onClick = onDeleteWord) {
-                    Text("Delete Word")
-                }
-                Button(onClick = {
-                    var canSaveWord = true
-                    var everyMeaningEmpty = true
-                    meanings.forEach { meaning ->
-                        if (meaning.isNotEmpty()) everyMeaningEmpty = false
-                    }
+                Button_WQGA(width = 80, height = 40, text = "Delete",
+                    onClickLabel = onDeleteWord,
+                    enabled = true
+                )
+                Button_WQGA(width = 80, height = 40, text = "Save",
+                    onClickLabel = {
+                        var canSaveWord = true
+                        var everyMeaningEmpty = true
+                        meanings.forEach { meaning ->
+                            if (meaning.isNotEmpty()) everyMeaningEmpty = false
+                        }
 
-                    if (everyMeaningEmpty) {
-                        warningMessage = "Meaning을 채워주세요!"
-                        canSaveWord = false
-                    }
+                        if (everyMeaningEmpty) {
+                            warningMessage = "Meaning을 채워주세요!"
+                            canSaveWord = false
+                        }
 
-                    if (canSaveWord) {
-                        onSaveWord(headword, meanings.toList())
-                    }
-                }) {
-                    Text("Save Word")
-                }
+                        if (canSaveWord) {
+                            onSaveWord(headword, meanings.toList())
+                        }
+                    },
+                    enabled = true
+                )
             }
         }
     )
@@ -429,16 +443,17 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (Strin
 fun WordAddFailDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "단어 개수 제한", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "단어 개수 제한", fontSize = 20.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text(text = "이 앱은 평가용 앱이므로 단어 개수에 제한이 있습니다. 양해 부탁드립니다!")
+                Text(text = "이 앱은 평가용 앱이므로 단어 개수에 제한이 있습니다. 양해 부탁드립니다!", fontFamily = pixelFont2)
             }
         },
         confirmButton = {
-            Button(onClick = onDismiss) {
-                Text("확인")
-            }
+            Button_WQGA(width = 80, height = 40, text = "OK",
+                onClickLabel = onDismiss,
+                enabled = true
+            )
         }
     )
 }
