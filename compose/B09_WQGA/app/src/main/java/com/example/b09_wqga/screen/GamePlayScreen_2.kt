@@ -4,7 +4,6 @@
 
 package com.example.b09_wqga.screen
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,7 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,9 +48,6 @@ import com.example.b09_wqga.R
 import com.example.b09_wqga.component.WordQuiz
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
-import com.example.b09_wqga.repository.VocRepository
-import com.example.b09_wqga.viewmodel.VocViewModel
-import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -75,9 +70,6 @@ data class BBPaddle(var x: Float, val y: Float, val width: Float, val height: Fl
 @Composable
 fun GamePlayScreen_2(navController: NavHostController) {
     val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
-    val vocRepository = VocRepository()
-    val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
-
     val gameDifficulty = userDataViewModel.gameDifficulty.value
     var canvasSize by remember { mutableStateOf(IntSize(0, 0)) }
 
@@ -545,49 +537,30 @@ fun GamePlayScreen_2(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        val currentQuiz by vocViewModel.currentQuiz.collectAsState()
-        Log.d("vocViewModel.currentQuiz", currentQuiz.toString())
-        val uuid = vocViewModel.gameVocUUID.toString()
-        Log.d("uuid", uuid)
-//        val quizStyle = vocViewModel.gameQuizStyle?.toIntOrNull() ?: 0
-
-        LaunchedEffect(currentQuiz) {
-            if (currentQuiz == null) {
-                // 데이터 로드가 완료되지 않았을 때 로드 시작
-                vocViewModel.gameInit("122b8e43-0bd0-4b64-a037-01b372c2fc43", 0, -1, "")
-            }
-        }
 
         if (showWordQuiz) {
-            WordQuiz(
-                quiz = currentQuiz!![0],
-                recomposeKey = recomposeKey,
-                playerQuizPaused,
-                onSubmit = { quizResult ->
-                    playerQuizResult = quizResult
-                    if (playerQuizResult) {
-                        showCorrect = true
-                        rightCount += 1
+            WordQuiz(userDataViewModel.currentQuiz[0], recomposeKey = recomposeKey, playerQuizPaused, onSubmit = {quizResult ->
+                playerQuizResult = quizResult
+                if(playerQuizResult) {
+                    showCorrect = true
+                    rightCount += 1
+                    coroutineScope.launch {
+                        quizFinished()
+                    }
+                } else {
+                    showWrong = true
+                    wrongCount += 1
+                    lives -= 1 //목숨 하나 까기
+                    if(lives == 0) {
+                        gameOver = true
+                    } else {
                         coroutineScope.launch {
                             quizFinished()
                         }
-                    } else {
-                        showWrong = true
-                        wrongCount += 1
-                        lives -= 1 //목숨 하나 까기
-                        if (lives == 0) {
-                            gameOver = true
-                        } else {
-                            coroutineScope.launch {
-                                quizFinished()
-                            }
-                        }
                     }
                 }
-            )
+            })
         }
-
-
 
         if(showMenuDialog) {
             GameMenuDialog(onDismiss = {

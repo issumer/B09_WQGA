@@ -4,7 +4,6 @@
 
 package com.example.b09_wqga.screen
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +32,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,43 +49,28 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
 import com.example.b09_wqga.component.Button_WQGA
+import com.example.b09_wqga.component.SearchBar
 import com.example.b09_wqga.component.SearchBar2
 import com.example.b09_wqga.database.Voc
 import com.example.b09_wqga.model.GameData
 import com.example.b09_wqga.model.UserDataViewModel
 import com.example.b09_wqga.navigation.Routes
-import com.example.b09_wqga.repository.UserRepository
 import com.example.b09_wqga.repository.VocRepository
 import com.example.b09_wqga.ui.theme.nanumFontFamily
 import com.example.b09_wqga.ui.theme.pixelFont1
 import com.example.b09_wqga.ui.theme.pixelFont2
-import com.example.b09_wqga.viewmodel.UserViewModel
 import com.example.b09_wqga.viewmodel.VocViewModel
-import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
 import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 
 
 @Composable
-fun GameListScreen(userId: String, navController: NavHostController) {
+fun GameListScreen(navController: NavHostController) {
     val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
-
-    var userRepository = UserRepository()
-    var userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
     val vocRepository = VocRepository()
     val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
-    val vocList by vocViewModel.vocList.collectAsState(initial = emptyList())
-
-    LaunchedEffect(userId) {
-        userViewModel.fetchName(userId)
-        vocViewModel.loadVocs(userId.toInt())
-
-        val userIdInt = userId.toIntOrNull()
-        if (userIdInt != null) {
-            vocViewModel.loadVocs(userIdInt)  // Correct method call
-        }
-    }
 
     val lazyColumnGameList = userDataViewModel.lazyColumnGameList
+    val vocList by vocViewModel.vocList.collectAsState(initial = emptyList())
 
     val gameData: GameData? = userDataViewModel.getRecentlyPlayedGame() // 최근에 플레이한 게임
 
@@ -103,10 +86,10 @@ fun GameListScreen(userId: String, navController: NavHostController) {
         .fillMaxSize()
         .padding(16.dp)) {
 
-        SearchBar2(
-            searchText = userDataViewModel.gameListSearchText.value,
-            onSearchTextChanged = { userDataViewModel.gameListSearchText.value = it; userDataViewModel.updateLazyColumnGameList() },
-        )
+            SearchBar2(
+                searchText = userDataViewModel.gameListSearchText.value,
+                onSearchTextChanged = { userDataViewModel.gameListSearchText.value = it; userDataViewModel.updateLazyColumnGameList() },
+            )
 
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -139,12 +122,12 @@ fun GameListScreen(userId: String, navController: NavHostController) {
 
         if(showGameStartDialog) {
             GameStartDialog(
-                vocDataList = vocList,
+                vocList = vocList,
                 onDismiss = {showGameStartDialog = false},
-                onPlay = {voc, quizStyle, difficulty, userId ->
+                onPlay = {voc, quizStyle, difficulty ->
                     showGameStartDialog = false
                     userDataViewModel.showBottomNavigationBar.value = false
-                    vocViewModel.gameInit(voc, quizStyle, difficulty, userId)
+                    userDataViewModel.gameInit(voc, quizStyle, difficulty)
                     when(currentPlayGameId) {
                         1 -> {
                             navController.navigate(Routes.GamePlayScreen_1.route) {
@@ -155,9 +138,7 @@ fun GameListScreen(userId: String, navController: NavHostController) {
                             }
                         }
                         2 -> {
-                            navController.navigate(Routes.GamePlayScreen_2.route)
-//                            navController.navigate("${Routes.GamePlayScreen_2.route}/${voc}/${quizStyle}/${difficulty}/${userId}")
-                            {
+                            navController.navigate(Routes.GamePlayScreen_2.route) {
                                 popUpTo(navController.graph.id) {// 백스택 모두 지우기
                                     inclusive = true
                                 }
@@ -165,8 +146,7 @@ fun GameListScreen(userId: String, navController: NavHostController) {
                             }
                         }
                     }
-                },
-                userId = userId
+                }
             )
         }
     }
@@ -220,14 +200,13 @@ fun GameItem(gameData: GameData, onStartClick: () -> Unit) {
                     Text(text = "${gameData.userWrong}", fontSize = 16.sp) // Wrong
 
                     Spacer(modifier = Modifier.width(70.dp))
-
+                    
                 }
             }
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                 Image(painter = painterResource(id = R.drawable.playb),
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(width = 80.dp, height = 40.dp)
+                    modifier = Modifier.size(width = 80.dp, height = 40.dp)
                         .clickable { onStartClick() }
                 )
 
@@ -236,9 +215,12 @@ fun GameItem(gameData: GameData, onStartClick: () -> Unit) {
     }
 }
 
+// 아직 로직 미구현
 @Composable
-fun GameStartDialog(vocDataList : List<Voc>, onDismiss: () -> Unit, onPlay: (String, Int, Int, String) -> Unit, userId: String) {
-    var selectedVocUUID by remember { mutableStateOf("") }
+fun GameStartDialog(vocList : List<Voc>, onDismiss: () -> Unit, onPlay: (Voc, Int, Int) -> Unit) {
+    val vocRepository = VocRepository()
+    val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
+
     var selectedVocTitle by remember { mutableStateOf("") }
     var selectedVoc : Voc? = null
     var selectedQuizStyle by remember { mutableStateOf(-1) }
@@ -279,12 +261,12 @@ fun GameStartDialog(vocDataList : List<Voc>, onDismiss: () -> Unit, onPlay: (Str
                         expanded = expandedVoc,
                         onDismissRequest = { expandedVoc = false }
                     ) {
-                        vocDataList.forEach { vocData ->
+                        vocList.forEach { voc ->
                             DropdownMenuItem(onClick = {
-                                selectedVocUUID = vocData.uuid
-                                selectedVocTitle = vocData.title
+                                selectedVoc = vocViewModel.getVocById(voc.voc_id)
+                                selectedVocTitle = voc.title
                                 expandedVoc = false
-                            }, text = { Text(text = vocData.title) })
+                            }, text = { Text(text = voc.title) })
                         }
                     }
                 }
@@ -362,7 +344,7 @@ fun GameStartDialog(vocDataList : List<Voc>, onDismiss: () -> Unit, onPlay: (Str
                 }
 
                 if(canPlay) {
-                    onPlay(selectedVocUUID, selectedQuizStyle, selectedDifficulty, userId)
+                    onPlay(selectedVoc!!, selectedQuizStyle, selectedDifficulty)
                 }
             })
         }

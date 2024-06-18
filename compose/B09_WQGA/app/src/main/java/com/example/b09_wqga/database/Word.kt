@@ -6,8 +6,8 @@ data class Word(
     val headword: String = "",
     val lang: String = "",
     val meanings: List<String> = emptyList(),
-    var right: Int = 0,
-    var wrong: Int = 0,
+    val right: Int = 0,
+    val wrong: Int = 0,
     val create_date: String = ""
 ) {
     // 기본 생성자 추가
