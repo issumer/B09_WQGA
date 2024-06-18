@@ -9,14 +9,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.b09_wqga.database.Voc
 import com.example.b09_wqga.database.Word
 import java.util.Arrays
 import java.util.Date
 import java.util.Locale
-import java.util.UUID
 import kotlin.random.Random
 
 // 단어 객체

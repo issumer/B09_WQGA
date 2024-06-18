@@ -7,7 +7,6 @@ import com.example.b09_wqga.repository.GameRepository
 import kotlinx.coroutines.launch
 
 class GameViewModel(private val gameRepository: GameRepository) : ViewModel() {
-
     fun addGame(game: Game, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             val result = gameRepository.addGame(game)
