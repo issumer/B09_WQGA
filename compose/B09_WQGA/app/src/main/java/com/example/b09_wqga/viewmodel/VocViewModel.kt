@@ -1,16 +1,13 @@
 package com.example.b09_wqga.viewmodel
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.b09_wqga.database.Quiz
 import com.example.b09_wqga.database.Voc
 import com.example.b09_wqga.database.Word
-import com.example.b09_wqga.model.Quiz
 import com.example.b09_wqga.repository.VocRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -29,62 +26,7 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
     val sortOrder = MutableStateFlow("Ascending")
     val sortOptions = listOf("Headword", "Meaning", "Right", "Wrong")
 
-    var gameVocUUID = mutableStateOf("") // 게임 시작 화면에서 선택한 단어장 UUID
-    var gameQuizStyle = mutableStateOf(-1) // 게임 시작 화면에서 퀴즈 방식
-    var gameDifficulty = mutableStateOf(-1) // 게임 시작 화면에서 난이도
-
-//    var currentQuiz = mutableStateListOf<Quiz>()
-    private val _currentQuiz = MutableStateFlow<List<Quiz>?>(null)
-    val currentQuiz: StateFlow<List<Quiz>?> = _currentQuiz
-
-    fun gameInit(vocDataUUID: String, quizStyle: Int, difficulty: Int, userId: String) {
-        gameVocUUID.value = vocDataUUID
-        gameQuizStyle.value = quizStyle
-//        gameDifficulty.value = difficulty
-
-        viewModelScope.launch {
-            val vocData = vocRepository.getVoc(vocDataUUID)
-
-            Log.d("vocData", vocData.toString())
-            Log.d("vocDataUUID", vocDataUUID)
-
-            if (vocData != null) {
-                _currentQuiz.value = listOf(Quiz(vocData, quizStyle = quizStyle))
-                Log.d("_currentQuiz", _currentQuiz.value.toString())
-            } else {
-                _currentQuiz.value = emptyList()
-            }
-        }
-    }
-
-
-//    fun gameInit(vocDataUUID : String, quizStyle : Int, difficulty : Int, userId: String) {
-//        gameVocUUID.value = vocDataUUID
-//        gameQuizStyle.value = quizStyle
-//        gameDifficulty.value = difficulty
-//
-//        viewModelScope.launch {
-//            val vocData = vocRepository.getVoc(gameVocUUID.value)
-//
-//
-//            Log.d("vocData", vocData.toString())
-//            Log.d("vocDataUUID", vocDataUUID)
-////            if (vocData != null) {
-////                if (currentQuiz.isEmpty()) {
-////                    currentQuiz.add(Quiz(vocData, quizStyle = quizStyle))
-////                    Log.d("currentQuiz1", currentQuiz.toString())
-////                } else {
-////                    currentQuiz[0] = Quiz(vocData, quizStyle = quizStyle)
-////                    Log.d("currentQuiz2", currentQuiz.toString())
-////                }
-////            }
-//            if (vocData != null) {
-//                _currentQuiz.value = listOf(Quiz(vocData, quizStyle = quizStyle))
-//            } else {
-//                Log.d("vocData", "vocData is null")
-//            }
-//        }
-//    }
+    val currentQuiz = MutableStateFlow<Word?>(null)
 
     private fun getCurrentDateTime(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
@@ -351,4 +293,25 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
             }
         }
     }
+
+    fun createQuiz(vocId: Int): Quiz {
+        val words = _wordList.value.filter { it.voc_id == vocId }
+        return if (words.isNotEmpty()) {
+            val randomWord = words.random()
+            val options = (words - randomWord).shuffled().take(3).toMutableList().apply {
+                add(randomWord)
+                shuffle()
+            }.map { it.headword }
+            Quiz(
+                question = randomWord.meanings.joinToString(", "),
+                options = options,
+                correctAnswer = randomWord.headword
+            )
+        } else {
+            Quiz(question = "", options = emptyList(), correctAnswer = "")
+        }
+    }
+
+
+
 }

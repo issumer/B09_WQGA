@@ -4,9 +4,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.b09_wqga.database.Game
 import com.example.b09_wqga.repository.GameRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class GameViewModel(private val gameRepository: GameRepository) : ViewModel() {
+
+    private val _gameList = MutableStateFlow<List<Game>>(emptyList())
+    val gameList: StateFlow<List<Game>> = _gameList
+
+    fun loadAllGames() {
+        viewModelScope.launch {
+            val games = gameRepository.getAllGames()
+            _gameList.value = games
+        }
+    }
+
     fun addGame(game: Game, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             val result = gameRepository.addGame(game)
