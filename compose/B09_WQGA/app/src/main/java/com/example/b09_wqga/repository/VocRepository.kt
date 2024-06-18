@@ -23,9 +23,19 @@ class VocRepository {
     }
 
 
-    suspend fun getVoc(voc_id: Int): Voc? {
+//    suspend fun getVoc(voc_id: Int): Voc? {
+//        return try {
+//            val snapshot = database.orderByChild("voc_id").equalTo(voc_id.toDouble()).get().await()
+//            snapshot.children.firstOrNull()?.getValue(Voc::class.java)
+//        } catch (e: Exception) {
+//            Log.e("VocRepository", "Error getting voc", e)
+//            null
+//        }
+//    }
+
+    suspend fun getVoc(uuid: String): Voc? {
         return try {
-            val snapshot = database.orderByChild("voc_id").equalTo(voc_id.toDouble()).get().await()
+            val snapshot = database.orderByChild("uuid").equalTo(uuid).get().await()
             snapshot.children.firstOrNull()?.getValue(Voc::class.java)
         } catch (e: Exception) {
             Log.e("VocRepository", "Error getting voc", e)

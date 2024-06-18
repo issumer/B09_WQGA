@@ -7,7 +7,6 @@ import com.example.b09_wqga.database.Voc
 import com.example.b09_wqga.repository.PlayedRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.launch
 
 class PlayedViewModel(private val playedRepository: PlayedRepository) : ViewModel() {
