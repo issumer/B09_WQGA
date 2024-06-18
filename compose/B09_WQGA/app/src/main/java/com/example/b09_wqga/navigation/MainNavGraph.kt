@@ -50,7 +50,7 @@ fun NavGraphBuilder.MainNavGraph(navController: NavHostController) {
             // 임시 패치
             val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
             val userId = userDataViewModel.userID.value
-            ProfileScreen(userId, userViewModel, navController)
+            ProfileScreen(navController, userId)
         }
     }
 }

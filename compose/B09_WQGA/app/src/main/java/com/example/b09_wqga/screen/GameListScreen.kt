@@ -32,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,20 +51,26 @@ import com.example.b09_wqga.R
 import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.component.SearchBar
 import com.example.b09_wqga.component.SearchBar2
+import com.example.b09_wqga.database.Voc
 import com.example.b09_wqga.model.GameData
 import com.example.b09_wqga.model.UserDataViewModel
-import com.example.b09_wqga.model.VocData
 import com.example.b09_wqga.navigation.Routes
+import com.example.b09_wqga.repository.VocRepository
 import com.example.b09_wqga.ui.theme.nanumFontFamily
 import com.example.b09_wqga.ui.theme.pixelFont1
 import com.example.b09_wqga.ui.theme.pixelFont2
+import com.example.b09_wqga.viewmodel.VocViewModel
+import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 
 
 @Composable
 fun GameListScreen(navController: NavHostController) {
     val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+    val vocRepository = VocRepository()
+    val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
 
     val lazyColumnGameList = userDataViewModel.lazyColumnGameList
+    val vocList by vocViewModel.vocList.collectAsState(initial = emptyList())
 
     val gameData: GameData? = userDataViewModel.getRecentlyPlayedGame() // 최근에 플레이한 게임
 
@@ -115,7 +122,7 @@ fun GameListScreen(navController: NavHostController) {
 
         if(showGameStartDialog) {
             GameStartDialog(
-                vocDataList = userDataViewModel.vocList,
+                vocList = vocList,
                 onDismiss = {showGameStartDialog = false},
                 onPlay = {voc, quizStyle, difficulty ->
                     showGameStartDialog = false
@@ -210,9 +217,12 @@ fun GameItem(gameData: GameData, onStartClick: () -> Unit) {
 
 // 아직 로직 미구현
 @Composable
-fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: (String, Int, Int) -> Unit) {
-    var selectedVocUUID by remember { mutableStateOf("") }
+fun GameStartDialog(vocList : List<Voc>, onDismiss: () -> Unit, onPlay: (Voc, Int, Int) -> Unit) {
+    val vocRepository = VocRepository()
+    val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
+
     var selectedVocTitle by remember { mutableStateOf("") }
+    var selectedVoc : Voc? = null
     var selectedQuizStyle by remember { mutableStateOf(-1) }
     var selectedQuizStyleName by remember { mutableStateOf("") }
     var selectedDifficulty by remember { mutableStateOf(-1) }
@@ -238,7 +248,7 @@ fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: 
                     OutlinedTextField(
                         value = selectedVocTitle,
                         onValueChange = {},
-                        label = { Text("Select Voc", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) },
+                        label = { Text("Select Vocabulary", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) },
                         modifier = Modifier.fillMaxWidth(),
                         readOnly = true,
                         trailingIcon = {
@@ -251,12 +261,12 @@ fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: 
                         expanded = expandedVoc,
                         onDismissRequest = { expandedVoc = false }
                     ) {
-                        vocDataList.forEach { vocData ->
+                        vocList.forEach { voc ->
                             DropdownMenuItem(onClick = {
-                                selectedVocUUID = vocData.uuid
-                                selectedVocTitle = vocData.title
+                                selectedVoc = vocViewModel.getVocById(voc.voc_id)
+                                selectedVocTitle = voc.title
                                 expandedVoc = false
-                            }, text = { Text(text = vocData.title) })
+                            }, text = { Text(text = voc.title) })
                         }
                     }
                 }
@@ -320,7 +330,7 @@ fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: 
         confirmButton = {
             Button_WQGA(width = 80, height = 40, text = "Play", onClickLabel = {
                 var canPlay = true
-                if(selectedVocUUID.isEmpty()) {
+                if(selectedVoc == null) {
                     warningMessage = "Select Voc를 채워주세요!"
                     canPlay = false
                 }
@@ -334,7 +344,7 @@ fun GameStartDialog(vocDataList : List<VocData>, onDismiss: () -> Unit, onPlay: 
                 }
 
                 if(canPlay) {
-                    onPlay(selectedVocUUID, selectedQuizStyle, selectedDifficulty)
+                    onPlay(selectedVoc!!, selectedQuizStyle, selectedDifficulty)
                 }
             })
         }

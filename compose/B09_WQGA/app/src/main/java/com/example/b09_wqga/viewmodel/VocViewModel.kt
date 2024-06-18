@@ -7,6 +7,7 @@ import com.example.b09_wqga.database.Word
 import com.example.b09_wqga.repository.VocRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -137,7 +138,7 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
     }
 
     fun checkWordFull(): Boolean {
-        return _wordList.value.size >= 10
+        return _wordList.value.size >= 60
     }
 
     fun isVocListFull(): Boolean {
@@ -169,6 +170,36 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
             else -> _wordList.value
         }
         _wordList.value = sortedList
+    }
+
+    fun getTotalWordCount() : Int {
+        var totalCount = 0
+        _vocList.value.forEach {
+            totalCount += it.word_count
+        }
+        return totalCount
+    }
+
+    // 프로필 화면 total right count
+    fun getTotalRightCount() : Int {
+        var totalCount = 0
+        _vocList.value.forEach {voc ->
+            voc.words_json.forEach {
+                totalCount += it.right
+            }
+        }
+        return totalCount
+    }
+
+    // 프로필 화면 total wrong count
+    fun getTotalWrongCount() : Int {
+        var totalCount = 0
+        _vocList.value.forEach {voc ->
+            voc.words_json.forEach {
+                totalCount += it.wrong
+            }
+        }
+        return totalCount
     }
 
     // 기본 단어장을 저장하는 함수

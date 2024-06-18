@@ -85,4 +85,10 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
             userRepository.updateUserDate(userId, date)
         }
     }
+
+    fun updateUserName(userId: String, name: String) {
+        viewModelScope.launch {
+            userRepository.updateUserName(userId, name)
+        }
+    }
 }
