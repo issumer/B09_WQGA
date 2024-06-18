@@ -9,12 +9,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.b09_wqga.database.Voc
+import com.example.b09_wqga.database.Word
 import java.util.Arrays
 import java.util.Date
 import java.util.Locale
-import java.util.UUID
 import kotlin.random.Random
 
 // 단어 객체
@@ -71,35 +71,6 @@ data class WordData(
     }
 }
 
-// 단어장 객체
-data class VocData(
-    val title: String, // 단어장 제목
-    val description: String, // 단어장 설명
-    val lang: String, // 단어장의 언어
-    var wordCount: Int = 0, // 단어장의 단어 개수
-    val wordList: MutableList<WordData> = mutableListOf(), // 단어장의 단어 리스트
-    val uuid: String = UUID.randomUUID().toString(), // 단어장의 UUID
-    val createDate: Date = Date(), // 단어장의 생성 날짜
-    //var doNotSave: Boolean = false // 데이터베이스에 저장X 단어장 여부
-) {
-    companion object {
-        val MAX_VOC_COUNT = 5 // 단어장 개수 제한
-    }
-
-    // uuid, title, description이 같으면 같은 단어장
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is VocData) return false
-
-        return uuid == other.uuid && title == other.title && description == other.description
-    }
-
-    override fun hashCode(): Int {
-        return uuid.hashCode() + title.hashCode() + description.hashCode()
-    }
-
-}
-
 // 게임 객체
 data class GameData(
     val id: Int, // 게임 아이디
@@ -115,32 +86,32 @@ data class GameData(
 
 
 data class Quiz(
-    val vocData: VocData,
+    val voc: Voc,
     var currentQuiz : Int = -1, // 0(multiple choice), 1(short answer)
     var currentQuizType : Int = -1,
     var currentQuizNum : Int = 0,
     var currentAnswerCorrect : Int = 0, // 0(아직 퀴즈 풀지 않음), 1(정답), 2(오답)
     var quizStyle : Int = 0, // quizStyle - 0(완전 랜덤), 1(틀린 단어 위주), 2(객관식), 3(주관식)
-    var wordPool : List<WordData>? = null,
-    var answerWord : WordData? = null,
+    var wordPool : List<Word>? = null,
+    var answerWord : Word? = null,
     var description: String = "",
     var choiceOptions: MutableList<String>? = null,
-    var choiceOptionsWordData : MutableList<WordData>? = null,
+    var choiceOptionsWordData : MutableList<Word>? = null,
     var answerNums : MutableList<Int>? = null,
     var shortAnswer : String = "",
 ) {
     init {
         if(quizStyle == 1) { // 틀린 단어 위주일 경우
-            val totalWrong = vocData.wordList.sumOf { it.wrong }
+            val totalWrong = voc.words_json.sumOf { it.wrong }
 
-            val wrongMean : Double = if (vocData.wordList.isNotEmpty()) {
-                totalWrong.toDouble() / vocData.wordList.size
+            val wrongMean : Double = if (voc.words_json.isNotEmpty()) {
+                totalWrong.toDouble() / voc.words_json.size
             } else {
                 0.0
             }
-            wordPool = vocData.wordList.filter { it.wrong >= wrongMean }
+            wordPool = voc.words_json.filter { it.wrong >= wrongMean }
         } else {
-            wordPool = vocData.wordList
+            wordPool = voc.words_json
         }
 
         // 첫번째 퀴즈 생성
@@ -162,9 +133,9 @@ data class Quiz(
         currentAnswerCorrect = 0
     }
     fun createMultipleChoiceQuiz() {
-        answerWord = vocData.wordList.random(Random)
+        answerWord = voc.words_json.random(Random)
         choiceOptions = mutableListOf<String>()
-        choiceOptionsWordData = mutableListOf<WordData>()
+        choiceOptionsWordData = mutableListOf<Word>()
         answerNums = mutableListOf<Int>()
         currentQuizType = Random.nextInt(2)
 
@@ -227,8 +198,8 @@ data class Quiz(
     }
 
     fun createShortAnswerQuiz() {
-        answerWord = vocData.wordList.random(Random)
-        choiceOptionsWordData = mutableListOf<WordData>()
+        answerWord = voc.words_json.random(Random)
+        choiceOptionsWordData = mutableListOf<Word>()
         currentQuizType = Random.nextInt(3)
 
         // 답이 되는 단어의 뜻 중 ""이 아닌 뜻 찾기
@@ -261,10 +232,10 @@ data class Quiz(
 
         // 맞은 개수, 틀린 개수 업데이트
         if(correct) {
-            answerWord!!.right += 1
+            //answerWord!!.right += 1 // Word 데이터 클래스에 맞게 코드 변화 필요
             currentAnswerCorrect = 1
         } else {
-            answerWord!!.wrong += 1
+            // answerWord!!.wrong += 1 // Word 데이터 클래스에 맞게 코드 변화 필요
             currentAnswerCorrect = 2
         }
 
@@ -276,10 +247,10 @@ data class Quiz(
 
         // 맞은 개수, 틀린 개수 업데이트
         if(correct) {
-            answerWord!!.right += 1
+            //answerWord!!.right += 1 // Word 데이터 클래스에 맞게 코드 변화 필요
             currentAnswerCorrect = 1
         } else {
-            answerWord!!.wrong += 1
+            //answerWord!!.wrong += 1 // Word 데이터 클래스에 맞게 코드 변화 필요
             currentAnswerCorrect = 2
         }
 

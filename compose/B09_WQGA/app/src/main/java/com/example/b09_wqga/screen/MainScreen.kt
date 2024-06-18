@@ -19,7 +19,6 @@ import com.example.b09_wqga.navigation.MainNavGraph
 import com.example.b09_wqga.navigation.Routes
 import com.example.b09_wqga.component.BottomNavigationBar
 import com.example.b09_wqga.model.UserDataViewModel
-import com.example.b09_wqga.model.VocData
 import com.example.b09_wqga.model.WordData
 import com.example.b09_wqga.repository.UserRepository
 import com.example.b09_wqga.viewmodel.UserViewModel
