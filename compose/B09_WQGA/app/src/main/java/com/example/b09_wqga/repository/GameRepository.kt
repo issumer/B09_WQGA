@@ -21,6 +21,16 @@ class GameRepository {
         }
     }
 
+    suspend fun getGameById(gameId: Int): Game? {
+        return try {
+            val snapshot = database.orderByChild("game_id").equalTo(gameId.toDouble()).get().await()
+            snapshot.children.firstOrNull()?.getValue(Game::class.java)
+        } catch (e: Exception) {
+            Log.e("GameRepository", "Error getting game by id", e)
+            null
+        }
+    }
+
     suspend fun getGame(game_id: Int): Game? {
         return try {
             val snapshot = database.orderByChild("game_id").equalTo(game_id.toDouble()).get().await()

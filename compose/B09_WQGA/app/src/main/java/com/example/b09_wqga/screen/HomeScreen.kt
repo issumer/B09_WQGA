@@ -69,11 +69,13 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
     var showFailDialog by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var attendanceDates by remember { mutableStateOf<List<String>>(listOf()) }
-    var recentlyPlayed by remember { mutableStateOf<Played?>(null) }
     var wordData by remember { mutableStateOf<Word?>(null) }
 
     val points = userViewModel.points.value
     val name = userViewModel.name.value
+
+    var recentlyPlayed by remember { mutableStateOf<Played?>(null) }
+    var recentlyPlayedGame by remember { mutableStateOf<Game?>(null) }
 
     LaunchedEffect(userId) {
         userViewModel.fetchName(userId)
@@ -87,6 +89,11 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
 
             playedViewModel.getAllPlayedByUserId(userIdInt) { playedList ->
                 recentlyPlayed = playedList.maxByOrNull { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.play_date) }
+                recentlyPlayed?.let { played ->
+                    gameViewModel.getGameById(played.game_id) { game ->
+                        recentlyPlayedGame = game
+                    }
+                }
             }
 
             vocViewModel.loadVocs(userIdInt)  // Correct method call
@@ -164,7 +171,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                 .weight(1f)
         )
 
-        if (recentlyPlayed != null) {
+        if (recentlyPlayed != null && recentlyPlayedGame != null) {
             Box(
                 modifier = Modifier
                     .background(
@@ -181,7 +188,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
             }
-            RecentlyPlayedGame(recentlyPlayed!!)
+            RecentlyPlayedGame(recentlyPlayed!!, recentlyPlayedGame!!.gamename)
         }
 
         if (wordData != null) {
@@ -223,12 +230,12 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
 }
 
 @Composable
-fun RecentlyPlayedGame(played: Played) {
+fun RecentlyPlayedGame(played: Played, gameName: String) {
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)) {
         Text(
-            text = "Game ID: ${played.game_id}",
+            text = "Game: $gameName",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)
@@ -264,6 +271,7 @@ fun RecentlyPlayedGame(played: Played) {
         }
     }
 }
+
 
 @Composable
 fun RecentlyAddedWord(word: Word) {

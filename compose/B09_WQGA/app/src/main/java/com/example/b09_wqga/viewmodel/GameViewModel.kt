@@ -20,6 +20,13 @@ class GameViewModel(private val gameRepository: GameRepository) : ViewModel() {
         }
     }
 
+    fun getGameById(gameId: Int, onComplete: (Game?) -> Unit) {
+        viewModelScope.launch {
+            val game = gameRepository.getGameById(gameId)
+            onComplete(game)
+        }
+    }
+
     fun addGame(game: Game, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             val result = gameRepository.addGame(game)
