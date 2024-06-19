@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.b09_wqga.database.Quiz
+import com.example.b09_wqga.ui.theme.pixelFont2
 
 @Composable
 fun WordQuiz(quiz: Quiz?, recomposeKey: Boolean, quizLoading: Boolean, onSubmit: (Boolean) -> Unit) {
@@ -77,6 +78,7 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
         Text(
             text = "Q. ${quiz.question}",
             fontSize = 20.sp,
+            fontFamily = pixelFont2,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -91,7 +93,7 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
                     onClick = { selectedOption = index }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = option, fontSize = 16.sp)
+                Text(text = option, fontFamily = pixelFont2,fontSize = 16.sp)
             }
         }
 
@@ -99,6 +101,7 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
             if (quiz.checkMultipleChoiceAnswer(listOf(selectedOption))) {
                 Text(
                     text = "정답! 답: ${quiz.correctAnswer}",
+                    fontFamily = pixelFont2,
                     fontSize = 16.sp,
                     color = Color.Blue,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -106,6 +109,7 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
             } else {
                 Text(
                     text = "오답! 답: ${quiz.correctAnswer}",
+                    fontFamily = pixelFont2,
                     fontSize = 16.sp,
                     color = Color.Red,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -125,7 +129,7 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
             modifier = Modifier.align(Alignment.End),
             enabled = !answerChecked
         ) {
-            Text("정답 확인")
+            Text("정답 확인", fontFamily = pixelFont2,)
         }
     }
 }
@@ -154,6 +158,7 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
         Text(
             text = "Q. ${quiz.question}",
             fontSize = 20.sp,
+            fontFamily = pixelFont2,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -174,7 +179,7 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
                     }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = option, fontSize = 16.sp)
+                Text(text = option, fontFamily = pixelFont2, fontSize = 16.sp)
             }
         }
 
@@ -182,12 +187,14 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
             1 -> Text(
                 text = "정답! 답: ${quiz.correctAnswer}",
                 fontSize = 16.sp,
+                fontFamily = pixelFont2,
                 color = Color.Blue,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             2 -> Text(
                 text = "오답! 답: ${quiz.correctAnswer}",
                 fontSize = 16.sp,
+                fontFamily = pixelFont2,
                 color = Color.Red,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -195,6 +202,7 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
                 Text(
                     text = "틀렸습니다",
                     fontSize = 16.sp,
+                    fontFamily = pixelFont2,
                     color = Color.Red,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -216,7 +224,7 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
             modifier = Modifier.align(Alignment.End),
             enabled = !answerChecked
         ) {
-            Text("정답 확인")
+            Text("정답 확인",fontFamily = pixelFont2,)
         }
     }
 }
