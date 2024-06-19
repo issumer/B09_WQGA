@@ -10,6 +10,7 @@ import com.example.b09_wqga.repository.VocRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Collections.shuffle
 import java.util.Date
@@ -56,17 +57,15 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
         return _wordList.value.find { it.word_id == wordId }
     }
 
-    fun addVoc(voc: Voc, onComplete: (Boolean) -> Unit) : Int { // voc_id 리턴
-        val vocId = generateUniqueVocId()
+    fun addVoc(voc: Voc, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val vocWithId = voc.copy(voc_id = vocId, create_date = getCurrentDateTime())
+            val vocWithId = voc.copy(voc_id = generateUniqueVocId(), create_date = getCurrentDateTime())
             val result = vocRepository.addVoc(vocWithId)
             onComplete(result)
             if (result) {
                 loadVocs(voc.user_id)
             }
         }
-        return vocId
     }
 
     fun getVocById(vocId: Int): Voc? {
@@ -90,6 +89,13 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
             if (result) {
                 loadVocs(userId)
             }
+        }
+    }
+
+    fun getNextAvailableVocId(onComplete: (Int) -> Unit) {
+        viewModelScope.launch {
+            val result = vocRepository.getNextAvailableVocId()
+            onComplete(result)
         }
     }
 
@@ -266,15 +272,41 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
         |contented^만족한
         """.trimMargin()
 
-        val vocId = addVoc(Voc(title = "기본 단어장", description = "기본적으로 제공되는 영어 단어장입니다. 평가하실 때 사용해주세요!", lang = "en", user_id = userId, words_json = emptyList()), onComplete = {})
+        var wordCount = 0
+        getNextAvailableVocId(onComplete = { availableVocId ->
+            val defaultWordList = defaultWordString.lines().map { line ->
+                val parts = line.split("^")
+                val headword = parts[0].trim()
+                val meanings = parts.drop(1).map { it.trim() }
+                wordCount += 1
 
-        defaultWordString.lines().forEach { line ->
-            val parts = line.split("^")
-            val headword = parts[0].trim()
-            val meanings = parts.drop(1).map { it.trim() }
+                Word(
+                    word_id = wordCount,
+                    voc_id = availableVocId,
+                    headword = headword,
+                    lang = "en",
+                    meanings = meanings,
+                    create_date = getCurrentDateTime())
+            }
 
-            addWord(vocId, headword, meanings)
-        }
+            var defaultVoc : Voc = Voc(
+                user_id = userId,
+                voc_id = availableVocId,
+                title = "기본 단어장",
+                description = "기본적으로 제공되는 영어 단어장입니다. 평가하실 때 사용해주세요!",
+                lang = "en",
+                word_count = wordCount,
+                words_json = defaultWordList,
+                create_date = getCurrentDateTime())
+
+
+            viewModelScope.launch {
+                val result = vocRepository.addVoc(defaultVoc)
+                if (result) {
+                    loadVocs(userId)
+                }
+            }
+        })
     }
 
     fun createQuiz(vocId: Int): Quiz {

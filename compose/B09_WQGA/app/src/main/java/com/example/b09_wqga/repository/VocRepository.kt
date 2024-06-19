@@ -57,6 +57,27 @@ class VocRepository {
         }
     }
 
+    suspend fun getNextAvailableVocId(): Int {
+        return try {
+            val snapshot = database.get().await()
+            val vocIds = snapshot.children
+                .mapNotNull { it.child("voc_id").getValue(Int::class.java) }
+                .toSet()
+            findSmallestMissingId(vocIds)
+        } catch (e: Exception) {
+            Log.e("VocRepository", "Error getting voc_ids", e)
+            -1
+        }
+    }
+
+    private fun findSmallestMissingId(existingIds: Set<Int>): Int {
+        var nextId = 1
+        while (existingIds.contains(nextId)) {
+            nextId++
+        }
+        return nextId
+    }
+
     suspend fun getAllVocsByUserId(user_id: Int): List<Voc> {
         return try {
             val snapshot = database.orderByChild("user_id").equalTo(user_id.toDouble()).get().await()

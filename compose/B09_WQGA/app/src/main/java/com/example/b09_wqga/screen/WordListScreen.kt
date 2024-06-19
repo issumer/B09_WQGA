@@ -403,7 +403,7 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (Strin
 
     LaunchedEffect(currentWord) {
         val currentMeanings = currentWord.meanings.toTypedArray()
-        for(i in 1..4) {
+        for(i in 0..4) {
             if(i < currentMeanings.size) {
                 meanings[i] = currentMeanings[i]
             }
