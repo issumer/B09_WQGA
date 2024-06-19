@@ -4,6 +4,7 @@
 
 package com.example.b09_wqga.screen
 
+import android.graphics.Typeface
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -42,6 +43,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.nativeCanvas
@@ -50,10 +52,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.res.ResourcesCompat.getFont
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
@@ -89,6 +95,7 @@ data class BBPaddle(var x: Float, val y: Float, val width: Float, val height: Fl
 
 @Composable
 fun GamePlayScreen_2(navController: NavHostController, vocId: Int) {
+    val textMeasurer = rememberTextMeasurer()
     val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(VocRepository()))
     val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
     val wordList by vocViewModel.wordList.collectAsState()
@@ -483,13 +490,14 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int) {
                                         draw(size = Size(block.width, block.height))
                                     }
                                 }
-
-                                val textPaint = android.graphics.Paint().apply {
-                                    color = android.graphics.Color.BLACK
-                                    textAlign = android.graphics.Paint.Align.CENTER
-                                    textSize = 40f
-                                }
-                                canvas.nativeCanvas.drawText("Quiz", block.x + block.width / 2, block.y + block.height / 2 + 15, textPaint)
+                                drawText(textMeasurer = textMeasurer,
+                                    text = "Quiz",
+                                    topLeft = Offset(
+                                        x = block.x + block.width / 3,
+                                        y = block.y + block.height / 8 
+                                    ),
+                                    style = TextStyle(fontSize = 18.sp, fontFamily = pixelFont2)
+                                )
                             } else { // 퀴즈 블록이 아닐 경우
                                 if(block.isBroken == 2){
                                     if(block.colorCode == 1){   // red
@@ -529,12 +537,16 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int) {
                             }
                         }
                         if (block.showExclamation && currentTime.value - block.timestamp < 2000L) {
-                            val textPaint = android.graphics.Paint().apply {
-                                color = android.graphics.Color.BLACK
-                                textAlign = android.graphics.Paint.Align.CENTER
-                                textSize = 40f
-                            }
-                            canvas.nativeCanvas.drawText("!", block.x + block.width / 2, block.y + block.height / 2 + 15, textPaint)
+                            drawText(textMeasurer = textMeasurer,
+                                text = "!",
+                                topLeft = Offset(
+                                    x = block.x + block.width / 2 + 3 ,
+                                    y = block.y + block.height / 8
+                                ),
+                                style = TextStyle(fontSize = 20.sp, fontFamily = pixelFont2, color = Color.White)
+                            )
+
+                          
                         }
                     }
 
