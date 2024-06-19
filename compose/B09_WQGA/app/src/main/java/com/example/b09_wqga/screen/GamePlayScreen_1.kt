@@ -1,5 +1,6 @@
 package com.example.b09_wqga.screen
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,6 +60,7 @@ import com.example.b09_wqga.ui.theme.pixelFont2
 import com.example.b09_wqga.viewmodel.VocViewModel
 import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -141,6 +144,8 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
     RPGAttributes.RPGEnemies[2].painter = painterResource(id = R.drawable.enemy3)
     val player_vec: Painter = painterResource(id = R.drawable.player)
     val yourturn: Painter = painterResource(id = R.drawable.yourturn)
+
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(vocId) {
         vocViewModel.loadWordsByVocId(vocId)
@@ -581,11 +586,23 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
 
         WordQuiz(quiz, recomposeKey = recomposeKey, playerQuizPaused, onSubmit = { quizResult ->
             playerQuizResult = quizResult
+            Log.d("GamePlayScreen_1", "Quiz result: $quizResult")
             if (playerQuizResult) {
                 rightCount += 1
                 playerTurn = true
+                coroutineScope.launch {
+                    delay(2000L)
+                    quiz = vocViewModel.createQuiz(vocId)
+                    recomposeKey = !recomposeKey
+                }
+
             } else {
                 wrongCount += 1
+                coroutineScope.launch {
+                    delay(2000L)
+                    quiz = vocViewModel.createQuiz(vocId)
+                    recomposeKey = !recomposeKey
+                }
             }
         })
 
@@ -638,3 +655,4 @@ fun GameMenuDialog(onDismiss: () -> Unit, onExitGame: () -> Unit, score: Int, ri
         }
     )
 }
+

@@ -1,5 +1,6 @@
 package com.example.b09_wqga.component
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -56,25 +57,35 @@ fun WordQuiz(quiz: Quiz?, recomposeKey: Boolean, quizLoading: Boolean, onSubmit:
     }
 }
 
+
 @Composable
 fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
     var selectedOption by remember { mutableStateOf(-1) }
     var answerChecked by remember { mutableStateOf(false) }
     val options = quiz.options
 
-    LaunchedEffect(null) {
+    LaunchedEffect(quiz) {
         selectedOption = -1
         answerChecked = false
     }
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .verticalScroll(rememberScrollState())
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
     ) {
-        Text(text = "Q. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+        Text(
+            text = "Q. ${quiz.question}",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
         options.forEachIndexed { index, option ->
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 4.dp)
+            ) {
                 RadioButton(
                     selected = selectedOption == index,
                     onClick = { selectedOption = index }
@@ -84,16 +95,32 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
             }
         }
 
-        when (quiz.currentAnswerCorrect) {
-            1 -> Text(text = "정답! 답: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 16.dp))
-            2 -> Text(text = "오답! 답: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 16.dp))
-            else -> Spacer(modifier = Modifier.height(16.dp))
+        if (answerChecked) {
+            if (quiz.checkMultipleChoiceAnswer(listOf(selectedOption))) {
+                Text(
+                    text = "정답! 답: ${quiz.correctAnswer}",
+                    fontSize = 16.sp,
+                    color = Color.Blue,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            } else {
+                Text(
+                    text = "오답! 답: ${quiz.correctAnswer}",
+                    fontSize = 16.sp,
+                    color = Color.Red,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+        } else {
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         Button(
             onClick = {
                 answerChecked = true
-                onSubmit(quiz.checkMultipleChoiceAnswer(mutableListOf(selectedOption)))
+                val result = quiz.checkMultipleChoiceAnswer(listOf(selectedOption))
+                Log.d("MultipleChoiceQuiz1", "Quiz result: $result, selectedOption: $selectedOption")
+                onSubmit(result)
             },
             modifier = Modifier.align(Alignment.End),
             enabled = !answerChecked
@@ -103,25 +130,39 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
     }
 }
 
+
+
+
 @Composable
 fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
     var selectedIndexes by remember { mutableStateOf(setOf<Int>()) }
     var answerChecked by remember { mutableStateOf(false) }
+    var showWrongMessage by remember { mutableStateOf(false) }
     val options = quiz.options
 
-    LaunchedEffect(null) {
+    LaunchedEffect(quiz) {
         selectedIndexes = setOf()
         answerChecked = false
+        showWrongMessage = false
     }
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .verticalScroll(rememberScrollState())
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
     ) {
-        Text(text = "Q. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+        Text(
+            text = "Q. ${quiz.question}",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
         options.forEachIndexed { index, option ->
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 4.dp)
+            ) {
                 Checkbox(
                     checked = index in selectedIndexes,
                     onCheckedChange = { isChecked ->
@@ -138,15 +179,39 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
         }
 
         when (quiz.currentAnswerCorrect) {
-            1 -> Text(text = "정답! 답: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 16.dp))
-            2 -> Text(text = "오답! 답: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 16.dp))
-            else -> Spacer(modifier = Modifier.height(16.dp))
+            1 -> Text(
+                text = "정답! 답: ${quiz.correctAnswer}",
+                fontSize = 16.sp,
+                color = Color.Blue,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            2 -> Text(
+                text = "오답! 답: ${quiz.correctAnswer}",
+                fontSize = 16.sp,
+                color = Color.Red,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            else -> if (showWrongMessage) {
+                Text(
+                    text = "틀렸습니다",
+                    fontSize = 16.sp,
+                    color = Color.Red,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            } else {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
 
         Button(
             onClick = {
                 answerChecked = true
-                onSubmit(quiz.checkMultipleChoiceAnswer(selectedIndexes.toMutableList()))
+                val result = quiz.checkMultipleChoiceAnswer(selectedIndexes.toMutableList())
+                Log.d("MultipleChoiceQuiz2", "Quiz result: $result, selectedIndexes: $selectedIndexes")
+                onSubmit(result)
+                if (!result) {
+                    showWrongMessage = true
+                }
             },
             modifier = Modifier.align(Alignment.End),
             enabled = !answerChecked
@@ -155,6 +220,14 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
         }
     }
 }
+
+
+
+
+
+
+
+
 
 @Composable
 fun ShortAnswerQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
