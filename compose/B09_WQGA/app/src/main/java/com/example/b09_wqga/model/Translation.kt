@@ -45,7 +45,7 @@ data class GTranslation(
 
 
 suspend fun translateText(text: String): List<GTranslation> {
-    val apiKey = "AIzaSyBWqlHObY63-iC4ug8JayRTuPyDXLv-jnQ"
+    val apiKey = "API KEY" // 깃헙에 커밋 금지, 코드 제출할 때도 삭제 부탁
     val targetLanguage = "ko"
     return try {
         val response = RetrofitInstance.api.translate(text, targetLanguage, apiKey)
