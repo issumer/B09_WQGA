@@ -494,7 +494,7 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int) {
                                     text = "Quiz",
                                     topLeft = Offset(
                                         x = block.x + block.width / 3,
-                                        y = block.y + block.height / 8 
+                                        y = block.y + block.height / 8
                                     ),
                                     style = TextStyle(fontSize = 18.sp, fontFamily = pixelFont2)
                                 )
@@ -546,7 +546,7 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int) {
                                 style = TextStyle(fontSize = 20.sp, fontFamily = pixelFont2, color = Color.White)
                             )
 
-                          
+
                         }
                     }
 
@@ -589,9 +589,11 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int) {
                     coroutineScope.launch {
                         quizFinished()
                     }
+                    showCorrect = true
                 } else {
                     wrongCount += 1
                     lives -= 1 //목숨 하나 까기
+                    showWrong = true 
                     if(lives == 0) {
                         gameOver = true
                         gameWin = false
