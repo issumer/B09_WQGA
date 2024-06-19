@@ -143,7 +143,7 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
     var showCorrect: Boolean by remember { mutableStateOf(false)}
     var showLiveDecrease: Boolean by remember { mutableStateOf(false)}
 
-
+    var showEndDialog by rememberSaveable { mutableStateOf<Boolean>(false) }
     var showMenuDialog by rememberSaveable {
         mutableStateOf<Boolean>(false)
     }
@@ -260,6 +260,13 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
         }
     }
 
+    LaunchedEffect(gameOver) {
+        if (gameOver && lives == 0){
+            delay(2000)
+            showEndDialog = true
+        }
+    }
+    
     LaunchedEffect(showCorrect){
         delay(1000)
         showCorrect = false
@@ -611,6 +618,28 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
                 onDismiss = {
                     if (!gameOver) {
                         showMenuDialog = false
+                    }
+                },
+                onExitGame = {
+                    miscViewModel.showBottomNavigationBar.value = true
+                    navController.navigate(Routes.GameListScreen.route) {
+                        popUpTo(navController.graph.id) {// 백스택 모두 지우기
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
+                score = score,
+                rightCount = rightCount,
+                wrongCount = wrongCount
+            )
+        }
+
+        if (showEndDialog) {
+            GameEndDialog(
+                onDismiss = {
+                    if (!gameOver) {
+                        showEndDialog = false
                     }
                 },
                 onExitGame = {
