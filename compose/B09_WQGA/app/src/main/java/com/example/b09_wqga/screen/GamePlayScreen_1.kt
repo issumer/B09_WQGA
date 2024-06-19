@@ -625,13 +625,24 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int) {
 fun GameMenuDialog(onDismiss: () -> Unit, onExitGame: () -> Unit, score: Int, rightCount: Int, wrongCount: Int) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "게임 메뉴", fontSize = 30.sp, fontFamily = pixelFont2, fontWeight = FontWeight.ExtraBold) },
+        title = {
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "PAUSE",
+                    fontSize = 27.sp,
+                    fontFamily = pixelFont2,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+        },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Spacer(modifier = Modifier.height(5.dp))
-                Text("점수: $score", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
-                Text("맞은 개수: $rightCount", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
-                Text("틀린 개수: $wrongCount", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
+                Text("점수: $score", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+                Spacer(modifier = Modifier.height(3.dp))
+                Text("맞은 개수: $rightCount", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+                Spacer(modifier = Modifier.height(3.dp))
+                Text("틀린 개수: $wrongCount", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 Spacer(modifier = Modifier.height(25.dp))
 
                 Row(modifier = Modifier.fillMaxWidth()) {
