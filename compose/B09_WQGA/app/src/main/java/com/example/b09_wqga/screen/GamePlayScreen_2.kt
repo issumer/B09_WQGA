@@ -94,7 +94,7 @@ data class BBBall(var x: Float, var y: Float, var radius: Float, var vx: Float, 
 data class BBPaddle(var x: Float, val y: Float, val width: Float, val height: Float)
 
 @Composable
-fun GamePlayScreen_2(navController: NavHostController, vocId: Int) {
+fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, currentPlayGameId: Int) {
     val textMeasurer = rememberTextMeasurer()
     val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(VocRepository()))
     val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)

@@ -13,6 +13,10 @@ class PlayedViewModel(private val playedRepository: PlayedRepository) : ViewMode
     private val _playedList = MutableStateFlow<List<Played>>(emptyList())
     val playedList: StateFlow<List<Played>> = _playedList
 
+    fun getTotalPlayedGames(): Int {
+        return _playedList.value.size
+    }
+
     fun loadPlayedByUserId(userId: Int) {
         viewModelScope.launch {
             val playedList = playedRepository.getPlayedByUserId(userId)
@@ -27,7 +31,9 @@ class PlayedViewModel(private val playedRepository: PlayedRepository) : ViewMode
         }
     }
 
-    fun getTotalPlayedGames(): Int {
-        return _playedList.value.size
+    fun addOrUpdatePlayed(played: Played) {
+        viewModelScope.launch {
+            playedRepository.addOrUpdatePlayed(played)
+        }
     }
 }

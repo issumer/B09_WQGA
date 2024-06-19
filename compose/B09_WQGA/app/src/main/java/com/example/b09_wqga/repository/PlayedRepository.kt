@@ -9,13 +9,30 @@ import kotlinx.coroutines.tasks.await
 class PlayedRepository {
     private val database: DatabaseReference = FirebaseDatabase.getInstance().getReference("played")
 
-    suspend fun addPlayed(played: Played): Boolean {
+    suspend fun addOrUpdatePlayed(played: Played): Boolean {
         return try {
-            val newId = database.push().key ?: return false
-            database.child(newId).setValue(played).await()
+            val snapshot = database.orderByChild("user_id").equalTo(played.user_id.toDouble()).get().await()
+            val existingPlayed = snapshot.children.firstOrNull { it.child("game_id").getValue(Int::class.java) == played.game_id }
+
+            if (existingPlayed != null) {
+                val existingPlayedData = existingPlayed.getValue(Played::class.java)
+                if (existingPlayedData != null) {
+                    val updatedPlayed = existingPlayedData.copy(
+                        best_score = maxOf(existingPlayedData.best_score, played.best_score),
+                        right = existingPlayedData.right + played.right,
+                        wrong = existingPlayedData.wrong + played.wrong,
+                        play_count = existingPlayedData.play_count + 1,
+                        play_date = played.play_date
+                    )
+                    existingPlayed.ref.setValue(updatedPlayed).await()
+                }
+            } else {
+                val newId = database.push().key ?: return false
+                database.child(newId).setValue(played).await()
+            }
             true
         } catch (e: Exception) {
-            Log.e("PlayedRepository", "Error adding played", e)
+            Log.e("PlayedRepository", "Error adding or updating played", e)
             false
         }
     }
@@ -29,6 +46,5 @@ class PlayedRepository {
             emptyList()
         }
     }
-
-    // 기타 필요한 메소드 추가
 }
+

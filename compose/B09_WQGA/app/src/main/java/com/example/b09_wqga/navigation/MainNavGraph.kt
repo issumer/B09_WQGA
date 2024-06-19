@@ -40,11 +40,17 @@ fun NavGraphBuilder.MainNavGraph(navController: NavHostController) {
         }
         composable(route = Routes.GamePlayScreen_1.route) { backStackEntry ->
             val vocId = backStackEntry.arguments?.getString("vocId")?.toIntOrNull() ?: return@composable
-            GamePlayScreen_1(navController, vocId!!)
+            val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+            val userId = miscViewModel.userID.value.toIntOrNull() ?: return@composable
+            val currentPlayGameId = 1 // 적절한 값으로 설정
+            GamePlayScreen_1(navController, vocId, userId, currentPlayGameId)
         }
         composable(route = Routes.GamePlayScreen_2.route) { backStackEntry ->
             val vocId = backStackEntry.arguments?.getString("vocId")?.toIntOrNull() ?: return@composable
-            GamePlayScreen_2(navController, vocId!!)
+            val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+            val userId = miscViewModel.userID.value.toIntOrNull() ?: return@composable
+            val currentPlayGameId = 2 // 적절한 값으로 설정
+            GamePlayScreen_2(navController, vocId, userId, currentPlayGameId)
         }
         composable(route = Routes.ProfileScreen.route) { backStackEntry ->
             val userRepository = UserRepository()

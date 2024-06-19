@@ -78,7 +78,7 @@ fun GameListScreen(navController: NavHostController, userId: Int) {
                 GameItem(game = game, onStartClick = {
                     showGameStartDialog = true
                     currentPlayGameId = game.game_id
-                    },
+                },
                     imagesc = if(game.game_id == 1){
                         R.drawable.game1
                     }
@@ -101,7 +101,7 @@ fun GameListScreen(navController: NavHostController, userId: Int) {
                     miscViewModel.showBottomNavigationBar.value = false
                     when (currentPlayGameId) {
                         1 -> {
-                            navController.navigate("GamePlayScreen_1/${voc.voc_id}") {
+                            navController.navigate("GamePlayScreen_1/${voc.voc_id}?userId=$userId") {
                                 popUpTo(navController.graph.id) {
                                     inclusive = true
                                 }
@@ -109,7 +109,7 @@ fun GameListScreen(navController: NavHostController, userId: Int) {
                             }
                         }
                         2 -> {
-                            navController.navigate("GamePlayScreen_2/${voc.voc_id}") {
+                            navController.navigate("GamePlayScreen_2/${voc.voc_id}?userId=$userId") {
                                 popUpTo(navController.graph.id) {
                                     inclusive = true
                                 }
@@ -129,7 +129,7 @@ fun GameItem(game: Game, onStartClick: () -> Unit, imagesc: Int) {
     Box(
         Modifier
             .border(
-                width = 2.dp, 
+                width = 2.dp,
                 color = Color.Black,
                 shape = RoundedCornerShape(15.dp)
             )

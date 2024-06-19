@@ -45,7 +45,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,17 +53,24 @@ import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
 import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.component.WordQuiz
+import com.example.b09_wqga.database.Played
 import com.example.b09_wqga.navigation.Routes
+import com.example.b09_wqga.repository.PlayedRepository
 import com.example.b09_wqga.repository.VocRepository
 import com.example.b09_wqga.ui.theme.nanumFontFamily
 import com.example.b09_wqga.ui.theme.pixelFont2
 import com.example.b09_wqga.viewmodel.MiscViewModel
+import com.example.b09_wqga.viewmodel.PlayedViewModel
 import com.example.b09_wqga.viewmodel.VocViewModel
+import com.example.b09_wqga.viewmodelfactory.PlayedViewModelFactory
 import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 data class RPGEnemy(
     val x: Float = 0.0f,
@@ -108,7 +114,7 @@ sealed class RPGAttributes {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun GamePlayScreen_1(navController: NavHostController, vocId: Int) {
+fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, currentPlayGameId: Int) {
     val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(VocRepository()))
     val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
     val wordList by vocViewModel.wordList.collectAsState()
@@ -326,6 +332,51 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int) {
         enemydamaged = false
     }
 
+    val playedViewModel: PlayedViewModel = viewModel(factory = PlayedViewModelFactory(PlayedRepository()))
+
+    var isPlayedUpdated by remember { mutableStateOf(false) }
+
+    fun updatePlayedData(score: Int, rightCount: Int, wrongCount: Int) {
+        if (!isPlayedUpdated) {
+            playedViewModel.getAllPlayedByUserId(userId) { playedList ->
+                val currentGameId = currentPlayGameId
+                val currentPlayed = playedList.find { it.game_id == currentGameId }
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+                val played = if (currentPlayed != null) {
+                    currentPlayed.copy(
+                        best_score = maxOf(currentPlayed.best_score, score),
+                        right = currentPlayed.right + rightCount,
+                        wrong = currentPlayed.wrong + wrongCount,
+                        play_count = currentPlayed.play_count + 1,
+                        play_date = today
+                    )
+                } else {
+                    Played(
+                        user_id = userId,
+                        game_id = currentGameId,
+                        best_score = score,
+                        right = rightCount,
+                        wrong = wrongCount,
+                        play_count = 1,
+                        play_date = today
+                    )
+                }
+
+                playedViewModel.addOrUpdatePlayed(played)
+                isPlayedUpdated = true
+            }
+        }
+    }
+
+    if (gameOver) {
+        updatePlayedData(score, rightCount, wrongCount)
+    }
+
+    if (showEndDialog) {
+        updatePlayedData(score, rightCount, wrongCount)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -527,24 +578,24 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int) {
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 if (playerQuizResult) {
-                        Image(
-                            painter = painterResource(id = R.drawable.sword),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .clickable {
-                                    performSkill(0)
-                                }
-                                .size(80.dp)
-                        )
-                        Image(
-                            painter = painterResource(id = R.drawable.potion),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .clickable {
-                                    performSkill(1)
-                                }
-                                .size(80.dp)
-                        )
+                    Image(
+                        painter = painterResource(id = R.drawable.sword),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .clickable {
+                                performSkill(0)
+                            }
+                            .size(80.dp)
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.potion),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .clickable {
+                                performSkill(1)
+                            }
+                            .size(80.dp)
+                    )
                 } else {
                     Image(
                         painter = painterResource(id = R.drawable.skipbutton),
@@ -607,7 +658,6 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int) {
                     }
                 },
                 onExitGame = {
-                    miscViewModel.showBottomNavigationBar.value = true
                     navController.navigate(Routes.GameListScreen.route) {
                         popUpTo(navController.graph.id) {// 백스택 모두 지우기
                             inclusive = true
@@ -640,11 +690,11 @@ fun GameMenuDialog(onDismiss: () -> Unit, onExitGame: () -> Unit, score: Int, ri
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Spacer(modifier = Modifier.height(5.dp))
-                Text("점수: $score", fontSize = 15.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("점수: $score", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 Spacer(modifier = Modifier.height(3.dp))
-                Text("맞은 개수: $rightCount", fontSize = 15.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("맞은 개수: $rightCount", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 Spacer(modifier = Modifier.height(3.dp))
-                Text("틀린 개수: $wrongCount", fontSize = 15.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("틀린 개수: $wrongCount", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 Spacer(modifier = Modifier.height(25.dp))
 
                 Row(modifier = Modifier.fillMaxWidth()) {
@@ -678,11 +728,11 @@ fun GameEndDialog(onDismiss: () -> Unit, onExitGame: () -> Unit, score: Int, rig
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Spacer(modifier = Modifier.height(5.dp))
-                Text("점수: $score", fontSize = 15.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("점수: $score", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 Spacer(modifier = Modifier.height(3.dp))
-                Text("맞은 개수: $rightCount", fontSize = 15.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("맞은 개수: $rightCount", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 Spacer(modifier = Modifier.height(3.dp))
-                Text("틀린 개수: $wrongCount", fontSize = 15.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("틀린 개수: $wrongCount", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 Spacer(modifier = Modifier.height(25.dp))
 
                 Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
