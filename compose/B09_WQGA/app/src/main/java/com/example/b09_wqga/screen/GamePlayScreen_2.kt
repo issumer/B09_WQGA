@@ -65,17 +65,24 @@ import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
 import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.component.WordQuiz
+import com.example.b09_wqga.database.Played
 import com.example.b09_wqga.navigation.Routes
+import com.example.b09_wqga.repository.PlayedRepository
 import com.example.b09_wqga.repository.VocRepository
 import com.example.b09_wqga.ui.theme.nanumFontFamily
 import com.example.b09_wqga.ui.theme.pixelFont2
 import com.example.b09_wqga.viewmodel.MiscViewModel
+import com.example.b09_wqga.viewmodel.PlayedViewModel
 import com.example.b09_wqga.viewmodel.VocViewModel
+import com.example.b09_wqga.viewmodelfactory.PlayedViewModelFactory
 import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 // BB: Block Breaking
 data class BBBlock(val x: Float,
@@ -171,6 +178,46 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
     val heart0 : Painter = painterResource(id = R.drawable.heart0)
 
 
+    val playedViewModel: PlayedViewModel = viewModel(factory = PlayedViewModelFactory(
+        PlayedRepository()
+    )
+    )
+
+    var isPlayedUpdated by remember { mutableStateOf(false) }
+
+    fun updatePlayedData(score: Int, rightCount: Int, wrongCount: Int) {
+        if (!isPlayedUpdated) {
+            playedViewModel.getAllPlayedByUserId(userId) { playedList ->
+                val currentGameId = currentPlayGameId
+                val currentPlayed = playedList.find { it.game_id == currentGameId }
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+                val played = if (currentPlayed != null) {
+                    currentPlayed.copy(
+                        best_score = maxOf(currentPlayed.best_score, score),
+                        right = currentPlayed.right + rightCount,
+                        wrong = currentPlayed.wrong + wrongCount,
+                        play_count = currentPlayed.play_count + 1,
+                        play_date = today
+                    )
+                } else {
+                    Played(
+                        user_id = userId,
+                        game_id = currentGameId,
+                        best_score = score,
+                        right = rightCount,
+                        wrong = wrongCount,
+                        play_count = 1,
+                        play_date = today
+                    )
+                }
+
+                playedViewModel.addOrUpdatePlayed(played)
+                isPlayedUpdated = true
+            }
+        }
+    }
+
     fun nextQuiz() {
         showWordQuiz = true
         playerQuizPaused = false
@@ -262,11 +309,12 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
 
     LaunchedEffect(gameOver) {
         if (gameOver && lives == 0){
+            updatePlayedData(score, rightCount, wrongCount)
             delay(2000)
             showEndDialog = true
         }
     }
-    
+
     LaunchedEffect(showCorrect){
         delay(1000)
         showCorrect = false
