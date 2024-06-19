@@ -18,6 +18,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonColors
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -93,6 +95,10 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
                 modifier = Modifier.padding(vertical = 2.dp)
             ) {
                 RadioButton(
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = Color.Black,
+                        unselectedColor = Color.Gray
+                    ),
                     selected = selectedOption == index,
                     onClick = { selectedOption = index }
                 )
@@ -306,6 +312,10 @@ fun MultipleChoiceQuiz1(quiz: Quiz, selectedOption: Int = -1, answerChecked: Boo
         options.forEachIndexed { index, option ->
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 2.dp)) {
                 RadioButton(
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = Color.Black,
+                        unselectedColor = Color.Gray
+                    ),
                     selected = selectedOption == index,
                     onClick = { selectedOption = index }
                 )
