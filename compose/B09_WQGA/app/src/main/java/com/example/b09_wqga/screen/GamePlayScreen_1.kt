@@ -338,6 +338,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
             if (!playerTurn) {
                 showDamageMessage()
                 performEnemyAttack()
+                quiz = vocViewModel.createQuiz(vocId)
                 recomposeKey = !recomposeKey // 강제 recompose
             }
         }
@@ -590,19 +591,19 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
             if (playerQuizResult) {
                 rightCount += 1
                 playerTurn = true
-                coroutineScope.launch {
-                    delay(2000L)
-                    quiz = vocViewModel.createQuiz(vocId)
-                    recomposeKey = !recomposeKey
-                }
+//                coroutineScope.launch {
+//                    delay(6000L)
+//                    quiz = vocViewModel.createQuiz(vocId)
+//                    recomposeKey = !recomposeKey
+//                }
 
             } else {
                 wrongCount += 1
-                coroutineScope.launch {
-                    delay(2000L)
-                    quiz = vocViewModel.createQuiz(vocId)
-                    recomposeKey = !recomposeKey
-                }
+//                coroutineScope.launch {
+//                    delay(6000L)
+//                    quiz = vocViewModel.createQuiz(vocId)
+//                    recomposeKey = !recomposeKey
+//                }
             }
         })
 
