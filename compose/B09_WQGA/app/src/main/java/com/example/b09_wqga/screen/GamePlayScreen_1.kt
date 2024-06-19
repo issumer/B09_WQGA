@@ -296,33 +296,9 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
                     selectedEnemyIndex = -1
                     playerTurn = false
                 }
-                1 -> { // 휩쓸기
-                    for (enemy in enemies) {
-                        val damage = Random.nextInt(((player.damage - 2.0) / enemies.count()).roundToInt(), ((player.damage + 10.0) / enemies.count()).roundToInt())
-                        enemy.health -= damage
-                        damageMessage = "-$damage"
-                        damagePosition = Offset(enemy.x + enemy.width / 2 + 30, enemy.y - 25)
-                        enemydamaged = true
-                    }
-
-                    enemies.forEach {
-                        if (it.health <= 0) score += it.score
-                    }
-
-                    enemies = enemies.filterIndexed { index, enemy -> enemy.health > 0 }.toMutableList()
-                    selectedEnemyIndex = -1
-                    playerTurn = false
-                }
-                2 -> { // 체력 회복
+                1 -> { // 체력 회복
                     player.health = if (player.health + 50 >= player.maxHealth) player.maxHealth else player.health + 50
                     playerTurn = false
-                }
-                3 -> { // 막기
-                    playerBlockSkill = true
-                    playerTurn = false
-                }
-                4 -> { // 도망
-                    setStage()
                 }
             }
             playerQuizResult = false
@@ -521,52 +497,31 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 15.dp),
+                    .padding(top = 15.dp, start = 20.dp, end = 20.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 if (playerQuizResult) {
-                    if (showAttackSkills) {
-                        Button(onClick = { showAttackSkills = false; showDefenseSkills = false }) {
-                            Text("뒤로")
-                        }
-                        Button(onClick = { performSkill(0) }) {
-                            Text("찌르기")
-                        }
-                        Button(onClick = { performSkill(1) }) {
-                            Text("휩쓸기")
-                        }
-                    } else if (showDefenseSkills) {
-                        Button(onClick = { showAttackSkills = false; showDefenseSkills = false }) {
-                            Text("뒤로")
-                        }
-                        Button(onClick = { performSkill(2) }) {
-                            Text("체력 회복")
-                        }
-                        Button(onClick = { performSkill(3) }) {
-                            Text("막기")
-                        }
-                    } else {
                         Image(
-                            painter = painterResource(id = R.drawable.attack),
+                            painter = painterResource(id = R.drawable.sword),
                             contentDescription = null,
                             modifier = Modifier
                                 .clickable {
-                                    showAttackSkills = true
+                                    performSkill(0)
                                 }
                                 .size(80.dp)
                         )
-                        Button(onClick = {
-                            showDefenseSkills = true
-                        }) {
-                            Text("회복")
-                        }
-                        Button(onClick = { performSkill(4) }) {
-                            Text("도망")
-                        }
-                    }
+                        Image(
+                            painter = painterResource(id = R.drawable.potion),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .clickable {
+                                    performSkill(1)
+                                }
+                                .size(80.dp)
+                        )
                 } else {
                     Image(
-                        painter = painterResource(id = R.drawable.skull),
+                        painter = painterResource(id = R.drawable.skipbutton),
                         contentDescription = null,
                         modifier = Modifier
                             .clickable {
