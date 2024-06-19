@@ -2,6 +2,7 @@ package com.example.b09_wqga.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -126,11 +128,16 @@ fun GameListScreen(navController: NavHostController, userId: Int) {
 fun GameItem(game: Game, onStartClick: () -> Unit, imagesc: Int) {
     Box(
         Modifier
-            .clip(RoundedCornerShape(10.dp))
+            .border(
+                width = 2.dp, 
+                color = Color.Black,
+                shape = RoundedCornerShape(15.dp)
+            )
             .fillMaxWidth()
             .height(90.dp)
-            .background(Color.LightGray)
+            .background(Color.LightGray, shape = RoundedCornerShape(15.dp))
             .padding(all = 10.dp)
+
     ) {
         Column(
             modifier = Modifier
