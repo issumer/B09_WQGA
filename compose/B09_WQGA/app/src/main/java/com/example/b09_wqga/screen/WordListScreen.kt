@@ -2,6 +2,7 @@ package com.example.b09_wqga.screen
 
 import android.annotation.SuppressLint
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,11 +25,14 @@ import androidx.navigation.NavHostController
 import com.example.b09_wqga.component.Button_WQGA
 import com.example.b09_wqga.component.SearchBar
 import com.example.b09_wqga.database.Word
+import com.example.b09_wqga.model.GTranslation
+import com.example.b09_wqga.model.translateText
 import com.example.b09_wqga.viewmodel.VocViewModel
 import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 import com.example.b09_wqga.repository.VocRepository
 import com.example.b09_wqga.ui.theme.pixelFont1
 import com.example.b09_wqga.ui.theme.pixelFont2
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 @SuppressLint("StateFlowValueCalledInComposition")
@@ -40,7 +44,7 @@ fun WordListScreen(navController: NavHostController, vocId: Int) {
 
     val lazyColumnWordList by vocViewModel.wordList.collectAsState()
 
-    var currentEditWordId by rememberSaveable { // 현재 편집하는 단어의 ID
+    var currentEditWordId by remember { // 현재 편집하는 단어의 ID
         mutableStateOf(0)
     }
 
@@ -63,14 +67,19 @@ fun WordListScreen(navController: NavHostController, vocId: Int) {
         mutableStateOf(null)
     }
 
-    // 현재 Lifecycle owner가 dispose되면 수행
-    DisposableEffect(LocalLifecycleOwner.current) {
-        tts = TextToSpeech(context) { status -> // tts 객체 초기화
-            if (status == TextToSpeech.SUCCESS) {
-                ttsReady = true
-                tts!!.language = Locale.US
+    LaunchedEffect(currentEditWordId) {
+        if(tts == null) {
+            tts = TextToSpeech(context) { status -> // tts 객체 초기화
+                if (status == TextToSpeech.SUCCESS) {
+                    ttsReady = true
+                    tts!!.language = Locale.US
+                }
             }
         }
+    }
+
+    // 현재 Lifecycle owner가 dispose되면 수행
+    DisposableEffect(LocalLifecycleOwner.current) {
         // 화면에서 감춰지거나 하면 자동으로 호출해서 tts 멈춤
         onDispose {
             tts?.stop() // nullable
@@ -290,6 +299,7 @@ fun SortDropdownMenu(label: String, selectedOption: String, options: List<String
 
 @Composable
 fun WordAddDialog(onDismiss: () -> Unit, onAddWord: (String, List<String>) -> Unit) {
+    val scope = rememberCoroutineScope()
     var headword by rememberSaveable {
         mutableStateOf("")
     }
@@ -317,6 +327,22 @@ fun WordAddDialog(onDismiss: () -> Unit, onAddWord: (String, List<String>) -> Un
                         onValueChange = { headword = it },
                         modifier = Modifier.weight(1f),
                         label = { Text("Enter Headword") }
+                    )
+                    Button_WQGA(width = 40, height = 20, text = "Dict",
+                        onClickLabel = {
+                            if(!headword.isEmpty()) {
+                                scope.launch {
+                                    val translations : List<GTranslation> = translateText(headword)
+                                    for(i in 0..4) {
+                                        meanings[i] = ""
+                                        if (i < translations.size) {
+                                            meanings[i] = translations[i].translatedText
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        enabled = true
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -364,14 +390,24 @@ fun WordAddDialog(onDismiss: () -> Unit, onAddWord: (String, List<String>) -> Un
 
 @Composable
 fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (String) -> Unit, onSaveWord: (String, List<String>) -> Unit, onDeleteWord: () -> Unit) {
-    var headword by rememberSaveable {
+    val scope = rememberCoroutineScope()
+    var headword by remember {
         mutableStateOf(currentWord.headword)
     }
     var meanings = remember {
-        mutableStateListOf(*currentWord.meanings.toTypedArray())
+        mutableStateListOf("", "", "", "", "")
     }
-    var warningMessage by rememberSaveable {
+    var warningMessage by remember {
         mutableStateOf("")
+    }
+
+    LaunchedEffect(currentWord) {
+        val currentMeanings = currentWord.meanings.toTypedArray()
+        for(i in 1..4) {
+            if(i < currentMeanings.size) {
+                meanings[i] = currentMeanings[i]
+            }
+        }
     }
 
     AlertDialog(
@@ -391,6 +427,22 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (Strin
                         modifier = Modifier.weight(1f),
                         readOnly = true,
                         label = { Text("Headword") }
+                    )
+                    Button_WQGA(width = 40, height = 20, text = "Dict",
+                        onClickLabel = {
+                            if(!headword.isEmpty()) {
+                                scope.launch {
+                                    val translations : List<GTranslation> = translateText(headword)
+                                    for(i in 0..4) {
+                                        meanings[i] = ""
+                                        if (i < translations.size) {
+                                            meanings[i] = translations[i].translatedText
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        enabled = true
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
