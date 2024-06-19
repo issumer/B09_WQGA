@@ -195,7 +195,7 @@ fun GameStartDialog(vocList: List<Voc>, onDismiss: () -> Unit, onPlay: (Voc, Int
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Game Setting", fontSize = 30.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.ExtraBold) },
+        title = { Text(text = "Game Setting", fontSize = 30.sp, fontFamily = pixelFont2, fontWeight = FontWeight.ExtraBold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Button_WQGA(width = 80, height = 40, text = "Back", onClickLabel = onDismiss)
@@ -204,7 +204,7 @@ fun GameStartDialog(vocList: List<Voc>, onDismiss: () -> Unit, onPlay: (Voc, Int
                     OutlinedTextField(
                         value = selectedVocTitle,
                         onValueChange = {},
-                        label = { Text("Select Vocabulary", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) },
+                        label = { Text("Select Vocabulary", fontFamily = pixelFont2, fontWeight = FontWeight.Normal) },
                         modifier = Modifier.fillMaxWidth(),
                         readOnly = true,
                         trailingIcon = {
@@ -222,7 +222,7 @@ fun GameStartDialog(vocList: List<Voc>, onDismiss: () -> Unit, onPlay: (Voc, Int
                                 selectedVoc = voc
                                 selectedVocTitle = voc.title
                                 expandedVoc = false
-                            }, text = { Text(text = voc.title) })
+                            }, text = { Text(text = voc.title, fontFamily = pixelFont2) })
                         }
                     }
                 }
@@ -231,7 +231,7 @@ fun GameStartDialog(vocList: List<Voc>, onDismiss: () -> Unit, onPlay: (Voc, Int
                     OutlinedTextField(
                         value = selectedQuizStyleName,
                         onValueChange = {},
-                        label = { Text("Select Quiz Style", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) },
+                        label = { Text("Select Quiz Style", fontFamily = pixelFont2, fontWeight = FontWeight.Normal) },
                         modifier = Modifier.fillMaxWidth(),
                         readOnly = true,
                         trailingIcon = {
@@ -249,7 +249,7 @@ fun GameStartDialog(vocList: List<Voc>, onDismiss: () -> Unit, onPlay: (Voc, Int
                                 selectedQuizStyle = index
                                 selectedQuizStyleName = style
                                 expandedQuizStyle = false
-                            }, text = { Text(text = style, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) })
+                            }, text = { Text(text = style, fontFamily = pixelFont2, fontWeight = FontWeight.Normal) })
                         }
                     }
                 }
@@ -258,7 +258,7 @@ fun GameStartDialog(vocList: List<Voc>, onDismiss: () -> Unit, onPlay: (Voc, Int
                     OutlinedTextField(
                         value = selectedDifficultyName,
                         onValueChange = {},
-                        label = { Text("Select Difficulty", fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) },
+                        label = { Text("Select Difficulty", fontFamily = pixelFont2, fontWeight = FontWeight.Normal) },
                         modifier = Modifier.fillMaxWidth(),
                         readOnly = true,
                         trailingIcon = {
@@ -276,7 +276,7 @@ fun GameStartDialog(vocList: List<Voc>, onDismiss: () -> Unit, onPlay: (Voc, Int
                                 selectedDifficulty = index
                                 selectedDifficultyName = difficulty
                                 expandedDifficulty = false
-                            }, text = { Text(text = difficulty, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal) })
+                            }, text = { Text(text = difficulty, fontFamily = pixelFont2, fontWeight = FontWeight.Normal) })
                         }
                     }
                 }
