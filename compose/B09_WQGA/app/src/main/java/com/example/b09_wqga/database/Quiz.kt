@@ -4,8 +4,8 @@ data class Quiz(
     val question: String,
     val options: List<String>,
     val correctAnswer: String,
-    val currentQuiz: Int = 0,
-    val currentQuizType: Int = 0,
+    val multipleOrShort: Int = 0,
+    val multipleSelectType: Int = 0,
     val currentQuizNum: Int = 0,
     val choiceOptionsWordData: List<Word>? = null,
     val answerNums: List<Int>? = null,
@@ -20,7 +20,7 @@ data class Quiz(
     }
 
     fun checkShortAnswerAnswer(userAnswer: String): Boolean {
-        val isCorrect = userAnswer.equals(answerWord?.headword, ignoreCase = true)
+        val isCorrect = userAnswer.equals(correctAnswer, ignoreCase = true)
         currentAnswerCorrect = if (isCorrect) 1 else 2
         return isCorrect
     }

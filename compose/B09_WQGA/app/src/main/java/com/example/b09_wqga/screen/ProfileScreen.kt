@@ -22,7 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
 import com.example.b09_wqga.component.Button_WQGA
-import com.example.b09_wqga.model.UserDataViewModel
+import com.example.b09_wqga.viewmodel.MiscViewModel
 import com.example.b09_wqga.repository.PlayedRepository
 import com.example.b09_wqga.repository.UserRepository
 import com.example.b09_wqga.repository.VocRepository
@@ -38,7 +38,7 @@ import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 @Composable
 fun ProfileScreen(navController: NavHostController, userId: Int) {
     val context = LocalContext.current
-    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+    val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
     val userRepository = UserRepository()
     val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
     val vocRepository = VocRepository()
@@ -102,7 +102,7 @@ fun ProfileScreen(navController: NavHostController, userId: Int) {
                 onClick = {
                     userViewModel.logout(context) {
                         navController.navigate("InitialScreen") {
-                            userDataViewModel.showBottomNavigationBar.value = false
+                            miscViewModel.showBottomNavigationBar.value = false
                             popUpTo(navController.graph.id) { // 백스택 모두 지우기
                                 inclusive = true
                             }

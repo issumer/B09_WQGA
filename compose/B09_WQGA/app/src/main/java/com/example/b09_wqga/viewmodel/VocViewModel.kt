@@ -1,5 +1,6 @@
 package com.example.b09_wqga.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.b09_wqga.database.Quiz
@@ -10,8 +11,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Collections.shuffle
 import java.util.Date
 import java.util.Locale
+import kotlin.random.Random
 
 class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
 
@@ -27,6 +30,8 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
     val sortOptions = listOf("Headword", "Meaning", "Right", "Wrong")
 
     val currentQuiz = MutableStateFlow<Word?>(null)
+    val quizStyle = MutableStateFlow(-1)
+    val gameDifficulty = MutableStateFlow(-1)
 
     private fun getCurrentDateTime(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
@@ -273,23 +278,109 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
     }
 
     fun createQuiz(vocId: Int): Quiz {
-        val words = _wordList.value.filter { it.voc_id == vocId }
+        var words = _wordList.value.filter { it.voc_id == vocId }
+
+        // 0: "완전 랜덤", 1: "틀린 단어 위주", 2: "객관식", 3: "주관식"
+        if(quizStyle.value == 1) { // 틀린 단어 위주
+            val totalWrong = words.sumOf { it.wrong }
+            val wrongMean : Double = if (words.isNotEmpty()) {
+                totalWrong.toDouble() / words.size
+            } else {
+                0.0
+            }
+            words = words.filter { it.wrong >= wrongMean }
+        }
+
+        var multipleOrShort = Random.nextInt(2) // 객관식 또는 주관식
+        val multipleSelectType = Random.nextInt(2) // 객관식의 타입
+        val shortAnswerType = Random.nextInt(3) // 주관식의 타입
+
+        // 퀴즈 스타일: 2이면 객관식, 3이면 주관식
+        if(quizStyle.value == 2 || quizStyle.value == 3) multipleOrShort = quizStyle.value - 2
+
         return if (words.isNotEmpty()) {
-            val randomWord = words.random()
-            val options = (words - randomWord).shuffled().take(3).toMutableList().apply {
-                add(randomWord)
-                shuffle()
-            }.map { it.headword }
-            Quiz(
-                question = randomWord.meanings.joinToString(", "),
-                options = options,
-                correctAnswer = randomWord.headword
-            )
+            val randomWord = words.random() // 문제로 출제할 단어
+
+            when(multipleOrShort) {
+                0 -> {
+                    when(multipleSelectType) {
+                        0 -> {
+                            val options = (words - randomWord).shuffled().take(3).toMutableList().apply {
+                                add(randomWord)
+                                shuffle()
+                            }.map { it.headword }
+                            Quiz(
+                                question = "다음 중 \"${randomWord.meanings.joinToString(", ")}\"를 의미하는 단어는 무엇인지 고르시오.",
+                                multipleOrShort = multipleOrShort,
+                                multipleSelectType = multipleSelectType,
+                                options = options,
+                                correctAnswer = randomWord.headword
+                            )
+                        }
+                        1 -> {
+                            val randomWordMeaning = randomWord.meanings.random()
+                            var options = (words - randomWord).shuffled().take(3).toMutableList().map { it.meanings.random() }
+
+                            options = options.toMutableList().apply {
+                                add(randomWordMeaning)
+                                shuffle()
+                            }
+
+                            Quiz(
+                                question = "다음 중 \"${randomWord.headword}\"의 한글 뜻을 고르시오.",
+                                multipleOrShort = multipleOrShort,
+                                multipleSelectType = multipleSelectType,
+                                options = options,
+                                correctAnswer = randomWordMeaning
+                            )
+                        }
+                        else -> {
+                            Quiz(question = "", options = emptyList(), correctAnswer = "")
+                        }
+                    }
+                }
+                1 -> {
+                    when(shortAnswerType) {
+                        0 -> {
+                            Quiz(
+                                question = "\"${randomWord.meanings.joinToString(", ")}\"을 의미하는 단어의 표제어를 적으시오.",
+                                multipleOrShort = multipleOrShort,
+                                multipleSelectType = multipleSelectType,
+                                options = emptyList(),
+                                correctAnswer = randomWord.headword
+                            )
+                        }
+                        1 -> {
+                            val cleanHeadword = randomWord.headword.replace(" ","")
+                            val randomAlphabet = cleanHeadword[Random.nextInt(cleanHeadword.length)]
+                            Quiz(
+                                question = "\"${randomWord.meanings.joinToString(", ")}\"을 의미하는 단어에서 '${randomAlphabet}'의 개수를 적으시오.",
+                                multipleOrShort = multipleOrShort,
+                                multipleSelectType = multipleSelectType,
+                                options = emptyList(),
+                                correctAnswer = randomWord.headword.count{it == randomAlphabet}.toString()
+                            )
+                        }
+                        2 -> {
+                            Quiz(
+                                question = "\"${randomWord.meanings.joinToString(", ")}\"을 의미하는 단어의 시작하는 알파벳을 적으시오.",
+                                multipleOrShort = multipleOrShort,
+                                multipleSelectType = multipleSelectType,
+                                options = emptyList(),
+                                correctAnswer = randomWord.headword[0].toString()
+                            )
+                        }
+                        else -> {
+                            Quiz(question = "", options = emptyList(), correctAnswer = "")
+                        }
+                    }
+                }
+                else -> {
+                    Quiz(question = "", options = emptyList(), correctAnswer = "")
+                }
+            }
         } else {
             Quiz(question = "", options = emptyList(), correctAnswer = "")
         }
     }
-
-
-
 }

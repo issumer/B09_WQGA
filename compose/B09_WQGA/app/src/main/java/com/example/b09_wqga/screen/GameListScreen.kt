@@ -31,12 +31,14 @@ import com.example.b09_wqga.ui.theme.nanumFontFamily
 import com.example.b09_wqga.ui.theme.pixelFont1
 import com.example.b09_wqga.ui.theme.pixelFont2
 import com.example.b09_wqga.viewmodel.GameViewModel
+import com.example.b09_wqga.viewmodel.MiscViewModel
 import com.example.b09_wqga.viewmodel.VocViewModel
 import com.example.b09_wqga.viewmodelfactory.GameViewModelFactory
 import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 
 @Composable
 fun GameListScreen(navController: NavHostController, userId: Int) {
+    val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
     val gameRepository = GameRepository()
     val gameViewModel: GameViewModel = viewModel(factory = GameViewModelFactory(gameRepository))
 
@@ -81,6 +83,9 @@ fun GameListScreen(navController: NavHostController, userId: Int) {
                 onDismiss = { showGameStartDialog = false },
                 onPlay = { voc, quizStyle, difficulty ->
                     showGameStartDialog = false
+                    vocViewModel.quizStyle.value = quizStyle
+                    vocViewModel.gameDifficulty.value = difficulty
+                    miscViewModel.showBottomNavigationBar.value = false
                     when (currentPlayGameId) {
                         1 -> {
                             navController.navigate("GamePlayScreen_1/${voc.voc_id}") {
@@ -91,7 +96,7 @@ fun GameListScreen(navController: NavHostController, userId: Int) {
                             }
                         }
                         2 -> {
-                            navController.navigate("GamePlayScreen_2") {
+                            navController.navigate("GamePlayScreen_2/${voc.voc_id}") {
                                 popUpTo(navController.graph.id) {
                                     inclusive = true
                                 }

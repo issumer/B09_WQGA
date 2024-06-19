@@ -42,14 +42,15 @@ fun WordQuiz(quiz: Quiz?, recomposeKey: Boolean, quizLoading: Boolean, onSubmit:
         LoadingQuiz()
     } else {
         quiz?.let {
-            when (it.currentQuiz) {
+            when (it.multipleOrShort) {
                 0 -> {
-                    when (it.currentQuizType) {
+                    when (it.multipleSelectType) {
                         0 -> {
                             MultipleChoiceQuiz1(it, onSubmit = onSubmit)
                         }
                         1 -> {
-                            MultipleChoiceQuiz2(it, onSubmit = onSubmit)
+                            //MultipleChoiceQuiz2(it, onSubmit = onSubmit) // 모두 고르시오 제외
+                            MultipleChoiceQuiz1(it, onSubmit = onSubmit)
                         }
                     }
                 }
@@ -269,8 +270,10 @@ fun ShortAnswerQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
         OutlinedTextField(value = userAnswer, onValueChange = { userAnswer = it }, label = { Text("답", fontFamily = pixelFont2) })
 
         when (quiz.currentAnswerCorrect) {
-            1 -> Text(text = "정답! 단어: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
-            2 -> Text(text = "오답! 단어: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
+
+            1 -> Text(text = "정답! 답: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 16.dp))
+            2 -> Text(text = "오답! 답: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 16.dp))
+
             else -> Spacer(modifier = Modifier.height(16.dp))
         }
 

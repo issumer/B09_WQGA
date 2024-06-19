@@ -57,6 +57,7 @@ import com.example.b09_wqga.navigation.Routes
 import com.example.b09_wqga.repository.VocRepository
 import com.example.b09_wqga.ui.theme.nanumFontFamily
 import com.example.b09_wqga.ui.theme.pixelFont2
+import com.example.b09_wqga.viewmodel.MiscViewModel
 import com.example.b09_wqga.viewmodel.VocViewModel
 import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 import kotlinx.coroutines.delay
@@ -106,8 +107,9 @@ sealed class RPGAttributes {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel: VocViewModel) {
+fun GamePlayScreen_1(navController: NavHostController, vocId: Int) {
     val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(VocRepository()))
+    val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
     val wordList by vocViewModel.wordList.collectAsState()
     var quiz by remember { mutableStateOf(vocViewModel.createQuiz(vocId)) }
     var canvasSize by remember { mutableStateOf(IntSize(0, 0)) }
@@ -135,6 +137,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
     var recomposeKey by remember { mutableStateOf(false) }
     var showAttackSkills by remember { mutableStateOf(false) }
     var showDefenseSkills by remember { mutableStateOf(false) }
+    val difficulty = vocViewModel.gameDifficulty.collectAsState()
 
     val effect1_vec: Painter = painterResource(id = R.drawable.effect1)
     val effect2_vec: Painter = painterResource(id = R.drawable.effect2)
@@ -171,9 +174,9 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
                 enemies.add(RPGAttributes.RPGEnemies[0].copy(
                     x = if (i == 1) canvasSize.width * 3 / 5.0f else canvasSize.width * 3 / 5.0f + 170,
                     y = if (i == 1) canvasSize.height / 10.0f - (i * 120) + 700 else canvasSize.height / 10.0f - (i * 130) + 700,
-                    health = (RPGAttributes.RPGEnemies[0].health * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier)).roundToInt(),
-                    maxHealth = (RPGAttributes.RPGEnemies[0].maxHealth * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier)).roundToInt(),
-                    damage = (RPGAttributes.RPGEnemies[0].damage * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier)).roundToInt()
+                    health = (RPGAttributes.RPGEnemies[0].health * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty.value)).roundToInt(),
+                    maxHealth = (RPGAttributes.RPGEnemies[0].maxHealth * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty.value)).roundToInt(),
+                    damage = (RPGAttributes.RPGEnemies[0].damage * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty.value)).roundToInt()
                 ))
             }
         }
@@ -208,9 +211,9 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
                 } else {
                     if (i == 0 || i == 3) canvasSize.height / 10.0f + 700 else if (i == 1 || i == 4) canvasSize.height / 10.0f + 400 else canvasSize.height / 10.0f + 550
                 },
-                health = (randomEnemy.health * (1 + randomEnemy.difficultyModifier)).roundToInt(),
-                maxHealth = (randomEnemy.maxHealth * (1 + randomEnemy.difficultyModifier)).roundToInt(),
-                damage = (randomEnemy.damage * (1 + randomEnemy.difficultyModifier)).roundToInt()
+                health = (randomEnemy.health * (1 + randomEnemy.difficultyModifier * difficulty.value)).roundToInt(),
+                maxHealth = (randomEnemy.maxHealth * (1 + randomEnemy.difficultyModifier * difficulty.value)).roundToInt(),
+                damage = (randomEnemy.damage * (1 + randomEnemy.difficultyModifier * difficulty.value)).roundToInt()
             ))
         }
     }
@@ -234,14 +237,14 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
 
     suspend fun showDamageEffect_2() {
         enemydamaged = true
-        delay(500L)
+        delay(400L)
         enemydamaged = false
     }
 
     suspend fun performEnemyAttack() {
         if (enemies.isNotEmpty()) {
             enemies.forEach { enemy ->
-                delay(500L)
+                delay(400L)
                 var damage = Random.nextInt(enemy.damage - 3, enemy.damage + 3)
                 if (playerBlockSkill) {
                     damage = (damage / 2.0).roundToInt()
@@ -253,7 +256,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
                 showDamageMessage()
             }
         }
-        delay(500L)
+        delay(400L)
         playerBlockSkill = false
 
         if (player.health <= 0) {
@@ -321,7 +324,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
     }
 
     LaunchedEffect(enemydamaged) {
-        delay(500L)
+        delay(400L)
         enemydamaged = false
     }
 
@@ -546,19 +549,8 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
             if (playerQuizResult) {
                 rightCount += 1
                 playerTurn = true
-//                coroutineScope.launch {
-//                    delay(6000L)
-//                    quiz = vocViewModel.createQuiz(vocId)
-//                    recomposeKey = !recomposeKey
-//                }
-
             } else {
                 wrongCount += 1
-//                coroutineScope.launch {
-//                    delay(6000L)
-//                    quiz = vocViewModel.createQuiz(vocId)
-//                    recomposeKey = !recomposeKey
-//                }
             }
         })
 
@@ -570,6 +562,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, vocViewModel:
                     }
                 },
                 onExitGame = {
+                    miscViewModel.showBottomNavigationBar.value = true
                     navController.navigate(Routes.GameListScreen.route) {
                         popUpTo(navController.graph.id) {// 백스택 모두 지우기
                             inclusive = true

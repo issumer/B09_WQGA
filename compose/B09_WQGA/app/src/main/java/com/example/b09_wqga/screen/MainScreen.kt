@@ -14,20 +14,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.b09_wqga.R
 import com.example.b09_wqga.navigation.MainNavGraph
 import com.example.b09_wqga.navigation.Routes
 import com.example.b09_wqga.component.BottomNavigationBar
-import com.example.b09_wqga.model.UserDataViewModel
-import com.example.b09_wqga.model.WordData
+import com.example.b09_wqga.viewmodel.MiscViewModel
 import com.example.b09_wqga.repository.UserRepository
 import com.example.b09_wqga.viewmodel.UserViewModel
 import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.util.Date
 import java.util.Locale
-import java.util.Scanner
 import kotlin.system.exitProcess
 
 @Composable
@@ -56,7 +52,7 @@ fun MainScreen(navController: NavHostController) {
         LocalNavGraphViewModelStoreOwner provides navStoreOwner
     ) {
         // 각 뷰모델 초기화
-        val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+        val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
 
         // 초기 단어장 파일
 //        val context = LocalContext.current
@@ -75,7 +71,7 @@ fun MainScreen(navController: NavHostController) {
 
         Scaffold(
             bottomBar = {
-                if (userDataViewModel.showBottomNavigationBar.value) {
+                if (miscViewModel.showBottomNavigationBar.value) {
                     val userId = navController.currentBackStackEntry?.arguments?.getString("userId")
                     if (userId != null) {
                         BottomNavigationBar(navController, userId)

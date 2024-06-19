@@ -11,12 +11,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,7 +34,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,7 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.b09_wqga.R
-import com.example.b09_wqga.model.UserDataViewModel
+import com.example.b09_wqga.viewmodel.MiscViewModel
 import com.example.b09_wqga.repository.UserRepository
 import com.example.b09_wqga.repository.AttendanceRepository
 import com.example.b09_wqga.viewmodel.UserViewModel
@@ -58,8 +55,6 @@ import com.example.b09_wqga.navigation.Routes
 import com.example.b09_wqga.repository.VocRepository
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
-import com.example.b09_wqga.ui.theme.nanumFontFamily
 import com.example.b09_wqga.ui.theme.pixelFont2
 import com.example.b09_wqga.viewmodel.VocViewModel
 import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
@@ -74,7 +69,7 @@ fun LoginScreen(navController: NavHostController) {
     val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
     val attendanceViewModel: AttendanceViewModel = viewModel(factory = AttendanceViewModelFactory(attendanceRepository))
     val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
-    val userDataViewModel: UserDataViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+    val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
 
     var userID by rememberSaveable { mutableStateOf("") }
     var userPassword by rememberSaveable { mutableStateOf("") }
@@ -175,8 +170,8 @@ fun LoginScreen(navController: NavHostController) {
                     } else {
                         userViewModel.loginUser(context, userID, userPassword) { user ->
                             if (user != null) {
-                                userDataViewModel.showBottomNavigationBar.value = true
-                                userDataViewModel.userID.value = user.user_id.toString() // 임시
+                                miscViewModel.showBottomNavigationBar.value = true
+                                miscViewModel.userID.value = user.user_id.toString() // 임시
 
                                 // 처음 등록한 사용자만 새 기본 단어장을 부여받음
                                 if(user.enterDate == user.updateDate) {
