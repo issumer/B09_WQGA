@@ -1,7 +1,19 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+}
+
+fun getLocalProperty(propertyName: String): String {
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(FileInputStream(localPropertiesFile))
+    }
+    return localProperties.getProperty(propertyName) ?: ""
 }
 
 android {
@@ -19,6 +31,12 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "GOOGLE_TRANSLATE_API_KEY", "\"${getLocalProperty("GOOGLE_TRANSLATE_API_KEY")}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true // Enable custom BuildConfig fields feature
     }
 
     buildTypes {

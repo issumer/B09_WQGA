@@ -1,11 +1,13 @@
 package com.example.b09_wqga.model
 
 import android.util.Log
+import com.example.b09_wqga.BuildConfig
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
+import java.util.Properties
 
 // Retrofit Service Interface
 interface TranslationService {
@@ -43,9 +45,8 @@ data class GTranslation(
     val translatedText: String
 )
 
-
 suspend fun translateText(text: String): List<GTranslation> {
-    val apiKey = "API KEY" // 깃헙에 커밋 금지, 코드 제출할 때도 삭제 부탁
+    val apiKey = BuildConfig.GOOGLE_TRANSLATE_API_KEY
     val targetLanguage = "ko"
     return try {
         val response = RetrofitInstance.api.translate(text, targetLanguage, apiKey)
