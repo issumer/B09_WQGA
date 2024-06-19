@@ -133,6 +133,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int) {
     var gameOver by remember { mutableStateOf(false) }
     var gamePaused by remember { mutableStateOf(false) }
     var showMenuDialog by rememberSaveable { mutableStateOf<Boolean>(false) }
+    var showEndDialog by rememberSaveable { mutableStateOf<Boolean>(false) }
 
     var recomposeKey by remember { mutableStateOf(false) }
     var showAttackSkills by remember { mutableStateOf(false) }
@@ -261,16 +262,12 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int) {
 
         if (player.health <= 0) {
             gameOver = true
-            centerMessage = "Defeat!"
+            delay(3000L)
+            showEndDialog = true
 
-            delay(2000L)
-            showMenuDialog = true
         } else if (enemies.isEmpty()) {
-            centerMessage = "Victory! Next Stage"
-
             delay(2000L)
             nextStage()
-            centerMessage = ""
         }
 
         playerQuizPaused = false
@@ -478,6 +475,31 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int) {
                 )
             }
 
+            if (gameOver) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0x88000000)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(painter = painterResource(R.drawable.gameover),
+                        contentDescription = "gameover",
+                        modifier = Modifier.size(150.dp))
+                }
+            }
+
+            if (enemies.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0x88000000)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(painter = painterResource(R.drawable.nextstage),
+                        contentDescription = "gameover",
+                        modifier = Modifier.size(150.dp))
+                }
+            }
 
             if (centerMessage.isNotEmpty()) {
                 Box(
@@ -575,6 +597,27 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int) {
                 wrongCount = wrongCount
             )
         }
+
+        if (showEndDialog) {
+            GameEndDialog(
+                onDismiss = {
+                    if (!gameOver) {
+                        showEndDialog = false
+                    }
+                },
+                onExitGame = {
+                    navController.navigate(Routes.GameListScreen.route) {
+                        popUpTo(navController.graph.id) {// 백스택 모두 지우기
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
+                score = score,
+                rightCount = rightCount,
+                wrongCount = wrongCount
+            )
+        }
     }
 }
 
@@ -605,3 +648,37 @@ fun GameMenuDialog(onDismiss: () -> Unit, onExitGame: () -> Unit, score: Int, ri
     )
 }
 
+@Composable
+fun GameEndDialog(onDismiss: () -> Unit, onExitGame: () -> Unit, score: Int, rightCount: Int, wrongCount: Int) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "RESULT",
+                    fontSize = 27.sp,
+                    fontFamily = pixelFont2,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Spacer(modifier = Modifier.height(5.dp))
+                Text("점수: $score", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+                Spacer(modifier = Modifier.height(3.dp))
+                Text("맞은 개수: $rightCount", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+                Spacer(modifier = Modifier.height(3.dp))
+                Text("틀린 개수: $wrongCount", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+                Spacer(modifier = Modifier.height(25.dp))
+
+                Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                    Button_WQGA(width = 80, height = 40, text = "Exit", onClickLabel = onExitGame)
+                }
+            }
+        },
+        confirmButton = {
+
+        }
+    )
+}
