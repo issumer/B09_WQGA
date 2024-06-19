@@ -45,6 +45,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -728,11 +729,11 @@ fun GameEndDialog(onDismiss: () -> Unit, onExitGame: () -> Unit, score: Int, rig
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Spacer(modifier = Modifier.height(5.dp))
-                Text("점수: $score", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+                Text("점수: $score", fontSize = 15.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 Spacer(modifier = Modifier.height(3.dp))
-                Text("맞은 개수: $rightCount", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+                Text("맞은 개수: $rightCount", fontSize = 15.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 Spacer(modifier = Modifier.height(3.dp))
-                Text("틀린 개수: $wrongCount", fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+                Text("틀린 개수: $wrongCount", fontSize = 15.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 Spacer(modifier = Modifier.height(25.dp))
 
                 Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
