@@ -1,16 +1,20 @@
 package com.example.b09_wqga.component
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -80,13 +84,13 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
             fontSize = 20.sp,
             fontFamily = pixelFont2,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
         options.forEachIndexed { index, option ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 4.dp)
+                modifier = Modifier.padding(vertical = 2.dp)
             ) {
                 RadioButton(
                     selected = selectedOption == index,
@@ -104,7 +108,7 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
                     fontFamily = pixelFont2,
                     fontSize = 16.sp,
                     color = Color.Blue,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             } else {
                 Text(
@@ -112,7 +116,7 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
                     fontFamily = pixelFont2,
                     fontSize = 16.sp,
                     color = Color.Red,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
         } else {
@@ -120,12 +124,16 @@ fun MultipleChoiceQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
         }
 
         Button(
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black,
+                contentColor = Color.White),
             onClick = {
                 answerChecked = true
                 val result = quiz.checkMultipleChoiceAnswer(listOf(selectedOption))
                 Log.d("MultipleChoiceQuiz1", "Quiz result: $result, selectedOption: $selectedOption")
                 onSubmit(result)
             },
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier.align(Alignment.End),
             enabled = !answerChecked
         ) {
@@ -160,13 +168,13 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
             fontSize = 20.sp,
             fontFamily = pixelFont2,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
         options.forEachIndexed { index, option ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 4.dp)
+                modifier = Modifier.padding(vertical = 2.dp)
             ) {
                 Checkbox(
                     checked = index in selectedIndexes,
@@ -189,14 +197,14 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
                 fontSize = 16.sp,
                 fontFamily = pixelFont2,
                 color = Color.Blue,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
             2 -> Text(
                 text = "오답! 답: ${quiz.correctAnswer}",
                 fontSize = 16.sp,
                 fontFamily = pixelFont2,
                 color = Color.Red,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
             else -> if (showWrongMessage) {
                 Text(
@@ -204,7 +212,7 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
                     fontSize = 16.sp,
                     fontFamily = pixelFont2,
                     color = Color.Red,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             } else {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -212,6 +220,9 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
         }
 
         Button(
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black,
+                contentColor = Color.White),
             onClick = {
                 answerChecked = true
                 val result = quiz.checkMultipleChoiceAnswer(selectedIndexes.toMutableList())
@@ -221,6 +232,7 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
                     showWrongMessage = true
                 }
             },
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier.align(Alignment.End),
             enabled = !answerChecked
         ) {
@@ -246,25 +258,29 @@ fun ShortAnswerQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
         .fillMaxWidth()
         .verticalScroll(rememberScrollState())
     ) {
-        Text(text = "Q. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+        Text(text = "Q. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
 
-        OutlinedTextField(value = userAnswer, onValueChange = { userAnswer = it }, label = { Text("답") })
+        OutlinedTextField(value = userAnswer, onValueChange = { userAnswer = it }, label = { Text("답", fontFamily = pixelFont2) })
 
         when (quiz.currentAnswerCorrect) {
-            1 -> Text(text = "정답! 단어: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 16.dp))
-            2 -> Text(text = "오답! 단어: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 16.dp))
+            1 -> Text(text = "정답! 단어: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
+            2 -> Text(text = "오답! 단어: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
             else -> Spacer(modifier = Modifier.height(16.dp))
         }
 
         Button(
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black,
+                contentColor = Color.White),
             onClick = {
                 answerChecked = true
                 onSubmit(quiz.checkShortAnswerAnswer(userAnswer))
             },
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier.align(Alignment.End),
             enabled = !answerChecked
         ) {
-            Text("정답 확인")
+            Text("정답 확인",fontFamily = pixelFont2)
         }
     }
 }
@@ -285,36 +301,40 @@ fun MultipleChoiceQuiz1(quiz: Quiz, selectedOption: Int = -1, answerChecked: Boo
         .fillMaxWidth()
         .verticalScroll(scrollState)
     ) {
-        Text(text = "${quiz.currentQuizNum}. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+        Text(text = "${quiz.currentQuizNum}. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp),fontFamily = pixelFont2)
 
         options.forEachIndexed { index, option ->
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 2.dp)) {
                 RadioButton(
                     selected = selectedOption == index,
                     onClick = { selectedOption = index }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = option.headword, fontSize = 16.sp)
+                Text(text = option.headword, fontSize = 16.sp, fontFamily = pixelFont2)
             }
         }
 
         val answerNums = quiz.answerNums.orEmpty().map { (it + 1).toString() } // Null 방지
         val answerString = answerNums.joinToString(", ")
         when (quiz.currentAnswerCorrect) {
-            1 -> Text(text = "정답! 답: $answerString", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 16.dp))
-            2 -> Text(text = "오답! 답: $answerString", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 16.dp))
-            else -> Text(text = "", fontSize = 16.sp, modifier = Modifier.padding(bottom = 16.dp))
+            1 -> Text(text = "정답! 답: $answerString", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
+            2 -> Text(text = "오답! 답: $answerString", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
+            else -> Text(text = "", fontSize = 16.sp, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
         }
 
         Button(
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black,
+                contentColor = Color.White),
             onClick = {
                 answerChecked = true
                 onSubmit(quiz.checkMultipleChoiceAnswer(mutableListOf(selectedOption)))
             },
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier.align(Alignment.End),
             enabled = !answerChecked
         ) {
-            Text("정답 확인")
+            Text("정답 확인",fontFamily = pixelFont2)
         }
     }
 }
@@ -335,10 +355,10 @@ fun MultipleChoiceQuiz2(quiz: Quiz, selectedIndexes: Set<Int> = setOf(), answerC
         .fillMaxWidth()
         .verticalScroll(scrollState)
     ) {
-        Text(text = "${quiz.currentQuizNum}. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+        Text(text = "${quiz.currentQuizNum}. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
 
         options.forEachIndexed { index, option ->
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 2.dp)) {
                 Checkbox(
                     checked = index in selectedIndexes,
                     onCheckedChange = { isChecked ->
@@ -350,27 +370,31 @@ fun MultipleChoiceQuiz2(quiz: Quiz, selectedIndexes: Set<Int> = setOf(), answerC
                     }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = option, fontSize = 16.sp)
+                Text(text = option, fontSize = 16.sp,fontFamily = pixelFont2)
             }
         }
 
         val answerNums = quiz.answerNums.orEmpty().map { (it + 1).toString() } // Null 방지
         val answerString = answerNums.joinToString(", ")
         when (quiz.currentAnswerCorrect) {
-            1 -> Text(text = "정답! 답: $answerString", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 16.dp))
-            2 -> Text(text = "오답! 답: $answerString", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 16.dp))
-            else -> Text(text = "", fontSize = 16.sp, modifier = Modifier.padding(bottom = 16.dp))
+            1 -> Text(text = "정답! 답: $answerString", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
+            2 -> Text(text = "오답! 답: $answerString", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
+            else -> Text(text = "", fontSize = 16.sp, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
         }
 
         Button(
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black,
+                contentColor = Color.White),
             onClick = {
                 answerChecked = true
                 onSubmit(quiz.checkMultipleChoiceAnswer(selectedIndexes.toMutableList()))
             },
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier.align(Alignment.End),
             enabled = !answerChecked
         ) {
-            Text("정답 확인")
+            Text("정답 확인",fontFamily = pixelFont2)
         }
     }
 }
@@ -385,26 +409,30 @@ fun ShortAnswerQuiz1(quiz: Quiz, userAnswer: String = "", answerChecked: Boolean
         .fillMaxWidth()
         .verticalScroll(scrollState)
     ) {
-        Text(text = "${quiz.currentQuizNum}. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+        Text(text = "${quiz.currentQuizNum}. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
 
-        OutlinedTextField(value = userAnswer, onValueChange = { userAnswer = it }, label = { Text("답") })
+        OutlinedTextField(value = userAnswer, onValueChange = { userAnswer = it }, label = { Text("답",fontFamily = pixelFont2) })
 
         val answerWord = quiz.answerWord ?: return // Null 방지
         when (quiz.currentAnswerCorrect) {
-            1 -> Text(text = "정답! 단어: ${answerWord.headword}", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 16.dp))
-            2 -> Text(text = "오답! 단어: ${answerWord.headword}", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 16.dp))
-            else -> Text(text = "", fontSize = 16.sp, modifier = Modifier.padding(bottom = 16.dp))
+            1 -> Text(text = "정답! 단어: ${answerWord.headword}", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
+            2 -> Text(text = "오답! 단어: ${answerWord.headword}", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
+            else -> Text(text = "", fontSize = 16.sp, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
         }
 
         Button(
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black,
+                contentColor = Color.White),
             onClick = {
                 answerChecked = true
                 onSubmit(quiz.checkShortAnswerAnswer(userAnswer))
             },
             modifier = Modifier.align(Alignment.End),
+            shape = RoundedCornerShape(12.dp),
             enabled = !answerChecked
         ) {
-            Text("정답 확인")
+            Text("정답 확인",fontFamily = pixelFont2)
         }
     }
 }
@@ -413,10 +441,15 @@ fun ShortAnswerQuiz1(quiz: Quiz, userAnswer: String = "", answerChecked: Boolean
 fun LoadingQuiz() {
     val scrollState = rememberScrollState()
 
-    Column(modifier = Modifier
+    Column(verticalArrangement = Arrangement.Center, modifier = Modifier
         .fillMaxWidth()
+        .fillMaxHeight()
         .verticalScroll(scrollState)
     ) {
-        Text("퀴즈 로딩 중")
+        Row(horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+            ){
+            Text("퀴즈 로딩 중 . . .", fontFamily = pixelFont2)
+        }
     }
 }
