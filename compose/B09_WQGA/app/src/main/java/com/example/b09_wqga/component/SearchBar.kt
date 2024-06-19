@@ -58,7 +58,7 @@ fun SearchBar(searchText: String, onSearchTextChanged: (String) -> Unit) {
         OutlinedTextField(
             value = searchText,
             placeholder = {
-                Text(text = "Enter PW", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+                Text(text = "Search", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
             },
             shape = RoundedCornerShape(25.dp),
             leadingIcon = { Icon(painter = painterResource(R.drawable.search), contentDescription = null,
@@ -89,7 +89,7 @@ fun SearchBar2(searchText: String, onSearchTextChanged: (String) -> Unit) {
         OutlinedTextField(
             value = searchText,
             placeholder = {
-                Text(text = "Enter PW", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+                Text(text = "Search", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
             },
             shape = RoundedCornerShape(25.dp),
             leadingIcon = { Icon(painter = painterResource(R.drawable.search), contentDescription = null,
