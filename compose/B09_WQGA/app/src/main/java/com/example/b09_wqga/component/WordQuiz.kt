@@ -16,11 +16,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -256,6 +258,7 @@ fun MultipleChoiceQuiz2(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShortAnswerQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
     var userAnswer by remember { mutableStateOf("") }
@@ -265,14 +268,25 @@ fun ShortAnswerQuiz1(quiz: Quiz, onSubmit: (Boolean) -> Unit) {
         .fillMaxWidth()
         .verticalScroll(rememberScrollState())
     ) {
-        Text(text = "Q. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
+        Text(text = "Q. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp),fontFamily = pixelFont2)
 
-        OutlinedTextField(value = userAnswer, onValueChange = { userAnswer = it }, label = { Text("답", fontFamily = pixelFont2) })
+        OutlinedTextField(
+            value = userAnswer,
+            onValueChange = { userAnswer = it },
+            placeholder = {
+                Text(text = "Enter Answer", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+            },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color.Black,
+                unfocusedBorderColor = Color.Gray
+            ),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
         when (quiz.currentAnswerCorrect) {
 
-            1 -> Text(text = "정답! 답: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 16.dp))
-            2 -> Text(text = "오답! 답: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 16.dp))
+            1 -> Text(text = "정답! 답: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Blue, modifier = Modifier.padding(bottom = 16.dp),fontFamily = pixelFont2)
+            2 -> Text(text = "오답! 답: ${quiz.correctAnswer}", fontSize = 16.sp, color = Color.Red, modifier = Modifier.padding(bottom = 16.dp),fontFamily = pixelFont2)
 
             else -> Spacer(modifier = Modifier.height(16.dp))
         }
@@ -412,6 +426,7 @@ fun MultipleChoiceQuiz2(quiz: Quiz, selectedIndexes: Set<Int> = setOf(), answerC
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShortAnswerQuiz1(quiz: Quiz, userAnswer: String = "", answerChecked: Boolean = false, onSubmit: (Boolean) -> Unit) {
     var userAnswer by remember { mutableStateOf(userAnswer) }
@@ -422,9 +437,20 @@ fun ShortAnswerQuiz1(quiz: Quiz, userAnswer: String = "", answerChecked: Boolean
         .fillMaxWidth()
         .verticalScroll(scrollState)
     ) {
-        Text(text = "${quiz.currentQuizNum}. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp),fontFamily = pixelFont2)
+        Text(text = "${quiz.currentQuizNum}. ${quiz.question}", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp),fontFamily = pixelFont2)
 
-        OutlinedTextField(value = userAnswer, onValueChange = { userAnswer = it }, label = { Text("답",fontFamily = pixelFont2) })
+        OutlinedTextField(
+            value = userAnswer,
+            onValueChange = { userAnswer = it },
+            placeholder = {
+                Text(text = "Enter Answer", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
+            },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color.Black,
+                unfocusedBorderColor = Color.Gray
+            ),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
         val answerWord = quiz.answerWord ?: return // Null 방지
         when (quiz.currentAnswerCorrect) {
