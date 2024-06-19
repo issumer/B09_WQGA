@@ -1,10 +1,12 @@
 package com.example.b09_wqga.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
@@ -12,6 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,7 +76,14 @@ fun GameListScreen(navController: NavHostController, userId: Int) {
                 GameItem(game = game, onStartClick = {
                     showGameStartDialog = true
                     currentPlayGameId = game.game_id
-                })
+                    },
+                    imagesc = if(game.game_id == 1){
+                        R.drawable.game1
+                    }
+                    else{
+                        R.drawable.game2
+                    }
+                )
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
@@ -112,42 +123,55 @@ fun GameListScreen(navController: NavHostController, userId: Int) {
 
 
 @Composable
-fun GameItem(game: Game, onStartClick: () -> Unit) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(8.dp)) {
-        Text(
-            text = game.gamename,
-            fontSize = 20.sp,
-            fontFamily = pixelFont2,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
+fun GameItem(game: Game, onStartClick: () -> Unit, imagesc: Int) {
+    Box(
+        Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .fillMaxWidth()
+            .height(90.dp)
+            .background(Color.LightGray)
+            .padding(all = 10.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground), // Placeholder 이미지, 필요시 변경
-                contentDescription = "Game Icon",
-                modifier = Modifier.size(48.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text(
-                    text = game.description,
-                    fontSize = 16.sp,
-                    fontFamily = pixelFont2,
-                    fontWeight = FontWeight.Normal,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(bottom = 8.dp)
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = imagesc), // Placeholder 이미지, 필요시 변경
+                    contentDescription = "Game Icon",
+                    modifier = Modifier.size(48.dp)
                 )
-            }
-            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                Image(painter = painterResource(id = R.drawable.playb),
-                    contentDescription = null,
-                    modifier = Modifier.size(width = 80.dp, height = 40.dp)
-                        .clickable { onStartClick() }
-                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier= Modifier.padding(top = 2.dp)) {
+                    Text(
+                        text = game.gamename,
+                        fontSize = 20.sp,
+                        fontFamily = pixelFont2,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    Text(
+                        text = game.description,
+                        fontSize = 16.sp,
+                        fontFamily = pixelFont2,
+                        fontWeight = FontWeight.Normal,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                    Image(painter = painterResource(id = R.drawable.playb),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(width = 80.dp, height = 40.dp)
+                            .clickable { onStartClick() }
+                    )
+                }
             }
         }
     }
