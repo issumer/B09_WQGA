@@ -319,6 +319,11 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
             delay(2000)
             showEndDialog = true
         }
+        if (gameOver && gameWin){
+            updatePlayedData(score, rightCount, wrongCount)
+            delay(2000)
+            showEndDialog = true
+        }
     }
 
     LaunchedEffect(showCorrect){
@@ -626,7 +631,7 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
 
                 }
             }
-            if (gameOver) {
+            if (gameOver && lives == 0) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -635,6 +640,19 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
                 ) {
                     Image(painter = painterResource(R.drawable.gameover),
                         contentDescription = "gameover",
+                        modifier = Modifier.size(150.dp))
+                }
+            }
+
+            if (gameWin) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0x88000000)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(painter = painterResource(R.drawable.clear),
+                        contentDescription = "gamewin",
                         modifier = Modifier.size(150.dp))
                 }
             }
