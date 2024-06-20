@@ -165,27 +165,76 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
         return _vocList.value.size >= 10
     }
 
+    fun sortVocList() {
+        val sortedList = _vocList.value.sortedWith(compareBy<Voc> {
+            !it.title.contains(searchText.value, ignoreCase = true)
+        }.thenBy {
+            it.title
+        })
+        _vocList.value = sortedList
+    }
+
     fun sortWordList() {
         val sortedList = when (sortBasedOn.value) {
             "Headword" -> if (sortOrder.value == "Ascending") {
-                _wordList.value.sortedBy { it.headword }
+                _wordList.value.sortedWith(compareBy<Word> {
+                    !it.headword.contains(searchText.value, ignoreCase = true)
+                }.thenBy {
+                    it.headword
+                })
+                //_wordList.value.sortedBy { it.headword }
             } else {
-                _wordList.value.sortedByDescending { it.headword }
+                _wordList.value.sortedWith(compareBy<Word> {
+                    it.headword.contains(searchText.value, ignoreCase = true)
+                }.thenBy {
+                    it.headword
+                })
+                //_wordList.value.sortedByDescending { it.headword }
             }
             "Meaning" -> if (sortOrder.value == "Ascending") {
-                _wordList.value.sortedBy { it.meanings.joinToString() }
+                _wordList.value.sortedWith(compareBy<Word> {
+                    !it.headword.contains(searchText.value, ignoreCase = true)
+                }.thenBy {
+                    it.meanings.joinToString()
+                })
+                //_wordList.value.sortedBy { it.meanings.joinToString() }
             } else {
-                _wordList.value.sortedByDescending { it.meanings.joinToString() }
+                _wordList.value.sortedWith(compareBy<Word> {
+                    it.headword.contains(searchText.value, ignoreCase = true)
+                }.thenBy {
+                    it.meanings.joinToString()
+                })
+                //_wordList.value.sortedByDescending { it.meanings.joinToString() }
             }
             "Right" -> if (sortOrder.value == "Ascending") {
-                _wordList.value.sortedBy { it.right }
+                _wordList.value.sortedWith(compareBy<Word> {
+                    !it.headword.contains(searchText.value, ignoreCase = true)
+                }.thenBy {
+                    it.right
+                })
+                //_wordList.value.sortedBy { it.right }
             } else {
-                _wordList.value.sortedByDescending { it.right }
+                _wordList.value.sortedWith(compareBy<Word> {
+                    it.headword.contains(searchText.value, ignoreCase = true)
+                }.thenBy {
+                    it.right
+                })
+                //_wordList.value.sortedByDescending { it.right }
             }
             "Wrong" -> if (sortOrder.value == "Ascending") {
-                _wordList.value.sortedBy { it.wrong }
+                _wordList.value.sortedWith(compareBy<Word> {
+                    !it.headword.contains(searchText.value, ignoreCase = true)
+                }.thenBy {
+                    it.wrong
+                })
+                //_wordList.value.sortedBy { it.wrong }
             } else {
-                _wordList.value.sortedByDescending { it.wrong }
+                _wordList.value.sortedWith(compareBy<Word> {
+                    it.headword.contains(searchText.value, ignoreCase = true)
+                }.thenBy {
+                    it.wrong
+                })
+                //_wordList.value.sortedByDescending { it.wrong }
             }
             else -> _wordList.value
         }

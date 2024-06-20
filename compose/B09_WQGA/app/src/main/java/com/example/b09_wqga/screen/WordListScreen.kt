@@ -113,7 +113,10 @@ fun WordListScreen(navController: NavHostController, vocId: Int) {
         ) {
             SearchBar(
                 searchText = vocViewModel.searchText.value,
-                onSearchTextChanged = { vocViewModel.searchText.value = it }
+                onSearchTextChanged = {
+                    vocViewModel.searchText.value = it
+                    vocViewModel.sortWordList()
+                }
             )
             Spacer(modifier = Modifier.width(8.dp))
 

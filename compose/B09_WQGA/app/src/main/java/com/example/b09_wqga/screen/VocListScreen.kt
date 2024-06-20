@@ -62,7 +62,10 @@ fun VocListScreen(navController: NavHostController, userId: Int) {
 
             SearchBar(
                 searchText = vocViewModel.searchText.value,
-                onSearchTextChanged = { vocViewModel.searchText.value = it }
+                onSearchTextChanged = {
+                    vocViewModel.searchText.value = it
+                    vocViewModel.sortVocList()
+                }
             )
             Spacer(modifier = Modifier.width(8.dp))
             Button_WQGA(width = 80, height = 40, text = "Add",
