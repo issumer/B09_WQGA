@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +39,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -46,6 +49,7 @@ import com.example.b09_wqga.database.User
 import com.example.b09_wqga.navigation.Routes
 import com.example.b09_wqga.repository.UserRepository
 import com.example.b09_wqga.ui.theme.nanumFontFamily
+import com.example.b09_wqga.ui.theme.pixelFont2
 import com.example.b09_wqga.viewmodel.UserViewModel
 import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
 import java.text.SimpleDateFormat
@@ -86,7 +90,7 @@ fun RegisterScreen(navController: NavHostController) {
             OutlinedTextField(
                 value = userName,
                 placeholder = {
-                    Text(text = "Enter Name", color = Color.Gray, fontSize = 14.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
+                    Text(text = "Enter Name", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 },
                 onValueChange = { userName = it },
                 leadingIcon = { Icon(painter = painterResource(R.drawable.name), contentDescription = null,
@@ -112,7 +116,7 @@ fun RegisterScreen(navController: NavHostController) {
             OutlinedTextField(
                 value = userID,
                 placeholder = {
-                    Text(text = "Enter ID", color = Color.Gray, fontSize = 14.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
+                    Text(text = "Enter ID", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 },
                 onValueChange = { userID = it },
                 leadingIcon = { Icon(painter = painterResource(R.drawable.idlogo), contentDescription = null,
@@ -140,7 +144,7 @@ fun RegisterScreen(navController: NavHostController) {
                 value = userPassword,
                 onValueChange = { userPassword = it },
                 placeholder = {
-                    Text(text = "Enter PW", color = Color.Gray, fontSize = 14.sp, fontFamily = nanumFontFamily, fontWeight = FontWeight.Normal)
+                    Text(text = "Enter PW", color = Color.Gray, fontSize = 14.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Normal)
                 },
                 leadingIcon = { Icon(painter = painterResource(R.drawable.pwlogo), contentDescription = null,
                     modifier = Modifier.size(25.dp)) },
@@ -205,11 +209,25 @@ fun RegisterScreen(navController: NavHostController) {
 fun RegisterFailDialog(onConfirmClick: () -> Unit) {
     AlertDialog(
         onDismissRequest = { },
-        title = { Text(text = "회원가입 실패", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-        text = { Text(text = "회원가입에 실패하였습니다. 아이디, 비번, 이름이 비었는지 확인해주세요!") },
+        title = {
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()){
+                Text(text = "회원가입 실패", fontSize = 20.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Bold) }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "회원가입에 실패하였습니다.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    Text(text = "입력칸이 비어있는지 확인해주세요!", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            }
+        },
         confirmButton = {
-            Button(onClick = onConfirmClick) {
-                Text(text = "OK")
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = onConfirmClick) {
+                    Image(
+                        painter = painterResource(R.drawable.okbutton),
+                        contentDescription = null,
+                        modifier = Modifier.size(width = 80.dp, height = 30.dp)
+                    )
+                }
             }
         }
     )
