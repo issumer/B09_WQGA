@@ -261,6 +261,7 @@ fun CustomCalendar(
             Text(
                 text = "${yearMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${yearMonth.year}",
                 fontSize = 20.sp,
+                fontFamily = pixelFont2,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -271,6 +272,7 @@ fun CustomCalendar(
                     text = day,
                     modifier = Modifier.weight(1f),
                     fontWeight = FontWeight.Bold,
+                    fontFamily = pixelFont2,
                     fontSize = 16.sp,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
@@ -309,6 +311,7 @@ fun CustomCalendar(
                                 Text(
                                     text = dayOfMonth.toString(),
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    fontFamily = pixelFont2,
                                     color = if (isSelected || isAttendanceDay) Color.White else Color.Black
                                 )
                             }
