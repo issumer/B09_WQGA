@@ -54,6 +54,7 @@ import com.example.b09_wqga.viewmodel.UserViewModel
 import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.regex.Pattern
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,11 +66,18 @@ fun RegisterScreen(navController: NavHostController) {
     var userPassword by rememberSaveable { mutableStateOf("") }
     var userName by rememberSaveable { mutableStateOf("") }
     var showRegisterFailDialog by rememberSaveable { mutableStateOf(false) }
+    var registerFailMessage by rememberSaveable { mutableStateOf("") }
     var passwordVisibility by rememberSaveable { mutableStateOf(false) }
     val dateFormat = "yyyyMMdd HH:mm"
     val date = Date(System.currentTimeMillis())
     val DateFormat = SimpleDateFormat(dateFormat)
     val Date: String = DateFormat.format(date)
+
+    fun isPasswordValid(password: String): Boolean {
+        val passwordPattern = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,16}\$"
+        return Pattern.matches(passwordPattern, password)
+    }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -178,20 +186,33 @@ fun RegisterScreen(navController: NavHostController) {
             contentDescription = null,
             modifier = Modifier.clickable {
                 // 회원가입 체크 코드
-                if(userID.isEmpty() || userPassword.isEmpty() || userName.isEmpty()) {
-                    showRegisterFailDialog = true
-                } else {
-                    val user = User(username = userID, password = userPassword, name = userName, enterDate = Date, updateDate = Date)
-                    userViewModel.registerUser(user) { success ->
-                        if (success) {
-                            navController.navigate(Routes.LoginScreen.route) {
-                                popUpTo(navController.graph.id) {// 백스택 모두 지우기
-                                    inclusive = true
+                when {
+                    userID.isEmpty() || userPassword.isEmpty() || userName.isEmpty() -> {
+                        registerFailMessage = "모든 필드를 입력해주세요."
+                        showRegisterFailDialog = true
+                    }
+                    userID.length < 8 || userID.length > 16 -> {
+                        registerFailMessage = "아이디는 8글자 이상 16글자 이하로 입력해주세요."
+                        showRegisterFailDialog = true
+                    }
+                    !isPasswordValid(userPassword) -> {
+                        registerFailMessage = "비밀번호는 영어와 숫자를 포함하여 8글자에서 16글자 사이로 입력해주세요."
+                        showRegisterFailDialog = true
+                    }
+                    else -> {
+                        val user = User(username = userID, password = userPassword, name = userName, enterDate = Date, updateDate = Date)
+                        userViewModel.registerUser(user) { success ->
+                            if (success) {
+                                navController.navigate(Routes.LoginScreen.route) {
+                                    popUpTo(navController.graph.id) {// 백스택 모두 지우기
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
                                 }
-                                launchSingleTop = true
+                            } else {
+                                registerFailMessage = "회원가입에 실패하였습니다. 다시 시도해주세요."
+                                showRegisterFailDialog = true
                             }
-                        } else {
-                            showRegisterFailDialog = true
                         }
                     }
                 }
@@ -200,13 +221,13 @@ fun RegisterScreen(navController: NavHostController) {
         )
 
         if (showRegisterFailDialog) {
-            RegisterFailDialog { showRegisterFailDialog = false }
+            RegisterFailDialog(registerFailMessage) { showRegisterFailDialog = false }
         }
     }
 }
 
 @Composable
-fun RegisterFailDialog(onConfirmClick: () -> Unit) {
+fun RegisterFailDialog(message: String, onConfirmClick: () -> Unit) {
     AlertDialog(
         onDismissRequest = { },
         title = {
@@ -215,8 +236,7 @@ fun RegisterFailDialog(onConfirmClick: () -> Unit) {
         },
         text = {
             Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = "회원가입에 실패하였습니다.", textAlign = TextAlign.Center, fontFamily = pixelFont2, modifier = Modifier.fillMaxWidth())
-                    Text(text = "입력칸이 비어있는지 확인해주세요!", textAlign = TextAlign.Center,fontFamily = pixelFont2, modifier = Modifier.fillMaxWidth())
+                Text(text = message, textAlign = TextAlign.Center, fontFamily = pixelFont2, modifier = Modifier.fillMaxWidth())
             }
         },
         confirmButton = {
@@ -232,4 +252,3 @@ fun RegisterFailDialog(onConfirmClick: () -> Unit) {
         }
     )
 }
-
