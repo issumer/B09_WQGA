@@ -215,8 +215,8 @@ fun RegisterFailDialog(onConfirmClick: () -> Unit) {
         },
         text = {
             Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = "회원가입에 실패하였습니다.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    Text(text = "입력칸이 비어있는지 확인해주세요!", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    Text(text = "회원가입에 실패하였습니다.", textAlign = TextAlign.Center, fontFamily = pixelFont2, modifier = Modifier.fillMaxWidth())
+                    Text(text = "입력칸이 비어있는지 확인해주세요!", textAlign = TextAlign.Center,fontFamily = pixelFont2, modifier = Modifier.fillMaxWidth())
             }
         },
         confirmButton = {
