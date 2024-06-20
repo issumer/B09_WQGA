@@ -1,119 +1,429 @@
 package com.example.b09_wqga.screen
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Architecture
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.ViewModelStoreOwner
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import com.example.b09_wqga.navigation.MainNavGraph
-import com.example.b09_wqga.navigation.Routes
-import com.example.b09_wqga.component.BottomNavigationBar
-import com.example.b09_wqga.viewmodel.MiscViewModel
-import com.example.b09_wqga.repository.UserRepository
+import com.example.b09_wqga.R
+import com.example.b09_wqga.component.Button_WQGA
+import com.example.b09_wqga.database.Game
+import com.example.b09_wqga.database.Played
+import com.example.b09_wqga.database.Word
+import com.example.b09_wqga.repository.AttendanceRepository
+import com.example.b09_wqga.repository.GameRepository
+import com.example.b09_wqga.repository.PlayedRepository
+import com.example.b09_wqga.repository.VocRepository
+import com.example.b09_wqga.ui.theme.pixelFont1
+import com.example.b09_wqga.ui.theme.pixelFont2
+import com.example.b09_wqga.viewmodel.AttendanceViewModel
+import com.example.b09_wqga.viewmodel.GameViewModel
+import com.example.b09_wqga.viewmodel.PlayedViewModel
 import com.example.b09_wqga.viewmodel.UserViewModel
-import com.example.b09_wqga.viewmodelfactory.UserViewModelFactory
+import com.example.b09_wqga.viewmodel.VocViewModel
+import com.example.b09_wqga.viewmodelfactory.AttendanceViewModelFactory
+import com.example.b09_wqga.viewmodelfactory.GameViewModelFactory
+import com.example.b09_wqga.viewmodelfactory.PlayedViewModelFactory
+import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import kotlin.system.exitProcess
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.TextStyle
+import java.util.*
 
 @Composable
-fun rememberViewModelStoreOwner(): ViewModelStoreOwner {
-    val context = LocalContext.current
-    return remember(context) { context as ViewModelStoreOwner }
-}
+fun HomeScreen(userId: String, userViewModel: UserViewModel) {
+    val scrollState = rememberScrollState()
+    val attendanceRepository = AttendanceRepository()
+    val attendanceViewModel: AttendanceViewModel = viewModel(factory = AttendanceViewModelFactory(attendanceRepository))
+    val gameRepository = GameRepository()
+    val gameViewModel: GameViewModel = viewModel(factory = GameViewModelFactory(gameRepository))
+    val playedRepository = PlayedRepository()
+    val playedViewModel: PlayedViewModel = viewModel(factory = PlayedViewModelFactory(playedRepository))
+    val vocRepository = VocRepository()
+    val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
 
-val LocalNavGraphViewModelStoreOwner =
-    staticCompositionLocalOf<ViewModelStoreOwner> {
-        error("Undefined")
+    val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+    var showCompleteDialog by remember { mutableStateOf(false) }
+    var showFailDialog by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var attendanceDates by remember { mutableStateOf<List<String>>(listOf()) }
+    var wordData by remember { mutableStateOf<Word?>(null) }
+
+    val points = userViewModel.points.value
+    val name = userViewModel.name.value
+
+    var recentlyPlayed by remember { mutableStateOf<Played?>(null) }
+    var recentlyPlayedGame by remember { mutableStateOf<Game?>(null) }
+
+    val vocList by vocViewModel.vocList.collectAsState()
+    var recentWord by remember { mutableStateOf<Word?>(null) }
+
+    LaunchedEffect(userId) {
+        val userIdInt = userId.toIntOrNull()
+        if (userIdInt != null) {
+            vocViewModel.loadVocs(userIdInt)
+        }
+    }
+    LaunchedEffect(vocList) {
+        if (vocList.isNotEmpty()) {
+            recentWord = vocList.flatMap { it.words_json }
+                .maxByOrNull { SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(it.create_date) }
+        }
     }
 
-@Composable
-fun MainScreen(navController: NavHostController) {
-    val navStoreOwner = rememberViewModelStoreOwner()
+    LaunchedEffect(userId) {
+        userViewModel.fetchName(userId)
+        userViewModel.fetchPoints(userId)
 
-    // 모프 평가 후 셧다운 코드 - 소스 코드 제출 시에는 삭제
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val currentDate = Date()
-    if (currentDate.after(dateFormat.parse("2024-06-30"))) {
-        exitProcess(-1)
-    }
+        val userIdInt = userId.toIntOrNull()
+        if (userIdInt != null) {
+            attendanceViewModel.getAttendanceDates(userIdInt) { dates ->
+                attendanceDates = dates
+            }
 
-    CompositionLocalProvider(
-        LocalNavGraphViewModelStoreOwner provides navStoreOwner
-    ) {
-        // 각 뷰모델 초기화
-        val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
-
-        // 초기 단어장 파일
-//        val context = LocalContext.current
-//        if(!userDataViewModel.initVocList.value) {
-//            val scan = Scanner(context.resources.openRawResource(R.raw.words)) // 파일 접근
-//            while(scan.hasNextLine()) {
-//                val headword = scan.nextLine()
-//                val meaning = scan.nextLine()
-//                val firstVocData : VocData = userDataViewModel.vocList[0]
-//                firstVocData.wordList.add(WordData(headword, "en", arrayOf<String>(meaning)))
-//                firstVocData.wordCount++
-//            }
-//            scan.close()
-//            userDataViewModel.initVocList.value = true
-//        }
-
-        Scaffold(
-            bottomBar = {
-                if (miscViewModel.showBottomNavigationBar.value) {
-                    val userId = navController.currentBackStackEntry?.arguments?.getString("userId")
-                    if (userId != null) {
-                        BottomNavigationBar(navController, userId)
+            playedViewModel.getAllPlayedByUserId(userIdInt) { playedList ->
+                recentlyPlayed = playedList.maxByOrNull { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.play_date) }
+                recentlyPlayed?.let { played ->
+                    gameViewModel.getGameById(played.game_id) { game ->
+                        recentlyPlayedGame = game
                     }
                 }
             }
-        ) { contentPadding ->
 
-            Column(modifier = Modifier.padding(contentPadding)) {
-                NavHost(
-                    navController = navController,
-                    startDestination = Routes.InitialScreen.route
-                ) {
-                    composable(Routes.InitialScreen.route) {
-                        InitialScreen(navController)
-                    }
+            vocViewModel.loadVocs(userIdInt)
+        }
+    }
 
-                    composable(Routes.LoginScreen.route) {
-                        LoginScreen(navController)
-                    }
+    val isButtonEnabled = !attendanceDates.contains(currentDate)
 
-                    composable(Routes.WelcomeScreen.route) {
-                        WelcomeScreen(navController)
-                    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(scrollState)
+    ) {
+        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Welcome back, $name!",
+                fontSize = 24.sp,
+                fontFamily = pixelFont2,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
 
-                    composable(Routes.RegisterScreen.route) {
-                        RegisterScreen(navController)
-                    }
-
-                    composable("${Routes.MainScreen.route}/{userId}") { backStackEntry ->
-                        val userId = backStackEntry.arguments?.getString("userId")
-                        if (userId != null) {
-                            val userRepository = UserRepository()
-                            val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(userRepository))
-                            HomeScreen(userId, userViewModel)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(R.drawable.diamond),
+                    contentDescription = "Points",
+                    modifier = Modifier.size(30.dp)
+                )
+                Text(
+                    text = "$points Points",
+                    fontSize = 18.sp,
+                    fontFamily = pixelFont1,
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.padding(start = 5.dp)
+                )
+            }
+            Button_WQGA(width = 200, height = 40, text = "Attendance Check",
+                onClickLabel = {
+                    if (isButtonEnabled) {
+                        val userIdInt = userId.toIntOrNull()
+                        if (userIdInt != null) {
+                            attendanceViewModel.addAttendance(userIdInt, currentDate) { success ->
+                                if (success) {
+                                    attendanceDates = attendanceDates + currentDate
+                                    userViewModel.increasePoints(userId)
+                                    showCompleteDialog = true
+                                } else {
+                                    showFailDialog = true
+                                }
+                            }
                         } else {
+                            showFailDialog = true
+                        }
+                    } else {
+                        showFailDialog = true
+                    }
+                }, enabled = isButtonEnabled
+            )
+        }
+        Spacer(modifier = Modifier.height(100.dp))
+        CustomCalendar(
+            selectedDate = selectedDate,
+            onDateSelected = { date -> selectedDate = date },
+            attendanceDates = attendanceDates,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 5.dp)
+                .weight(1f)
+        )
+
+        if (recentlyPlayed != null && recentlyPlayedGame != null) {
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(start = 8.dp, end = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Recently Played Game",
+                    fontSize = 18.sp,
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 5.dp)
+                )
+            }
+            RecentlyPlayedGame(recentlyPlayed!!, recentlyPlayedGame!!.gamename)
+        }
+
+        if (recentWord != null) {
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(start = 8.dp, end = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Recently Added Word",
+                    fontSize = 18.sp,
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 5.dp)
+                )
+            }
+            RecentlyAddedWord(recentWord!!)
+        }
+    }
+
+    if (showCompleteDialog) {
+        AttendanceCompleteDialog(onDismiss = {
+            showCompleteDialog = false
+        }, onConfirm = {
+            showCompleteDialog = false
+        })
+    }
+    if (showFailDialog) {
+        AttendanceFailDialog(onDismiss = {
+            showFailDialog = false
+        }, onConfirm = {
+            showFailDialog = false
+        })
+    }
+}
+
+@Composable
+fun CustomCalendar(
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit,
+    attendanceDates: List<String>,
+    modifier: Modifier = Modifier
+) {
+    val yearMonth = YearMonth.now()
+    val daysInMonth = yearMonth.lengthOfMonth()
+    val firstDayOfWeek = yearMonth.atDay(1).dayOfWeek.value % 7 // 1=Monday ... 7=Sunday, so % 7 to make it 0=Sunday ... 6=Saturday
+    val attendanceDatesSet = attendanceDates.map { LocalDate.parse(it) }.toSet()
+
+    Column(modifier = modifier) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "${yearMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${yearMonth.year}",
+                fontSize = 20.sp,
+                fontFamily = pixelFont2,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").forEach { day ->
+                Text(
+                    text = day,
+                    modifier = Modifier.weight(1f),
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = pixelFont2,
+                    fontSize = 16.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
+        }
+
+        Column {
+            var dayOfMonth = 1
+            while (dayOfMonth <= daysInMonth) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    for (i in 0..6) {
+                        if ((dayOfMonth == 1 && i < firstDayOfWeek) || dayOfMonth > daysInMonth) {
+                            Box(modifier = Modifier.weight(1f)) {} // empty box for days not in month
+                        } else {
+                            val date = yearMonth.atDay(dayOfMonth)
+                            val isSelected = date == selectedDate
+                            val isAttendanceDay = attendanceDatesSet.contains(date)
+
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(4.dp)
+                                    .background(
+                                        color = when {
+                                            isSelected -> Color.Black
+                                            isAttendanceDay -> Color.Gray
+                                            else -> Color.Transparent
+                                        },
+                                        shape = RoundedCornerShape(4.dp)
+                                    )
+                                    .clickable {
+                                        onDateSelected(date)
+                                    }
+                            ) {
+                                Text(
+                                    text = dayOfMonth.toString(),
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    fontFamily = pixelFont2,
+                                    color = if (isSelected || isAttendanceDay) Color.White else Color.Black
+                                )
+                            }
+                            dayOfMonth++
                         }
                     }
-                    MainNavGraph(navController)
                 }
             }
         }
     }
 }
 
+@Composable
+fun RecentlyPlayedGame(played: Played, gameName: String) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp)) {
+        Text(
+            text = "Game: $gameName",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground), // Replace with actual game image
+                contentDescription = "Game Icon",
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(imageVector = Icons.Default.Architecture, contentDescription = "Ranking Icon")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "${played.best_score}", fontSize = 16.sp) // Ranking
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = "Right Icon")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "${played.right}", fontSize = 16.sp) // Right
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = "Wrong Icon")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "${played.wrong}", fontSize = 16.sp) // Wrong
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun RecentlyAddedWord(word: Word) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp)) {
+        Text(
+            text = word.headword,
+            fontSize = 22.sp,
+            fontFamily = pixelFont2,
+            fontWeight = FontWeight.Black,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        word.meanings.forEach { meaning ->
+            if (meaning.isNotEmpty()) {
+                Text(
+                    text = meaning,
+                    fontSize = 18.sp,
+                    fontFamily = pixelFont2,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+            }
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = "Icon")
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = "${word.right}")
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = "Icon")
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = "${word.wrong}")
+            }
+        }
+    }
+}
+
+@Composable
+fun AttendanceCompleteDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Attendance Completed!") },
+        text = { Text("Good Luck~") },
+        confirmButton = {
+            Button_WQGA(width = 80, height = 40, text = "OK", onClickLabel = onConfirm)
+        }
+    )
+}
+
+@Composable
+fun AttendanceFailDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Attendance Fail!") },
+        text = { Text("You've already completed your attendance today! Please come back tomorrow.") },
+        confirmButton = {
+            Button_WQGA(width = 80, height = 40, text = "OK", onClickLabel = onConfirm)
+        }
+    )
+}
