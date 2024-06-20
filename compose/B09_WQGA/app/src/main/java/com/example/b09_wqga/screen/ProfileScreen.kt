@@ -73,14 +73,16 @@ fun ProfileScreen(navController: NavHostController, userId: Int) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.Start
         ) {
             Image(
                 painter = painterResource(id = R.drawable.accounticon),
                 contentDescription = "Profile Picture",
                 modifier = Modifier.size(50.dp)
+                    .weight(0.5f)
+                    .padding(end = 11.dp)
             )
-            Column {
+            Column(modifier = Modifier.weight(2f)) {
                 Text(
                     text = "ID: $username",
                     fontSize = 20.sp,
@@ -115,6 +117,7 @@ fun ProfileScreen(navController: NavHostController, userId: Int) {
                         shape = RoundedCornerShape(10.dp)
                     )
                     .padding(start = 5.dp, end = 5.dp)
+                    .weight(1.2f)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.logout),
@@ -123,7 +126,7 @@ fun ProfileScreen(navController: NavHostController, userId: Int) {
                     tint = Color.White
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Log out", fontFamily = pixelFont1, color = Color.White)
+                Text("Log out", fontWeight = FontWeight.Black, fontSize = 18.sp, fontFamily = pixelFont2, color = Color.White)
             }
         }
 
