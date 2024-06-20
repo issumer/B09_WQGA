@@ -3,6 +3,7 @@ package com.example.b09_wqga.screen
 import android.annotation.SuppressLint
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,7 +16,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontVariation.weight
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -235,11 +238,11 @@ fun WordItem(word: Word, onTTSClick: () -> Unit, onEditClick: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = "Icon")
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "${word.right}")
+                Text(text = "${word.right}", fontFamily = pixelFont2)
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = "Icon")
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "${word.wrong}")
+                Text(text = "${word.wrong}", fontFamily = pixelFont2)
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -274,7 +277,7 @@ fun SortDropdownMenu(label: String, selectedOption: String, options: List<String
         OutlinedTextField(
             value = selectedOption,
             onValueChange = {},
-            label = { Text(label) },
+            label = { Text(label, fontFamily = pixelFont2) },
             modifier = Modifier.width(160.dp),
             readOnly = true,
             trailingIcon = {
@@ -291,7 +294,7 @@ fun SortDropdownMenu(label: String, selectedOption: String, options: List<String
                 DropdownMenuItem(onClick = {
                     onOptionSelected(option)
                     expanded = false
-                }, text = { Text(text = option) })
+                }, text = { Text(text = option, fontFamily = pixelFont2) })
             }
         }
     }
@@ -325,32 +328,37 @@ fun WordAddDialog(onDismiss: () -> Unit, onAddWord: (String, List<String>) -> Un
                     OutlinedTextField(
                         value = headword,
                         onValueChange = { headword = it },
-                        modifier = Modifier.weight(1f),
-                        label = { Text("Enter Headword") }
+                        modifier = Modifier.weight(2.5f)
+                            .padding(end=10.dp),
+                        readOnly = true,
+                        label = { Text("Headword", fontFamily = pixelFont2) }
                     )
-                    Button_WQGA(width = 40, height = 20, text = "Dict",
-                        onClickLabel = {
-                            if(!headword.isEmpty()) {
-                                scope.launch {
-                                    val translations : List<GTranslation> = translateText(headword)
-                                    for(i in 0..4) {
-                                        meanings[i] = ""
-                                        if (i < translations.size) {
-                                            meanings[i] = translations[i].translatedText
+                    Box(modifier = Modifier.weight(1f)
+                    ){
+                        Button_WQGA(width = 70, height = 50, text = "Dict",
+                            onClickLabel = {
+                                if(!headword.isEmpty()) {
+                                    scope.launch {
+                                        val translations : List<GTranslation> = translateText(headword)
+                                        for(i in 0..4) {
+                                            meanings[i] = ""
+                                            if (i < translations.size) {
+                                                meanings[i] = translations[i].translatedText
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        },
-                        enabled = true
-                    )
+                            },
+                            enabled = true
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 meanings.forEachIndexed { index, meaning ->
                     OutlinedTextField(
                         value = meaning,
                         onValueChange = { meanings[index] = it },
-                        label = { Text("Meaning ${index + 1}") },
+                        label = { Text("Meaning ${index + 1}", fontFamily = pixelFont2) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -420,15 +428,21 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (Strin
                     enabled = true
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     OutlinedTextField(
                         value = headword,
                         onValueChange = { headword = it },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(2.5f)
+                            .padding(end=10.dp),
                         readOnly = true,
-                        label = { Text("Headword") }
+                        label = { Text("Headword", fontFamily = pixelFont2) }
                     )
-                    Button_WQGA(width = 40, height = 20, text = "Dict",
+                    Box(modifier = Modifier.weight(1f)
+                    ){
+                        Button_WQGA(width = 70, height = 50, text = "Dict",
                         onClickLabel = {
                             if(!headword.isEmpty()) {
                                 scope.launch {
@@ -443,14 +457,16 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (Strin
                             }
                         },
                         enabled = true
-                    )
+                        )
+                    }
+//
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 meanings.forEachIndexed { index, meaning ->
                     OutlinedTextField(
                         value = meaning,
                         onValueChange = { meanings[index] = it },
-                        label = { Text("Meaning ${index + 1}") },
+                        label = { Text("Meaning ${index + 1}", fontFamily = pixelFont2) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
