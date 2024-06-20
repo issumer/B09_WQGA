@@ -58,12 +58,14 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
     }
 
     fun addVoc(voc: Voc, onComplete: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            val vocWithId = voc.copy(voc_id = generateUniqueVocId(), create_date = getCurrentDateTime())
-            val result = vocRepository.addVoc(vocWithId)
-            onComplete(result)
-            if (result) {
-                loadVocs(voc.user_id)
+        getNextAvailableVocId { availableVocId ->
+            viewModelScope.launch {
+                val vocWithId = voc.copy(voc_id = availableVocId, create_date = getCurrentDateTime())
+                val result = vocRepository.addVoc(vocWithId)
+                onComplete(result)
+                if (result) {
+                    loadVocs(voc.user_id)
+                }
             }
         }
     }
