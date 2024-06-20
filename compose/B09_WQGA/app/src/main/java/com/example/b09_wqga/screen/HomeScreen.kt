@@ -188,15 +188,16 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
             Box(
                 modifier = Modifier
                     .background(
-                        color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
+                        color = Color.Black,
                         shape = RoundedCornerShape(12.dp)
                     )
-                    .padding(start = 8.dp, end = 8.dp),
+                    .padding(start = 15.dp, end = 15.dp, top = 10.dp, bottom = 5.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "Recently Played Game",
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
+                    fontFamily = pixelFont2,
                     color = Color.White,
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
@@ -208,15 +209,16 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
             Box(
                 modifier = Modifier
                     .background(
-                        color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
+                        color = Color.Black,
                         shape = RoundedCornerShape(12.dp)
                     )
-                    .padding(start = 8.dp, end = 8.dp),
+                    .padding(start = 15.dp, end = 15.dp, top = 10.dp, bottom = 5.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "Recently Added Word",
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
+                    fontFamily = pixelFont2,
                     color = Color.White,
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
@@ -332,6 +334,7 @@ fun RecentlyPlayedGame(played: Played, gameName: String) {
         Text(
             text = "Game: $gameName",
             fontSize = 20.sp,
+            fontFamily = pixelFont2,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)
         )
@@ -347,15 +350,15 @@ fun RecentlyPlayedGame(played: Played, gameName: String) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = Icons.Default.Architecture, contentDescription = "Ranking Icon")
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "${played.best_score}", fontSize = 16.sp) // Ranking
+                    Text(text = "${played.best_score}",fontFamily = pixelFont2, fontSize = 16.sp) // Ranking
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = "Right Icon")
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "${played.right}", fontSize = 16.sp) // Right
+                    Text(text = "${played.right}",fontFamily = pixelFont2, fontSize = 16.sp) // Right
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = "Wrong Icon")
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "${played.wrong}", fontSize = 16.sp) // Wrong
+                    Text(text = "${played.wrong}",fontFamily = pixelFont2, fontSize = 16.sp) // Wrong
                 }
             }
         }
@@ -394,11 +397,11 @@ fun RecentlyAddedWord(word: Word) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = "Icon")
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "${word.right}")
+                Text(text = "${word.right}",fontFamily = pixelFont2)
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = "Icon")
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "${word.wrong}")
+                Text(text = "${word.wrong}",fontFamily = pixelFont2)
             }
         }
     }
@@ -408,8 +411,8 @@ fun RecentlyAddedWord(word: Word) {
 fun AttendanceCompleteDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Attendance Completed!") },
-        text = { Text("Good Luck~") },
+        title = { Text(text = "Attendance Completed!",fontFamily = pixelFont2,) },
+        text = { Text("Good Luck~",fontFamily = pixelFont2,) },
         confirmButton = {
             Button_WQGA(width = 80, height = 40, text = "OK", onClickLabel = onConfirm)
         }
@@ -420,8 +423,8 @@ fun AttendanceCompleteDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
 fun AttendanceFailDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Attendance Fail!") },
-        text = { Text("You've already completed your attendance today! Please come back tomorrow.") },
+        title = { Text(text = "Attendance Fail!",fontFamily = pixelFont2,) },
+        text = { Text("You've already completed your attendance today! Please come back tomorrow.",fontFamily = pixelFont2,) },
         confirmButton = {
             Button_WQGA(width = 80, height = 40, text = "OK", onClickLabel = onConfirm)
         }
