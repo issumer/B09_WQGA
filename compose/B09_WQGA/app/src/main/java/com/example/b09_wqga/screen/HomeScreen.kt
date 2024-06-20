@@ -157,7 +157,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                 }, enabled = isButtonEnabled
             )
         }
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(150.dp))
         CustomCalendar(
             selectedDate = selectedDate,
             onDateSelected = { date -> selectedDate = date },
@@ -249,7 +249,7 @@ fun CustomCalendar(
                 fontWeight = FontWeight.Bold
             )
         }
-
+        Spacer(modifier = Modifier.height(10.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
             listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").forEach { day ->
                 Text(
@@ -281,8 +281,8 @@ fun CustomCalendar(
                                     .padding(4.dp)
                                     .background(
                                         color = when {
-                                            isSelected -> Color.Blue
-                                            isAttendanceDay -> Color.Green
+                                            isSelected -> Color.Black
+                                            isAttendanceDay -> Color.Gray
                                             else -> Color.Transparent
                                         },
                                         shape = RoundedCornerShape(4.dp)
