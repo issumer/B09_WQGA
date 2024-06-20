@@ -168,6 +168,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
     val coroutineScope = rememberCoroutineScope()
     val fightSound = remember { MediaPlayer.create(context, R.raw.fight_sound) }
 
+
     LaunchedEffect(vocId) {
         vocViewModel.loadWordsByVocId(vocId)
     }
@@ -688,11 +689,18 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
         }
 
         DisposableEffect(Unit) {
+            val musicPlayer = MediaPlayer.create(context, R.raw.bgm).apply {
+                isLooping = true
+                start()
+            }
+
             onDispose {
+                musicPlayer.release()
                 player_hurt_sound.release()
                 mob_hurt_sound.release()
             }
         }
+
     }
 }
 

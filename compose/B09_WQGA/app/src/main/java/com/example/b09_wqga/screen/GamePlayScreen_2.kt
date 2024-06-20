@@ -714,7 +714,7 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
 
         DisposableEffect(Unit) {
             onDispose {
-                brickSound.release() 
+                brickSound.release()
             }
         }
 
