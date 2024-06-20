@@ -5,6 +5,7 @@
 package com.example.b09_wqga.screen
 
 import android.graphics.Typeface
+import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -28,6 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,6 +53,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -184,6 +187,9 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
     )
 
     var isPlayedUpdated by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val brickSound = remember { MediaPlayer.create(context, R.raw.brick_sound) }
 
     fun updatePlayedData(score: Int, rightCount: Int, wrongCount: Int) {
         if (!isPlayedUpdated) {
@@ -385,16 +391,18 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
                     if (ballRect.overlaps(blockRect) && block.isBroken != 0) {
                         ball = ball.copy(vy = -ball.vy)
 
+                        // Play sound for brick hit
+                        brickSound.start()
+
                         if (block.isBroken == 2) {
                             if (block.quizBlock) {
                                 block.copy(
                                     showExclamation = true,
                                     timestamp = currentTime.value,
                                     isBroken = 0
-                                )
-                                    .also {
-                                        nextQuiz()
-                                    }// 퀴즈 표시
+                                ).also {
+                                    nextQuiz()
+                                } // 퀴즈 표시
                             } else block.copy(isBroken = 1)
                         } else {
                             if (block.quizBlock) {
@@ -402,17 +410,16 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
                                     showExclamation = true,
                                     timestamp = currentTime.value,
                                     isBroken = 0
-                                )
-                                    .also {
-                                        nextQuiz()
-                                    } // 퀴즈 표시
+                                ).also {
+                                    nextQuiz()
+                                } // 퀴즈 표시
                             } else block.copy(isBroken = 0)
                         }
-
                     } else {
                         block
                     }
                 }
+
                 // 모든 벽돌이 깨졌는지 확인
                 if (blocks.all { it.isBroken == 0 }) {
                     gameWin = true
@@ -704,5 +711,12 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
                 wrongCount = wrongCount
             )
         }
+
+        DisposableEffect(Unit) {
+            onDispose {
+                brickSound.release() 
+            }
+        }
+
     }
 }
