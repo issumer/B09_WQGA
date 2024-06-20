@@ -1,6 +1,9 @@
 package com.example.b09_wqga.viewmodel
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.b09_wqga.database.Quiz
@@ -25,14 +28,12 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
     private val _wordList = MutableStateFlow<List<Word>>(emptyList())
     val wordList: StateFlow<List<Word>> = _wordList
 
-    val searchText = MutableStateFlow("")
-    val sortBasedOn = MutableStateFlow("Headword")
-    val sortOrder = MutableStateFlow("Ascending")
+    val searchText = mutableStateOf("")
+    val sortBasedOn = mutableStateOf("Headword")
+    val sortOrder = mutableStateOf("Ascending")
     val sortOptions = listOf("Headword", "Meaning", "Right", "Wrong")
 
     val currentQuiz = MutableStateFlow<Word?>(null)
-    val quizStyle = MutableStateFlow(-1)
-    val gameDifficulty = MutableStateFlow(-1)
 
     private fun getCurrentDateTime(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
@@ -47,9 +48,11 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
     }
 
     fun loadWordsByVocId(vocId: Int) {
+        Log.i("vocid", "vocid: $vocId")
         viewModelScope.launch {
             val words = vocRepository.getWordsByVocId(vocId)
             _wordList.value = words
+            //Log.i("vocid", "word: ${words[0].headword}")
         }
     }
 
@@ -311,11 +314,11 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
         })
     }
 
-    fun createQuiz(vocId: Int): Quiz {
+    fun createQuiz(vocId: Int, quizStyle: Int): Quiz {
         var words = _wordList.value.filter { it.voc_id == vocId }
 
         // 0: "완전 랜덤", 1: "틀린 단어 위주", 2: "객관식", 3: "주관식"
-        if(quizStyle.value == 1) { // 틀린 단어 위주
+        if(quizStyle == 1) { // 틀린 단어 위주
             val totalWrong = words.sumOf { it.wrong }
             val wrongMean : Double = if (words.isNotEmpty()) {
                 totalWrong.toDouble() / words.size
@@ -330,7 +333,7 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
         val shortAnswerType = Random.nextInt(3) // 주관식의 타입
 
         // 퀴즈 스타일: 2이면 객관식, 3이면 주관식
-        if(quizStyle.value == 2 || quizStyle.value == 3) multipleOrShort = quizStyle.value - 2
+        if(quizStyle == 2 || quizStyle == 3) multipleOrShort = quizStyle - 2
 
         return if (words.isNotEmpty()) {
             val randomWord = words.random() // 문제로 출제할 단어

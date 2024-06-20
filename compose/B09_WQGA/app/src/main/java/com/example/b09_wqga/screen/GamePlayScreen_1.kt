@@ -118,8 +118,10 @@ sealed class RPGAttributes {
 fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, currentPlayGameId: Int) {
     val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(VocRepository()))
     val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+    val difficulty = miscViewModel.gameDifficulty.intValue
+    val quizStyle = miscViewModel.quizStyle.intValue
     val wordList by vocViewModel.wordList.collectAsState()
-    var quiz by remember { mutableStateOf(vocViewModel.createQuiz(vocId)) }
+    var quiz by remember { mutableStateOf(vocViewModel.createQuiz(vocId, quizStyle)) }
     var canvasSize by remember { mutableStateOf(IntSize(0, 0)) }
 
     var player by remember { mutableStateOf(RPGPlayer(x = 0.0f, y = 0.0f, health = 100, maxHealth = 100, damage = 12)) }
@@ -146,7 +148,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
     var recomposeKey by remember { mutableStateOf(false) }
     var showAttackSkills by remember { mutableStateOf(false) }
     var showDefenseSkills by remember { mutableStateOf(false) }
-    val difficulty = vocViewModel.gameDifficulty.collectAsState()
+
 
     val effect1_vec: Painter = painterResource(id = R.drawable.effect1)
     val effect2_vec: Painter = painterResource(id = R.drawable.effect2)
@@ -165,7 +167,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
 
     LaunchedEffect(wordList) {
         if (wordList.isNotEmpty()) {
-            quiz = vocViewModel.createQuiz(vocId)
+            quiz = vocViewModel.createQuiz(vocId, quizStyle)
         }
     }
 
@@ -183,9 +185,9 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
                 enemies.add(RPGAttributes.RPGEnemies[0].copy(
                     x = if (i == 1) canvasSize.width * 3 / 5.0f else canvasSize.width * 3 / 5.0f + 170,
                     y = if (i == 1) canvasSize.height / 10.0f - (i * 120) + 700 else canvasSize.height / 10.0f - (i * 130) + 700,
-                    health = (RPGAttributes.RPGEnemies[0].health * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty.value)).roundToInt(),
-                    maxHealth = (RPGAttributes.RPGEnemies[0].maxHealth * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty.value)).roundToInt(),
-                    damage = (RPGAttributes.RPGEnemies[0].damage * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty.value)).roundToInt()
+                    health = (RPGAttributes.RPGEnemies[0].health * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty)).roundToInt(),
+                    maxHealth = (RPGAttributes.RPGEnemies[0].maxHealth * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty)).roundToInt(),
+                    damage = (RPGAttributes.RPGEnemies[0].damage * (1 + RPGAttributes.RPGEnemies[0].difficultyModifier * difficulty)).roundToInt()
                 ))
             }
         }
@@ -220,9 +222,9 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
                 } else {
                     if (i == 0 || i == 3) canvasSize.height / 10.0f + 700 else if (i == 1 || i == 4) canvasSize.height / 10.0f + 400 else canvasSize.height / 10.0f + 550
                 },
-                health = (randomEnemy.health * (1 + randomEnemy.difficultyModifier * difficulty.value)).roundToInt(),
-                maxHealth = (randomEnemy.maxHealth * (1 + randomEnemy.difficultyModifier * difficulty.value)).roundToInt(),
-                damage = (randomEnemy.damage * (1 + randomEnemy.difficultyModifier * difficulty.value)).roundToInt()
+                health = (randomEnemy.health * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
+                maxHealth = (randomEnemy.maxHealth * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt(),
+                damage = (randomEnemy.damage * (1 + randomEnemy.difficultyModifier * difficulty)).roundToInt()
             ))
         }
     }
@@ -322,7 +324,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
             if (!playerTurn) {
                 showDamageMessage()
                 performEnemyAttack()
-                quiz = vocViewModel.createQuiz(vocId)
+                quiz = vocViewModel.createQuiz(vocId, quizStyle)
                 recomposeKey = !recomposeKey // 강제 recompose
             }
         }

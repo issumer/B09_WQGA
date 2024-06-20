@@ -1,5 +1,6 @@
 package com.example.b09_wqga.screen
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -96,8 +97,8 @@ fun GameListScreen(navController: NavHostController, userId: Int) {
                 onDismiss = { showGameStartDialog = false },
                 onPlay = { voc, quizStyle, difficulty ->
                     showGameStartDialog = false
-                    vocViewModel.quizStyle.value = quizStyle
-                    vocViewModel.gameDifficulty.value = difficulty
+                    miscViewModel.quizStyle.intValue = quizStyle
+                    miscViewModel.gameDifficulty.intValue = difficulty
                     miscViewModel.showBottomNavigationBar.value = false
                     when (currentPlayGameId) {
                         1 -> {

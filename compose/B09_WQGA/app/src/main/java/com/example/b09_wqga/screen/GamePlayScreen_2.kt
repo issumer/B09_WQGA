@@ -105,10 +105,10 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
     val textMeasurer = rememberTextMeasurer()
     val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(VocRepository()))
     val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
+    val difficulty = miscViewModel.gameDifficulty.intValue
+    val quizStyle = miscViewModel.quizStyle.intValue
     val wordList by vocViewModel.wordList.collectAsState()
-    var quiz by remember { mutableStateOf(vocViewModel.createQuiz(vocId)) }
-
-    val difficulty = vocViewModel.gameDifficulty.collectAsState()
+    var quiz by remember { mutableStateOf(vocViewModel.createQuiz(vocId, quizStyle)) }
 
     var canvasSize by remember { mutableStateOf(IntSize(0, 0)) }
 
@@ -118,13 +118,13 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
 
     var ball by remember {
         mutableStateOf(BBBall(x = 0f, y = 0f, radius = 20f,
-            vx = when(difficulty.value) {
+            vx = when(difficulty) {
                 0 -> 6f
                 1 -> 8f
                 2 -> 10f
                 else -> 6f
             },
-            vy = when(difficulty.value) {
+            vy = when(difficulty) {
                 0 -> 6f
                 1 -> 8f
                 2 -> 10f
@@ -221,7 +221,7 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
     fun nextQuiz() {
         showWordQuiz = true
         playerQuizPaused = false
-        quiz = vocViewModel.createQuiz(vocId)
+        quiz = vocViewModel.createQuiz(vocId, quizStyle)
         recomposeKey = !recomposeKey // 강제 recompose
     }
 
@@ -237,7 +237,7 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
 
     LaunchedEffect(wordList) {
         if (wordList.isNotEmpty()) {
-            quiz = vocViewModel.createQuiz(vocId)
+            quiz = vocViewModel.createQuiz(vocId, quizStyle)
         }
     }
 
@@ -246,14 +246,14 @@ fun GamePlayScreen_2(navController: NavHostController, vocId: Int, userId: Int, 
             val blockWidth = canvasSize.width / 5f
             val blockHeight = canvasSize.height / 20f
 
-            val quizBlockCount = when (difficulty.value) {
+            val quizBlockCount = when (difficulty) {
                 0 -> 6
                 1 -> 13
                 2 -> 20
                 else -> 10
             }
 
-            blocks = List(when(difficulty.value) {
+            blocks = List(when(difficulty) {
                 0 -> 30
                 1 -> 35
                 2 -> 40
