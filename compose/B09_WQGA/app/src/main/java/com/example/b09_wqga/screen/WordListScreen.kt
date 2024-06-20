@@ -315,7 +315,7 @@ fun WordAddDialog(onDismiss: () -> Unit, onAddWord: (String, List<String>) -> Un
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Add Word",fontFamily = pixelFont1, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "Add Word", fontFamily = pixelFont1, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Button_WQGA(width = 80, height = 40, text = "Back",
@@ -328,19 +328,16 @@ fun WordAddDialog(onDismiss: () -> Unit, onAddWord: (String, List<String>) -> Un
                     OutlinedTextField(
                         value = headword,
                         onValueChange = { headword = it },
-                        modifier = Modifier.weight(3f)
-                            .padding(end=10.dp),
-                        readOnly = true,
+                        modifier = Modifier.weight(3f).padding(end = 10.dp),
                         label = { Text("Headword", fontFamily = pixelFont2) }
                     )
-                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd
-                    ){
+                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                         Button_WQGA(width = 70, height = 50, text = "Dict",
                             onClickLabel = {
-                                if(!headword.isEmpty()) {
+                                if (headword.isNotEmpty()) {
                                     scope.launch {
-                                        val translations : List<GTranslation> = translateText(headword)
-                                        for(i in 0..4) {
+                                        val translations: List<GTranslation> = translateText(headword)
+                                        for (i in 0..4) {
                                             meanings[i] = ""
                                             if (i < translations.size) {
                                                 meanings[i] = translations[i].translatedText
@@ -411,8 +408,8 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (Strin
 
     LaunchedEffect(currentWord) {
         val currentMeanings = currentWord.meanings.toTypedArray()
-        for(i in 0..4) {
-            if(i < currentMeanings.size) {
+        for (i in 0..4) {
+            if (i < currentMeanings.size) {
                 meanings[i] = currentMeanings[i]
             }
         }
@@ -420,7 +417,7 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (Strin
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Edit Word",fontFamily = pixelFont1, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(text = "Edit Word", fontFamily = pixelFont1, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Button_WQGA(width = 80, height = 40, text = "Back",
@@ -435,31 +432,27 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (Strin
                     OutlinedTextField(
                         value = headword,
                         onValueChange = { headword = it },
-                        modifier = Modifier.weight(3f)
-                            .padding(end=10.dp),
-                        readOnly = true,
+                        modifier = Modifier.weight(3f).padding(end = 10.dp),
                         label = { Text("Headword", fontFamily = pixelFont2) }
                     )
-                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd
-                    ){
+                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                         Button_WQGA(width = 70, height = 50, text = "Dict",
-                        onClickLabel = {
-                            if(!headword.isEmpty()) {
-                                scope.launch {
-                                    val translations : List<GTranslation> = translateText(headword)
-                                    for(i in 0..4) {
-                                        meanings[i] = ""
-                                        if (i < translations.size) {
-                                            meanings[i] = translations[i].translatedText
+                            onClickLabel = {
+                                if (headword.isNotEmpty()) {
+                                    scope.launch {
+                                        val translations: List<GTranslation> = translateText(headword)
+                                        for (i in 0..4) {
+                                            meanings[i] = ""
+                                            if (i < translations.size) {
+                                                meanings[i] = translations[i].translatedText
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        },
-                        enabled = true
+                            },
+                            enabled = true
                         )
                     }
-//
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 meanings.forEachIndexed { index, meaning ->
