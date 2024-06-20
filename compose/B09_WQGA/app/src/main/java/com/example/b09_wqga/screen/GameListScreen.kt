@@ -53,6 +53,7 @@ fun GameListScreen(navController: NavHostController, userId: Int) {
     val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(vocRepository))
 
     var showGameStartDialog by rememberSaveable { mutableStateOf(false) }
+    var showGameStartFailDialog by rememberSaveable { mutableStateOf(false) }
     var currentPlayGameId by rememberSaveable { mutableStateOf(-1) }
 
     val gameList by gameViewModel.gameList.collectAsState()
@@ -96,28 +97,41 @@ fun GameListScreen(navController: NavHostController, userId: Int) {
                 vocList = vocList,
                 onDismiss = { showGameStartDialog = false },
                 onPlay = { voc, quizStyle, difficulty ->
-                    showGameStartDialog = false
-                    miscViewModel.quizStyle.intValue = quizStyle
-                    miscViewModel.gameDifficulty.intValue = difficulty
-                    miscViewModel.showBottomNavigationBar.value = false
-                    when (currentPlayGameId) {
-                        1 -> {
-                            navController.navigate("GamePlayScreen_1/${voc.voc_id}?userId=$userId") {
-                                popUpTo(navController.graph.id) {
-                                    inclusive = true
+                    if(voc.words_json.size < 10) {
+                        showGameStartFailDialog = true
+                    } else {
+                        showGameStartFailDialog = false
+                        showGameStartDialog = false
+                        miscViewModel.quizStyle.intValue = quizStyle
+                        miscViewModel.gameDifficulty.intValue = difficulty
+                        miscViewModel.showBottomNavigationBar.value = false
+                        when (currentPlayGameId) {
+                            1 -> {
+                                navController.navigate("GamePlayScreen_1/${voc.voc_id}?userId=$userId") {
+                                    popUpTo(navController.graph.id) {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
                                 }
-                                launchSingleTop = true
                             }
-                        }
-                        2 -> {
-                            navController.navigate("GamePlayScreen_2/${voc.voc_id}?userId=$userId") {
-                                popUpTo(navController.graph.id) {
-                                    inclusive = true
+                            2 -> {
+                                navController.navigate("GamePlayScreen_2/${voc.voc_id}?userId=$userId") {
+                                    popUpTo(navController.graph.id) {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
                                 }
-                                launchSingleTop = true
                             }
                         }
                     }
+                }
+            )
+        }
+
+        if(showGameStartFailDialog) {
+            GameStartFailDialog(
+                onConfirmClick = {
+                    showGameStartFailDialog = false
                 }
             )
         }
@@ -311,6 +325,39 @@ fun GameStartDialog(vocList: List<Voc>, onDismiss: () -> Unit, onPlay: (Voc, Int
                     onPlay(selectedVoc!!, selectedQuizStyle, selectedDifficulty)
                 }
             })
+        }
+    )
+}
+
+@Composable
+fun GameStartFailDialog(onConfirmClick: () -> Unit) {
+    val showDialog = remember { mutableStateOf(false) }
+    AlertDialog(
+        onDismissRequest = { showDialog.value = false },
+        title = {
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                Text(text = "게임시작 실패", fontSize = 20.sp, fontFamily = pixelFont2, fontWeight = FontWeight.Bold)
+            }
+        },
+        text = {
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "단어장에 단어가 부족합니다. 최소 10개 이상 채워보세요!",
+                    fontFamily = pixelFont2,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        confirmButton = {
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+
+                TextButton(onClick = onConfirmClick) {
+                    Image(painter = painterResource(R.drawable.okbutton),
+                        contentDescription = null,
+                        modifier = Modifier.size(width = 80.dp, height = 30.dp)
+                    )
+                }
+            }
         }
     )
 }

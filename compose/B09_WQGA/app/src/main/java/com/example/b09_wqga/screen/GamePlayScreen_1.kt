@@ -1,5 +1,6 @@
 package com.example.b09_wqga.screen
 
+import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -22,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +45,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -116,6 +119,7 @@ sealed class RPGAttributes {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, currentPlayGameId: Int) {
+    val context = LocalContext.current
     val vocViewModel: VocViewModel = viewModel(factory = VocViewModelFactory(VocRepository()))
     val miscViewModel: MiscViewModel = viewModel(viewModelStoreOwner = LocalNavGraphViewModelStoreOwner.current)
     val difficulty = miscViewModel.gameDifficulty.intValue
@@ -158,6 +162,8 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
     RPGAttributes.RPGEnemies[2].painter = painterResource(id = R.drawable.enemy3)
     val player_vec: Painter = painterResource(id = R.drawable.player)
     val yourturn: Painter = painterResource(id = R.drawable.yourturn)
+    val player_hurt_sound = remember { MediaPlayer.create(context, R.raw.classic_hurt) }
+    val mob_hurt_sound = remember { MediaPlayer.create(context, R.raw.hit1) }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -265,6 +271,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
                 damagePosition = Offset(player.x + 70.0f, player.y - 50.0f)
                 showDamageEffect_1()
                 showDamageMessage()
+                player_hurt_sound.start()
             }
         }
         delay(400L)
@@ -302,6 +309,8 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
                         enemies = enemies.filterIndexed { index, _ -> index != selectedEnemyIndex }.toMutableList()
                         selectedEnemyIndex = -1
                     }
+
+                    mob_hurt_sound.start()
 
                     selectedEnemyIndex = -1
                     playerTurn = false
@@ -673,6 +682,13 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
                 rightCount = rightCount,
                 wrongCount = wrongCount
             )
+        }
+
+        DisposableEffect(Unit) {
+            onDispose {
+                player_hurt_sound.release()
+                mob_hurt_sound.release()
+            }
         }
     }
 }
