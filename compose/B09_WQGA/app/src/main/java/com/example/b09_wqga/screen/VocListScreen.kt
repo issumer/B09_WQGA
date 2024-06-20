@@ -2,6 +2,7 @@ package com.example.b09_wqga.screen
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -152,10 +153,16 @@ fun VocListScreen(navController: NavHostController, userId: Int) {
 fun VocItem(voc: Voc, onEditClick: () -> Unit, onEnterClick: () -> Unit) {
     Box(
         Modifier
-            .clip(RoundedCornerShape(10.dp))
+            .border(
+                width = 2.dp,
+                color = Color.Black,
+                shape = RoundedCornerShape(10.dp)
+            )
             .fillMaxWidth()
             .height(180.dp)
-            .background(Color.LightGray)) {
+            .background(Color.LightGray, shape = RoundedCornerShape(10.dp))
+            .padding(all = 10.dp)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -177,44 +184,48 @@ fun VocItem(voc: Voc, onEditClick: () -> Unit, onEnterClick: () -> Unit) {
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
+            Column(modifier = Modifier.fillMaxSize()
+                .padding(bottom = 10.dp),
+                verticalArrangement = Arrangement.Bottom){
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Abc,
+                            modifier = Modifier.size(24.dp),
+                            contentDescription = "Icon"
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(text = "Count: ${voc.word_count}", fontFamily = pixelFont2)
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Abc,
-                        modifier = Modifier.size(24.dp),
-                        contentDescription = "Icon"
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Count: ${voc.word_count}")
+                        Spacer(modifier = Modifier.width(8.dp))
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            modifier = Modifier.size(24.dp),
+                            contentDescription = "Icon"
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(text = voc.lang, fontFamily = pixelFont2)
+                    }
 
-                    Icon(
-                        imageVector = Icons.Default.Language,
-                        modifier = Modifier.size(24.dp),
-                        contentDescription = "Icon"
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = voc.lang)
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Button_WQGA(width = 80, height = 40, text = "Edit",
-                        onClickLabel = onEditClick,
-                        enabled = true
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button_WQGA(width = 80, height = 40, text = "Enter",
-                        onClickLabel = onEnterClick,
-                        enabled = true
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Button_WQGA(width = 80, height = 40, text = "Edit",
+                            onClickLabel = onEditClick,
+                            enabled = true
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button_WQGA(width = 80, height = 40, text = "Enter",
+                            onClickLabel = onEnterClick,
+                            enabled = true
+                        )
+                    }
                 }
             }
+
         }
     }
 }
