@@ -328,12 +328,12 @@ fun WordAddDialog(onDismiss: () -> Unit, onAddWord: (String, List<String>) -> Un
                     OutlinedTextField(
                         value = headword,
                         onValueChange = { headword = it },
-                        modifier = Modifier.weight(2.5f)
+                        modifier = Modifier.weight(3f)
                             .padding(end=10.dp),
                         readOnly = true,
                         label = { Text("Headword", fontFamily = pixelFont2) }
                     )
-                    Box(modifier = Modifier.weight(1f)
+                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd
                     ){
                         Button_WQGA(width = 70, height = 50, text = "Dict",
                             onClickLabel = {
@@ -435,12 +435,12 @@ fun WordEditDialog(onDismiss: () -> Unit, currentWord: Word, onDictClick: (Strin
                     OutlinedTextField(
                         value = headword,
                         onValueChange = { headword = it },
-                        modifier = Modifier.weight(2.5f)
+                        modifier = Modifier.weight(3f)
                             .padding(end=10.dp),
                         readOnly = true,
                         label = { Text("Headword", fontFamily = pixelFont2) }
                     )
-                    Box(modifier = Modifier.weight(1f)
+                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd
                     ){
                         Button_WQGA(width = 70, height = 50, text = "Dict",
                         onClickLabel = {
