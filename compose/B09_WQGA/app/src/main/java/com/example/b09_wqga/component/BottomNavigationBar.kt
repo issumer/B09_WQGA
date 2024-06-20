@@ -1,13 +1,7 @@
-/*
-메인 화면 Scaffold의 Botton Navigation Bar에 해당하는 컴포넌트
-*/
-
 package com.example.b09_wqga.component
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
@@ -20,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.b09_wqga.navigation.Routes
+
 
 @Composable
 fun BottomNavigationBar(navController: NavController, userId: String) {
