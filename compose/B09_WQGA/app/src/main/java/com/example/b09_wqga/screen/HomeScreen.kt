@@ -173,7 +173,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                 }, enabled = isButtonEnabled
             )
         }
-        Spacer(modifier = Modifier.height(100.dp))
+        Spacer(modifier = Modifier.height(40.dp))
         CustomCalendar(
             selectedDate = selectedDate,
             onDateSelected = { date -> selectedDate = date },
@@ -185,6 +185,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
         )
 
         if (recentlyPlayed != null && recentlyPlayedGame != null) {
+
             Box(
                 modifier = Modifier
                     .background(
@@ -202,6 +203,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
             }
+
             RecentlyPlayedGame(recentlyPlayed!!, recentlyPlayedGame!!.gamename)
         }
 
@@ -328,10 +330,11 @@ fun CustomCalendar(
 
 @Composable
 fun RecentlyPlayedGame(played: Played, gameName: String) {
-    val gameImageResource = when (played.game_id) {
-        1 -> R.drawable.game1
-        2 -> R.drawable.game2
-        else -> R.drawable.ic_launcher_foreground
+    val src = if(gameName == "Quiz Brick"){
+        R.drawable.game1
+    }
+    else{
+        R.drawable.game2
     }
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -339,7 +342,7 @@ fun RecentlyPlayedGame(played: Played, gameName: String) {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
-                painter = painterResource(id = gameImageResource),
+                painter = painterResource(id = src), // Replace with actual game image
                 contentDescription = "Game Icon",
                 modifier = Modifier.size(48.dp)
 
