@@ -330,11 +330,12 @@ fun CustomCalendar(
 
 @Composable
 fun RecentlyPlayedGame(played: Played, gameName: String) {
-        val gameImageResource = when (played.game_id) {
+    val gameImageResource = when (played.game_id) {
         1 -> R.drawable.game1
         2 -> R.drawable.game2
-        else -> R.drawable.ic_launcher_foreground
-            
+        else -> R.drawable.ic_launcher_foreground // Missing closing brace for 'when' statement
+    }
+
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)) {
@@ -344,9 +345,8 @@ fun RecentlyPlayedGame(played: Played, gameName: String) {
                 painter = painterResource(id = gameImageResource), // Replace with actual game image
                 contentDescription = "Game Icon",
                 modifier = Modifier.size(48.dp)
-
             )
-            Column(){
+            Column() {
                 Text(
                     text = "Game: $gameName",
                     fontSize = 20.sp,
@@ -354,24 +354,45 @@ fun RecentlyPlayedGame(played: Played, gameName: String) {
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 4.dp, start = 10.dp)
                 )
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(4.dp)) {
-                    Icon(imageVector = Icons.Default.Architecture, contentDescription = "Ranking Icon")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Architecture,
+                        contentDescription = "Ranking Icon"
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "${played.best_score}",fontFamily = pixelFont2, fontSize = 16.sp) // Ranking
+                    Text(
+                        text = "${played.best_score}",
+                        fontFamily = pixelFont2,
+                        fontSize = 16.sp
+                    ) // Ranking
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = "Right Icon")
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "${played.right}",fontFamily = pixelFont2, fontSize = 16.sp) // Right
+                    Text(
+                        text = "${played.right}",
+                        fontFamily = pixelFont2,
+                        fontSize = 16.sp
+                    ) // Right
                     Spacer(modifier = Modifier.width(4.dp))
-                    Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = "Wrong Icon")
+                    Icon(
+                        imageVector = Icons.Default.ArrowDownward,
+                        contentDescription = "Wrong Icon"
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "${played.wrong}",fontFamily = pixelFont2, fontSize = 16.sp) // Wrong
+                    Text(
+                        text = "${played.wrong}",
+                        fontFamily = pixelFont2,
+                        fontSize = 16.sp
+                    ) // Wrong
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun RecentlyAddedWord(word: Word) {
