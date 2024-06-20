@@ -320,6 +320,11 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
                 }
                 1 -> { // Heal
                     player.health = if (player.health + 50 >= player.maxHealth) player.maxHealth else player.health + 50
+                    val powerUpSound = MediaPlayer.create(context, R.raw.powerup)
+                    powerUpSound.start()
+                    powerUpSound.setOnCompletionListener {
+                        it.release()
+                    }
                     playerTurn = false
                 }
             }
@@ -329,6 +334,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
             playerQuizPaused = true
         }
     }
+
 
 
     LaunchedEffect(Unit) {
