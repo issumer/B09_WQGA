@@ -17,9 +17,8 @@ class AttendanceRepository {
                 val existingAttendance = snapshot.children.firstOrNull()?.getValue(Attendance::class.java)
                 val updatedDates = existingAttendance?.attendance_dates?.toMutableList() ?: mutableListOf()
                 if (updatedDates.contains(date)) {
-                    // 이미 같은 날에 로그인한 경우
                     Log.d("AttendanceRepository", "Duplicate login date: $date")
-                    return true // 중복이여도 true 반환
+                    return true
                 }
                 updatedDates.add(date)
                 val updatedAttendance = existingAttendance?.copy(attendance_dates = updatedDates)

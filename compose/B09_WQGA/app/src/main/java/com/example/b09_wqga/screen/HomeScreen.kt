@@ -1,8 +1,8 @@
 package com.example.b09_wqga.screen
 
-import android.widget.CalendarView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,9 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Architecture
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,10 +20,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.b09_wqga.R
 import com.example.b09_wqga.component.Button_WQGA
@@ -49,6 +45,8 @@ import com.example.b09_wqga.viewmodelfactory.PlayedViewModelFactory
 import com.example.b09_wqga.viewmodelfactory.VocViewModelFactory
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.TextStyle
 import java.util.*
 
 @Composable
@@ -96,7 +94,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                 }
             }
 
-            vocViewModel.loadVocs(userIdInt)  // Correct method call
+            vocViewModel.loadVocs(userIdInt)
         }
     }
 
@@ -159,9 +157,8 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                 }, enabled = isButtonEnabled
             )
         }
-
-        Calendar(
-            currentDate = selectedDate,
+        Spacer(modifier = Modifier.height(30.dp))
+        CustomCalendar(
             selectedDate = selectedDate,
             onDateSelected = { date -> selectedDate = date },
             attendanceDates = attendanceDates,
@@ -230,6 +227,86 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
 }
 
 @Composable
+fun CustomCalendar(
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit,
+    attendanceDates: List<String>,
+    modifier: Modifier = Modifier
+) {
+    val yearMonth = YearMonth.now()
+    val daysInMonth = yearMonth.lengthOfMonth()
+    val firstDayOfWeek = yearMonth.atDay(1).dayOfWeek.value % 7 // 1=Monday ... 7=Sunday, so % 7 to make it 0=Sunday ... 6=Saturday
+    val attendanceDatesSet = attendanceDates.map { LocalDate.parse(it) }.toSet()
+
+    Column(modifier = modifier) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "${yearMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${yearMonth.year}",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Row(modifier = Modifier.fillMaxWidth()) {
+            listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").forEach { day ->
+                Text(
+                    text = day,
+                    modifier = Modifier.weight(1f),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
+        }
+
+        Column {
+            var dayOfMonth = 1
+            while (dayOfMonth <= daysInMonth) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    for (i in 0..6) {
+                        if ((dayOfMonth == 1 && i < firstDayOfWeek) || dayOfMonth > daysInMonth) {
+                            Box(modifier = Modifier.weight(1f)) {} // empty box for days not in month
+                        } else {
+                            val date = yearMonth.atDay(dayOfMonth)
+                            val isSelected = date == selectedDate
+                            val isAttendanceDay = attendanceDatesSet.contains(date)
+
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(4.dp)
+                                    .background(
+                                        color = when {
+                                            isSelected -> Color.Blue
+                                            isAttendanceDay -> Color.Green
+                                            else -> Color.Transparent
+                                        },
+                                        shape = RoundedCornerShape(4.dp)
+                                    )
+                                    .clickable {
+                                        onDateSelected(date)
+                                    }
+                            ) {
+                                Text(
+                                    text = dayOfMonth.toString(),
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected || isAttendanceDay) Color.White else Color.Black
+                                )
+                            }
+                            dayOfMonth++
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun RecentlyPlayedGame(played: Played, gameName: String) {
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -249,20 +326,15 @@ fun RecentlyPlayedGame(played: Played, gameName: String) {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column {
-                // Add game description and other details here
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = Icons.Default.Architecture, contentDescription = "Ranking Icon")
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = "${played.best_score}", fontSize = 16.sp) // Ranking
-
                     Spacer(modifier = Modifier.width(4.dp))
-
                     Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = "Right Icon")
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = "${played.right}", fontSize = 16.sp) // Right
-
                     Spacer(modifier = Modifier.width(4.dp))
-
                     Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = "Wrong Icon")
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = "${played.wrong}", fontSize = 16.sp) // Wrong
@@ -271,7 +343,6 @@ fun RecentlyPlayedGame(played: Played, gameName: String) {
         }
     }
 }
-
 
 @Composable
 fun RecentlyAddedWord(word: Word) {
@@ -313,35 +384,6 @@ fun RecentlyAddedWord(word: Word) {
             }
         }
     }
-}
-
-@Composable
-fun Calendar(
-    currentDate: LocalDate,
-    selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit,
-    attendanceDates: List<String>,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val highlightedDates = attendanceDates.map { LocalDate.parse(it) }.toSet()
-
-    AndroidView(
-        modifier = modifier,
-        factory = { ctx ->
-            CalendarView(ctx).apply {
-                setOnDateChangeListener { _, year, month, dayOfMonth ->
-                    val date = LocalDate.of(year, month + 1, dayOfMonth)
-                    onDateSelected(date)
-                }
-            }
-        },
-        update = { view ->
-            for (date in highlightedDates) {
-                // 이미 출석한 날짜 색칠 필요
-            }
-        }
-    )
 }
 
 @Composable
