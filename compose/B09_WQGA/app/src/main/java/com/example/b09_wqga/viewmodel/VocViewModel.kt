@@ -42,8 +42,12 @@ class VocViewModel(private val vocRepository: VocRepository) : ViewModel() {
 
     fun loadVocs(userId: Int) {
         viewModelScope.launch {
-            val vocs = vocRepository.getAllVocsByUserId(userId)
-            _vocList.value = vocs
+            try {
+                val vocs = vocRepository.getAllVocsByUserId(userId)
+                _vocList.value = vocs
+            } catch (e: Exception) {
+                Log.e("VocViewModel", "Error loading vocs", e)
+            }
         }
     }
 

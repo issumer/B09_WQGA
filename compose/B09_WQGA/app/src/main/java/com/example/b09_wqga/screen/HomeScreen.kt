@@ -75,6 +75,22 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
     var recentlyPlayed by remember { mutableStateOf<Played?>(null) }
     var recentlyPlayedGame by remember { mutableStateOf<Game?>(null) }
 
+    val vocList by vocViewModel.vocList.collectAsState()
+    var recentWord by remember { mutableStateOf<Word?>(null) }
+
+    LaunchedEffect(userId) {
+        val userIdInt = userId.toIntOrNull()
+        if (userIdInt != null) {
+            vocViewModel.loadVocs(userIdInt)
+        }
+    }
+    LaunchedEffect(vocList) {
+        if (vocList.isNotEmpty()) {
+            recentWord = vocList.flatMap { it.words_json }
+                .maxByOrNull { SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(it.create_date) }
+        }
+    }
+
     LaunchedEffect(userId) {
         userViewModel.fetchName(userId)
         userViewModel.fetchPoints(userId)
@@ -157,7 +173,7 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
                 }, enabled = isButtonEnabled
             )
         }
-        Spacer(modifier = Modifier.height(150.dp))
+        Spacer(modifier = Modifier.height(100.dp))
         CustomCalendar(
             selectedDate = selectedDate,
             onDateSelected = { date -> selectedDate = date },
@@ -188,25 +204,24 @@ fun HomeScreen(userId: String, userViewModel: UserViewModel) {
             RecentlyPlayedGame(recentlyPlayed!!, recentlyPlayedGame!!.gamename)
         }
 
-        if (wordData != null) {
+        if (recentWord != null) {
             Box(
                 modifier = Modifier
                     .background(
-                        color = Color.Black,
-                        shape = RoundedCornerShape(10.dp)
+                        color = colorResource(id = R.color.wqga).copy(alpha = 0.7f),
+                        shape = RoundedCornerShape(12.dp)
                     )
-                    .padding(start = 15.dp, end = 15.dp, top = 5.dp, bottom = 5.dp),
+                    .padding(start = 8.dp, end = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "Recently Added Word",
-                    fontSize = 13.sp,
-                    fontFamily = pixelFont1,
+                    fontSize = 18.sp,
                     color = Color.White,
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
             }
-            RecentlyAddedWord(wordData!!)
+            RecentlyAddedWord(recentWord!!)
         }
     }
 
