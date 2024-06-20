@@ -166,6 +166,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
     val mob_hurt_sound = remember { MediaPlayer.create(context, R.raw.hit1) }
 
     val coroutineScope = rememberCoroutineScope()
+    val fightSound = remember { MediaPlayer.create(context, R.raw.fight_sound) }
 
     LaunchedEffect(vocId) {
         vocViewModel.loadWordsByVocId(vocId)
@@ -271,7 +272,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
                 damagePosition = Offset(player.x + 70.0f, player.y - 50.0f)
                 showDamageEffect_1()
                 showDamageMessage()
-                player_hurt_sound.start()
+                fightSound.start()
             }
         }
         delay(400L)
@@ -291,15 +292,16 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
         playerTurn = true
     }
 
+
     fun performSkill(skillNum: Int) {
         if (playerTurn) {
             when (skillNum) {
-                0 -> { // 찌르기
-                    if (selectedEnemyIndex == -1 || !(selectedEnemyIndex in 0 until enemies.size)) { // 아무 적도 선택하지 않음
+                0 -> { // Attack
+                    if (selectedEnemyIndex == -1 || !(selectedEnemyIndex in 0 until enemies.size)) { // No enemy selected
                         selectedEnemyIndex = Random.nextInt(enemies.size)
                     }
 
-                    val damage = Random.nextInt(player.damage - 5, player.damage + 10) // 플레이어 공격력 -10 ~ +10 사이 데미지
+                    val damage = Random.nextInt(player.damage - 5, player.damage + 10) // Player damage range
                     enemies[selectedEnemyIndex].health -= damage
                     damageMessage = "-$damage"
                     damagePosition = Offset(enemies[selectedEnemyIndex].x + enemies[selectedEnemyIndex].width / 2 + 30, enemies[selectedEnemyIndex].y - 25)
@@ -310,12 +312,12 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
                         selectedEnemyIndex = -1
                     }
 
-                    mob_hurt_sound.start()
+                    fightSound.start()
 
                     selectedEnemyIndex = -1
                     playerTurn = false
                 }
-                1 -> { // 체력 회복
+                1 -> { // Heal
                     player.health = if (player.health + 50 >= player.maxHealth) player.maxHealth else player.health + 50
                     playerTurn = false
                 }
@@ -326,6 +328,7 @@ fun GamePlayScreen_1(navController: NavHostController, vocId: Int, userId: Int, 
             playerQuizPaused = true
         }
     }
+
 
     LaunchedEffect(Unit) {
         while (!gameOver) {
