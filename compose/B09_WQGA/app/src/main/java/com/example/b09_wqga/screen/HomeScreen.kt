@@ -328,26 +328,33 @@ fun CustomCalendar(
 
 @Composable
 fun RecentlyPlayedGame(played: Played, gameName: String) {
+    val src = if(gameName == "Quiz Brick"){
+        R.drawable.game1
+    }
+    else{
+        R.drawable.game2
+    }
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)) {
-        Text(
-            text = "Game: $gameName",
-            fontSize = 20.sp,
-            fontFamily = pixelFont2,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground), // Replace with actual game image
+                painter = painterResource(id = src), // Replace with actual game image
                 contentDescription = "Game Icon",
                 modifier = Modifier.size(48.dp)
+
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(){
+                Text(
+                    text = "Game: $gameName",
+                    fontSize = 20.sp,
+                    fontFamily = pixelFont2,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 4.dp, start = 10.dp)
+                )
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(4.dp)) {
                     Icon(imageVector = Icons.Default.Architecture, contentDescription = "Ranking Icon")
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = "${played.best_score}",fontFamily = pixelFont2, fontSize = 16.sp) // Ranking
